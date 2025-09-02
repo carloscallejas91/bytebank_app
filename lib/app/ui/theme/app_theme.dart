@@ -33,6 +33,11 @@ final lightTheme = ThemeData(
       textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
     ),
   ),
+  textButtonTheme: TextButtonThemeData(
+    style: TextButton.styleFrom(
+      foregroundColor: AppColors.secondary,
+    ),
+  ),
   inputDecorationTheme: const InputDecorationTheme(
     labelStyle: TextStyle(color: AppColors.lightTextPrimary),
     hintStyle: TextStyle(color: AppColors.lightTextPrimary),
