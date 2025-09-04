@@ -4,6 +4,8 @@ import 'package:mobile_app/modules/create/create_binding.dart';
 import 'package:mobile_app/modules/create/ui/create_screen.dart';
 import 'package:mobile_app/modules/forget/forget_binding.dart';
 import 'package:mobile_app/modules/forget/ui/forget_screen.dart';
+import 'package:mobile_app/modules/home/home_binding.dart';
+import 'package:mobile_app/modules/home/ui/home_screen.dart';
 
 part 'app_routes.dart';
 
@@ -21,6 +23,11 @@ class AppPages {
       name: Routes.FORGOT_PASSWORD,
       page: () => const ForgotScreen(),
       binding: ForgotBinding(),
+    ),
+    GetPage(
+      name: Routes.HOME,
+      page: () => const HomeScreen(),
+      binding: HomeBinding(),
     ),
   ];
 }
