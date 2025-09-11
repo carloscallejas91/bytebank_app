@@ -68,4 +68,14 @@ class AppValidators {
     }
     return null;
   }
+
+  static String? currency(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Por favor, insira um valor';
+    }
+    if (double.tryParse(value.replaceAll(',', '.')) == null) {
+      return 'Valor inválido';
+    }
+    return null;
+  }
 }

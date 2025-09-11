@@ -20,9 +20,6 @@ class AppColorExtensions extends ThemeExtension<AppColorExtensions> {
     Color? onSuccess,
     Color? warning,
     Color? onWarning,
-    Color? gradientPrimary,
-    Color? gradientSecondary,
-    Color? gradientTertiary,
   }) {
     return AppColorExtensions(
       success: success ?? this.success,

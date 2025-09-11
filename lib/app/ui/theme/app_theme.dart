@@ -34,9 +34,7 @@ final lightTheme = ThemeData(
     ),
   ),
   textButtonTheme: TextButtonThemeData(
-    style: TextButton.styleFrom(
-      foregroundColor: AppColors.secondary,
-    ),
+    style: TextButton.styleFrom(foregroundColor: AppColors.secondary),
   ),
   inputDecorationTheme: const InputDecorationTheme(
     labelStyle: TextStyle(color: AppColors.lightTextPrimary),
@@ -47,11 +45,17 @@ final lightTheme = ThemeData(
     enabledBorder: UnderlineInputBorder(
       borderSide: BorderSide(color: AppColors.lightBorder),
     ),
+    errorBorder: OutlineInputBorder(
+      borderSide: BorderSide(color: AppColors.error, width: 1.0),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderSide: BorderSide(color: AppColors.error, width: 2.0),
+    ),
   ),
   extensions: const <ThemeExtension<dynamic>>[
     AppColorExtensions(
-      onSuccess: AppColors.success,
-      success: AppColors.onSuccess,
+      onSuccess: AppColors.onSuccess,
+      success: AppColors.success,
       warning: AppColors.warning,
       onWarning: AppColors.onWarning,
     ),
