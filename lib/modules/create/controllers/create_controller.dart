@@ -14,10 +14,11 @@ class CreateController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   // Controllers
-  final nameController = TextEditingController();
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  final confirmPasswordController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   // Conditionals
   final RxBool isLoading = false.obs;
@@ -42,10 +43,15 @@ class CreateController extends GetxController {
       );
 
       if (userCredential.user != null) {
-        await userCredential.user!.updateDisplayName(nameController.text.trim());
+        await userCredential.user!.updateDisplayName(
+          nameController.text.trim(),
+        );
       }
     } on FirebaseAuthException catch (e) {
-      snackBarService.showError(title: 'Erro ao Criar Conta', message: e.message);
+      snackBarService.showError(
+        title: 'Erro ao Criar Conta',
+        message: e.message,
+      );
     } finally {
       isLoading.value = false;
     }

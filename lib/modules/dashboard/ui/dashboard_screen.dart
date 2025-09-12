@@ -35,6 +35,7 @@ class DashboardScreen extends StatelessWidget {
                     url: 'https://randomuser.me/api/portraits/men/76.jpg',
                   ),
                   CreditCardWidget(
+                    controller: controller,
                     number: '4321',
                     validity: '12/26',
                     balance: '12.555,00',
