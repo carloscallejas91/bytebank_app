@@ -5,7 +5,10 @@ import 'package:get/get.dart';
 class AuthService extends GetxService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
-  Future<User?> signIn({required String email, required String password}) async {
+  Future<User?> signIn({
+    required String email,
+    required String password,
+  }) async {
     try {
       final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
         email: email.trim(),
@@ -15,7 +18,9 @@ class AuthService extends GetxService {
     } on FirebaseAuthException {
       rethrow;
     } catch (e) {
-      debugPrint("signInWithEmailAndPassword: um erro inesperado ocorreu durante o login: $e");
+      debugPrint(
+        "signInWithEmailAndPassword: um erro inesperado ocorreu durante o login: $e",
+      );
       rethrow;
     }
   }
@@ -41,7 +46,22 @@ class AuthService extends GetxService {
     } on FirebaseAuthException {
       rethrow;
     } catch (e) {
-      debugPrint("createUserWithEmailAndPassword: um erro inesperado ocorreu: $e");
+      debugPrint(
+        "createUserWithEmailAndPassword: um erro inesperado ocorreu: $e",
+      );
+      rethrow;
+    }
+  }
+
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email.trim());
+    } on FirebaseAuthException {
+      rethrow;
+    } catch (e) {
+      debugPrint(
+        "sendPasswordResetEmail: um erro inesperado ocorreu ao enviar o e-mail de recuperação: $e",
+      );
       rethrow;
     }
   }
