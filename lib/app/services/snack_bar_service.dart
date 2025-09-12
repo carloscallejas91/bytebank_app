@@ -9,7 +9,7 @@ class SnackBarService extends GetxService {
     Get.snackbar(
       title,
       message ?? 'Ocorreu um erro, tente novamente mais tarde.',
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: theme.colorScheme.error,
       colorText: theme.colorScheme.onError,
     );
@@ -21,7 +21,7 @@ class SnackBarService extends GetxService {
     Get.snackbar(
       title,
       message,
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: customColors.success,
       colorText: customColors.onSuccess,
     );
@@ -33,7 +33,7 @@ class SnackBarService extends GetxService {
     Get.snackbar(
       title,
       message,
-      snackPosition: SnackPosition.BOTTOM,
+      snackPosition: SnackPosition.TOP,
       backgroundColor: customColors.warning,
       colorText: customColors.onWarning,
     );
