@@ -15,8 +15,8 @@ class AuthController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   // Controllers
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   // Conditionals
   final RxBool isLoading = false.obs;

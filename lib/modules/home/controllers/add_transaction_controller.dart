@@ -12,8 +12,8 @@ class AddTransactionController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   // Controllers
-  final valueController = TextEditingController();
-  final descriptionController = TextEditingController();
+  final TextEditingController valueController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
 
   // Form Fields
   final selectedType = TransactionType.expense.obs;

@@ -2,6 +2,10 @@ import 'package:get/get.dart';
 import 'package:mobile_app/app/utils/date_formatter.dart';
 
 class DashboardController extends GetxController {
+  // Conditionals
+  final RxBool isBalanceVisible = false.obs;
+
+  // Others
   final String now = DateFormatter.formatDayOfWeekWithDate();
 
   final Map<String, double> sampleSpending = {
@@ -11,4 +15,8 @@ class DashboardController extends GetxController {
     'Cartão de Débito': 60.0,
     'Vale Alimentação': 40.0,
   };
+
+  void toggleBalanceVisibility() {
+    isBalanceVisible.toggle();
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile_app/app/routes/app_pages.dart';
 import 'package:mobile_app/app/ui/constants/app_assets.dart';
 import 'package:mobile_app/modules/dashboard/ui/dashboard_screen.dart';
 import 'package:mobile_app/modules/home/controllers/add_transaction_controller.dart';
@@ -37,15 +38,21 @@ class HomeScreen extends StatelessWidget {
 
   AppBar _buildAppBar(ThemeData theme) {
     return AppBar(
-      title: Image.asset(AppAssets.logo, height: 50),
+      title: Padding(
+        padding: const EdgeInsets.only(left: 8.0),
+        child: Image.asset(AppAssets.logo, height: 50),
+      ),
       backgroundColor: theme.colorScheme.surface,
       shadowColor: theme.colorScheme.shadow,
       elevation: 2,
       actions: [
-        IconButton(
-          icon: const Icon(Icons.logout),
-          tooltip: 'Sair',
-          onPressed: () {},
+        Padding(
+          padding: const EdgeInsets.only(right: 16),
+          child: IconButton(
+            icon: Icon(Icons.logout, color: theme.colorScheme.onSurface),
+            tooltip: 'Sair',
+            onPressed: () => Get.offAllNamed(Routes.AUTH),
+          ),
         ),
       ],
     );

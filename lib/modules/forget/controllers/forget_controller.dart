@@ -14,7 +14,7 @@ class ForgotController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   // Controllers
-  final emailController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
 
   // Conditionals
   final RxBool isLoading = false.obs;

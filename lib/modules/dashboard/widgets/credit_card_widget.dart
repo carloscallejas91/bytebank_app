@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:mobile_app/app/ui/constants/app_assets.dart';
+import 'package:mobile_app/modules/dashboard/controllers/dashboard_controller.dart';
 
 class CreditCardWidget extends StatelessWidget {
+  final DashboardController controller;
   final String number;
   final String validity;
   final String balance;
@@ -9,6 +12,7 @@ class CreditCardWidget extends StatelessWidget {
 
   const CreditCardWidget({
     super.key,
+    required this.controller,
     required this.number,
     required this.validity,
     required this.balance,
@@ -32,15 +36,15 @@ class CreditCardWidget extends StatelessWidget {
         child: Column(
           spacing: 60,
           children: [
-            _buildHeader(foreground, theme),
-            _buildContent(foreground, theme, foregroundAlt),
+            _buildHeader(theme, foreground),
+            _buildContent(theme, foreground, foregroundAlt),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(Color foreground, ThemeData theme) {
+  Widget _buildHeader(ThemeData theme, Color foreground) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +70,7 @@ class CreditCardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(Color foreground, ThemeData theme, Color foregroundAlt) {
+  Widget _buildContent(ThemeData theme, Color foreground, Color foregroundAlt) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -75,25 +79,30 @@ class CreditCardWidget extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Row(
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      onPressed: () {},
-                      icon: Icon(Icons.visibility, color: foreground),
+            Obx(
+              () => Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: controller.toggleBalanceVisibility,
+                    icon: Icon(
+                      controller.isBalanceVisible.value
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: foreground,
                     ),
-                    Text(
-                      'R\$ ******', // balance
-                      style: theme.textTheme.bodyLarge!.copyWith(
-                        color: foreground,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  ),
+                  Text(
+                    controller.isBalanceVisible.value
+                        ? 'R\$ $balance'
+                        : 'R\$ ******',
+                    style: theme.textTheme.bodyLarge!.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.bold,
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
             Text(
               accountType,
