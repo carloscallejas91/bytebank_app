@@ -47,6 +47,8 @@ class CreateController extends GetxController {
       );
 
       if (user != null) {
+        clearForm();
+
         _snackBarService.showSuccess(
           title: 'Bem-vindo(a), ${user.displayName}!',
           message: 'Sua conta foi criada com sucesso.',
@@ -55,9 +57,11 @@ class CreateController extends GetxController {
         Get.offAllNamed(Routes.HOME);
       }
     } on FirebaseAuthException catch (e) {
+      debugPrint(e.message);
+
       _snackBarService.showError(
         title: 'Erro ao Criar Conta',
-        message: e.message,
+        message: 'Ocorreu um erro, tente novamente!',
       );
     } catch (e) {
       _snackBarService.showError(
@@ -75,6 +79,13 @@ class CreateController extends GetxController {
 
   void toggleConfirmPasswordVisibility() {
     isConfirmPasswordHidden.value = !isConfirmPasswordHidden.value;
+  }
+
+  void clearForm(){
+    nameController.clear();
+    emailController.clear();
+    passwordController.clear();
+    confirmPasswordController.clear();
   }
 
   @override
