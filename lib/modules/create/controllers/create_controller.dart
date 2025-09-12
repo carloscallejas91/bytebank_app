@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile_app/app/routes/app_pages.dart';
+import 'package:mobile_app/app/services/auth_service.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 
 class CreateController extends GetxController {
@@ -8,7 +10,8 @@ class CreateController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Utils
-  final SnackBarService snackBarService = Get.find();
+  final AuthService _authService = Get.find();
+  final SnackBarService _snackBarService = Get.find();
 
   // Form
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -37,20 +40,29 @@ class CreateController extends GetxController {
     isLoading.value = true;
 
     try {
-      final userCredential = await _auth.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
+      final user = await _authService.createUser(
+        name: nameController.text,
+        email: emailController.text,
+        password: passwordController.text,
       );
 
-      if (userCredential.user != null) {
-        await userCredential.user!.updateDisplayName(
-          nameController.text.trim(),
+      if (user != null) {
+        _snackBarService.showSuccess(
+          title: 'Bem-vindo(a), ${user.displayName}!',
+          message: 'Sua conta foi criada com sucesso.',
         );
+
+        Get.offAllNamed(Routes.HOME);
       }
     } on FirebaseAuthException catch (e) {
-      snackBarService.showError(
+      _snackBarService.showError(
         title: 'Erro ao Criar Conta',
         message: e.message,
+      );
+    } catch (e) {
+      _snackBarService.showError(
+        title: 'Erro Inesperado',
+        message: 'Ocorreu um erro. Por favor, tente novamente.',
       );
     } finally {
       isLoading.value = false;
