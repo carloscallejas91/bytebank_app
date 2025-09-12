@@ -25,7 +25,7 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: _buildAppBar(theme),
+      appBar: _buildAppBar(homeController, theme),
       bottomNavigationBar: _buildNavigationBar(homeController, theme),
       floatingActionButton: _buildFloatingActionButton(
         theme,
@@ -36,7 +36,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  AppBar _buildAppBar(ThemeData theme) {
+  AppBar _buildAppBar(HomeController controller, ThemeData theme) {
     return AppBar(
       title: Padding(
         padding: const EdgeInsets.only(left: 8.0),
@@ -51,7 +51,7 @@ class HomeScreen extends StatelessWidget {
           child: IconButton(
             icon: Icon(Icons.logout, color: theme.colorScheme.onSurface),
             tooltip: 'Sair',
-            onPressed: () => Get.offAllNamed(Routes.AUTH),
+            onPressed: () => controller.signOut(),
           ),
         ),
       ],

@@ -2,14 +2,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/routes/app_pages.dart';
+import 'package:mobile_app/app/services/auth_service.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 
 class AuthController extends GetxController {
-  // Firebase
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  // Utils
-  final SnackBarService snackBarService = Get.find();
+  // Services
+  final AuthService _authService = Get.find();
+  final SnackBarService _snackBarService = Get.find();
 
   // Form
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -29,25 +28,45 @@ class AuthController extends GetxController {
   }
 
   Future<void> signInWithEmail() async {
-    Get.offAllNamed(Routes.HOME);
-    // if (isFormValid()) return;
-    //
-    // isLoading.value = true;
-    //
-    // try {
-    //   await _auth.signInWithEmailAndPassword(
-    //     email: emailController.text.trim(),
-    //     password: passwordController.text.trim(),
-    //   );
-    // } on FirebaseAuthException catch (e) {
-    //   snackBarService.showError(title: 'Erro de Autenticação', message: e.message);
-    // } finally {
-    //   isLoading.value = false;
-    // }
+    if (isFormValid()) return;
+
+    isLoading.value = true;
+
+    try {
+      final user = await _authService.signIn(
+        email: emailController.text,
+        password: passwordController.text,
+      );
+
+      if (user != null) {
+        clearForm();
+        Get.offAllNamed(Routes.HOME);
+      }
+      ;
+    } on FirebaseAuthException catch (e) {
+      debugPrint(e.message);
+
+      _snackBarService.showError(
+        title: 'Erro de Autenticação',
+        message: 'Ocorreu um erro, tente novamente!',
+      );
+    } catch (e) {
+      _snackBarService.showError(
+        title: 'Erro Inesperado',
+        message: 'Ocorreu um erro ao tentar fazer login.',
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   void togglePasswordVisibility() {
     isPasswordHidden.value = !isPasswordHidden.value;
+  }
+
+  void clearForm() {
+    emailController.clear();
+    passwordController.clear();
   }
 
   @override

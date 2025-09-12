@@ -5,6 +5,21 @@ import 'package:get/get.dart';
 class AuthService extends GetxService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
+  Future<User?> signIn({required String email, required String password}) async {
+    try {
+      final userCredential = await _firebaseAuth.signInWithEmailAndPassword(
+        email: email.trim(),
+        password: password.trim(),
+      );
+      return userCredential.user;
+    } on FirebaseAuthException {
+      rethrow;
+    } catch (e) {
+      debugPrint("signInWithEmailAndPassword: um erro inesperado ocorreu durante o login: $e");
+      rethrow;
+    }
+  }
+
   Future<User?> createUser({
     required String name,
     required String email,
