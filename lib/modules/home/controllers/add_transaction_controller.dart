@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile_app/app/core/enums/transaction_type.dart';
+import 'package:mobile_app/app/data/enums/transaction_type.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 import 'package:mobile_app/app/utils/date_formatter.dart';
 

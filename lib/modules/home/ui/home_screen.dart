@@ -5,6 +5,7 @@ import 'package:mobile_app/modules/dashboard/ui/dashboard_screen.dart';
 import 'package:mobile_app/modules/home/controllers/add_transaction_controller.dart';
 import 'package:mobile_app/modules/home/controllers/home_controller.dart';
 import 'package:mobile_app/modules/home/widgets/add_transaction_sheet.dart';
+import 'package:mobile_app/modules/transaction/ui/transaction_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -18,14 +19,17 @@ class HomeScreen extends StatelessWidget {
 
     final List<Widget> screens = [
       const Center(child: DashboardScreen()),
-      const Center(child: Text('Extrato')),
+      const Center(child: TransactionScreen()),
     ];
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: _buildAppBar(theme),
       bottomNavigationBar: _buildNavigationBar(homeController, theme),
-      floatingActionButton: _buildFloatingActionButton(theme, addTransactionController),
+      floatingActionButton: _buildFloatingActionButton(
+        theme,
+        addTransactionController,
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: _buildBody(homeController, screens),
     );
@@ -58,13 +62,19 @@ class HomeScreen extends StatelessWidget {
         indicatorColor: theme.colorScheme.onPrimaryContainer,
         destinations: [
           NavigationDestination(
-            icon: Icon(Icons.dashboard),
-            selectedIcon: Icon(Icons.space_dashboard_outlined, color: theme.colorScheme.tertiary,),
+            icon: Icon(Icons.dashboard, color: theme.colorScheme.onPrimary),
+            selectedIcon: Icon(
+              Icons.space_dashboard_outlined,
+              color: theme.colorScheme.tertiary,
+            ),
             label: 'Dashboard',
           ),
           NavigationDestination(
-            icon: Icon(Icons.view_list),
-            selectedIcon: Icon(Icons.view_list_outlined, color: theme.colorScheme.tertiary,),
+            icon: Icon(Icons.view_list, color: theme.colorScheme.onPrimary),
+            selectedIcon: Icon(
+              Icons.view_list_outlined,
+              color: theme.colorScheme.tertiary,
+            ),
             label: 'Extrato',
           ),
         ],
@@ -87,14 +97,17 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFloatingActionButton(ThemeData theme, AddTransactionController controller) {
+  Widget _buildFloatingActionButton(
+    ThemeData theme,
+    AddTransactionController controller,
+  ) {
     return FloatingActionButton(
       tooltip: 'Adicionar extrato',
       backgroundColor: theme.colorScheme.secondary,
       elevation: 2.0,
       onPressed: () {
         Get.bottomSheet(
-          AddTransactionSheet(controller: controller,),
+          AddTransactionSheet(controller: controller),
           backgroundColor: Theme.of(Get.context!).colorScheme.surface,
           isScrollControlled: true,
         );
@@ -104,21 +117,6 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildBody(HomeController controller, List<Widget> screens) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.minHeight),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24.0,
-                vertical: 32.0,
-              ),
-              child: Obx(() => screens[controller.selectedIndex.value]),
-            ),
-          ),
-        );
-      },
-    );
+    return Obx(() => screens[controller.selectedIndex.value]);
   }
 }

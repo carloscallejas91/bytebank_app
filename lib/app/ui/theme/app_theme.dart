@@ -11,6 +11,7 @@ final lightTheme = ThemeData(
     onPrimary: AppColors.onPrimary,
     surface: AppColors.lightSurface,
     onSurface: AppColors.lightTextPrimary,
+    onSurfaceVariant: AppColors.lightTextSecondary,
     error: AppColors.error,
     onError: AppColors.onError,
     secondary: AppColors.secondary,
