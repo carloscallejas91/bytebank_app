@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/ui/constants/app_assets.dart';
 import 'package:mobile_app/modules/dashboard/ui/dashboard_screen.dart';
+import 'package:mobile_app/modules/home/controllers/add_transaction_controller.dart';
 import 'package:mobile_app/modules/home/controllers/home_controller.dart';
+import 'package:mobile_app/modules/home/widgets/add_transaction_sheet.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<HomeController>();
+    final homeController = Get.find<HomeController>();
+    final addTransactionController = Get.find<AddTransactionController>();
+
     final theme = Theme.of(context);
 
     final List<Widget> screens = [
@@ -20,10 +24,10 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: _buildAppBar(theme),
-      bottomNavigationBar: _buildNavigationBar(controller, theme),
-      floatingActionButton: _buildFloatingActionButton(theme),
+      bottomNavigationBar: _buildNavigationBar(homeController, theme),
+      floatingActionButton: _buildFloatingActionButton(theme, addTransactionController),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      body: _buildBody(controller, screens),
+      body: _buildBody(homeController, screens),
     );
   }
 
@@ -83,12 +87,18 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFloatingActionButton(ThemeData theme) {
+  Widget _buildFloatingActionButton(ThemeData theme, AddTransactionController controller) {
     return FloatingActionButton(
       tooltip: 'Adicionar extrato',
       backgroundColor: theme.colorScheme.secondary,
       elevation: 2.0,
-      onPressed: () {},
+      onPressed: () {
+        Get.bottomSheet(
+          AddTransactionSheet(controller: controller,),
+          backgroundColor: Theme.of(Get.context!).colorScheme.surface,
+          isScrollControlled: true,
+        );
+      },
       child: Icon(Icons.add, color: theme.colorScheme.onSecondary),
     );
   }
