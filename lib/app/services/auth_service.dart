@@ -1,9 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:mobile_app/app/services/database_service.dart';
 
 class AuthService extends GetxService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final DatabaseService _databaseService = Get.find();
 
   Future<User?> signIn({
     required String email,
@@ -36,10 +38,13 @@ class AuthService extends GetxService {
         password: password.trim(),
       );
 
-      if (userCredential.user != null) {
-        await userCredential.user!.updateDisplayName(name.trim());
-        await userCredential.user!.reload();
+      final newUser = userCredential.user;
+      if (newUser != null) {
+        await newUser.updateDisplayName(name.trim());
 
+        await _databaseService.createUserDocument(user: newUser, name: name.trim());
+
+        await newUser.reload();
         return _firebaseAuth.currentUser;
       }
       return null;
