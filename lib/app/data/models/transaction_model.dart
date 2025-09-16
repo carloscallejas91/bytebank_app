@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mobile_app/app/data/enums/transaction_type.dart';
 
 class TransactionModel {
@@ -16,4 +17,15 @@ class TransactionModel {
     required this.amount,
     required this.date,
   });
+
+  Map<String, dynamic> toMap(String userId) {
+    return {
+      'userId': userId,
+      'type': type.name,
+      'description': description,
+      'paymentMethod': paymentMethod,
+      'amount': amount,
+      'date': Timestamp.fromDate(date),
+    };
+  }
 }
