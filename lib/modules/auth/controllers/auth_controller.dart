@@ -42,7 +42,7 @@ class AuthController extends GetxController {
         clearForm();
         Get.offAllNamed(Routes.HOME);
       }
-      ;
+
     } on FirebaseAuthException catch (e) {
       debugPrint(e.message);
 

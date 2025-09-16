@@ -9,7 +9,7 @@ class HomeBinding implements Bindings {
   void dependencies() {
     Get.lazyPut<HomeController>(() => HomeController(), fenix: true);
     Get.lazyPut<DashboardController>(() => DashboardController(), fenix: true);
-    Get.lazyPut<AddTransactionController>(() => AddTransactionController(), fenix: true);
     Get.lazyPut<TransactionController>(() => TransactionController(), fenix: true);
+    Get.lazyPut<AddTransactionController>(() => AddTransactionController(), fenix: true);
   }
 }

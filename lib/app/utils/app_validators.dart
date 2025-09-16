@@ -73,7 +73,7 @@ class AppValidators {
     if (value == null || value.isEmpty) {
       return 'Por favor, insira um valor';
     }
-    if (double.tryParse(value.replaceAll(',', '.')) == null) {
+    if (value == 'R\$ 0,00') {
       return 'Valor inválido';
     }
     return null;

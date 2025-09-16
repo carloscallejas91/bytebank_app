@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile_app/app/routes/app_pages.dart';
 import 'package:mobile_app/app/ui/constants/app_assets.dart';
 import 'package:mobile_app/modules/dashboard/ui/dashboard_screen.dart';
 import 'package:mobile_app/modules/home/controllers/add_transaction_controller.dart';
@@ -28,8 +27,8 @@ class HomeScreen extends StatelessWidget {
       appBar: _buildAppBar(homeController, theme),
       bottomNavigationBar: _buildNavigationBar(homeController, theme),
       floatingActionButton: _buildFloatingActionButton(
-        theme,
         addTransactionController,
+        theme,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: _buildBody(homeController, screens),
@@ -105,8 +104,8 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildFloatingActionButton(
-    ThemeData theme,
     AddTransactionController controller,
+    ThemeData theme,
   ) {
     return FloatingActionButton(
       tooltip: 'Adicionar extrato',

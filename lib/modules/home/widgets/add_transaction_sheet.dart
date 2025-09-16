@@ -14,91 +14,133 @@ class AddTransactionSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Builder(
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Nova Transação', style: theme.textTheme.headlineSmall),
-              const SizedBox(height: 16),
-              _buildTransactionForm(theme),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: controller.saveTransaction,
-                child: const Text('Salvar'),
-              ),
-            ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+      child: Form(
+        key: controller.formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Nova Transação', style: theme.textTheme.headlineSmall),
+            const SizedBox(height: 24),
+            _buildTypeSelector(),
+            const SizedBox(height: 16),
+            _buildValueField(),
+            const SizedBox(height: 16),
+            _buildPaymentMethodDropdown(),
+            const SizedBox(height: 16),
+            _buildDescriptionField(),
+            const SizedBox(height: 32),
+            _buildSaveButton(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTypeSelector() {
+    return Obx(
+      () => SegmentedButton<TransactionType>(
+        segments: const [
+          ButtonSegment(
+            value: TransactionType.expense,
+            label: Text('Saída'),
+            icon: Icon(Icons.arrow_downward),
           ),
-        );
+          ButtonSegment(
+            value: TransactionType.income,
+            label: Text('Entrada'),
+            icon: Icon(Icons.arrow_upward),
+          ),
+        ],
+        selected: {controller.selectedType.value},
+        onSelectionChanged: (newSelection) =>
+            controller.setTransactionType(newSelection.first),
+      ),
+    );
+  }
+
+  Widget _buildValueField() {
+    return CustomTextField(
+      controller: controller.valueController,
+      labelText: 'Valor',
+      hintText: 'R\$0,00',
+      prefixIcon: Icons.attach_money,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      validator: (value) {
+        if (controller.valueController.numberValue <= 0) {
+          return 'Por favor, insira um valor maior que zero.';
+        }
+        return null;
       },
     );
   }
 
-  Widget _buildTransactionForm(ThemeData theme) {
-    return Form(
-      key: controller.formKey,
-      child: Column(
-        spacing: 16,
-        children: [
-          Obx(
-            () => SegmentedButton<TransactionType>(
-              segments: const [
-                ButtonSegment(
-                  value: TransactionType.expense,
-                  label: Text('Saída'),
-                  icon: Icon(Icons.arrow_downward),
-                ),
-                ButtonSegment(
-                  value: TransactionType.income,
-                  label: Text('Entrada'),
-                  icon: Icon(Icons.arrow_upward),
-                ),
-              ],
-              selected: {controller.selectedType.value},
-              onSelectionChanged: (Set<TransactionType> newSelection) {
-                controller.setTransactionType(newSelection.first);
-              },
-            ),
+  Widget _buildPaymentMethodDropdown() {
+    return Obx(() {
+      final isExpense =
+          controller.selectedType.value == TransactionType.expense;
+      return DropdownButtonFormField<String>(
+        key: ValueKey('payment_method_${controller.selectedType.value}'),
+        initialValue: controller.selectedPaymentMethod.value,
+        hint: Text(
+          isExpense
+              ? 'Boleto, Cartão de débito, etc...'
+              : 'Salário, Pix, etc...',
+        ),
+        decoration: InputDecoration(
+          labelText: 'Selecione um método',
+          prefixIcon: Icon(
+            isExpense ? Icons.payment_outlined : Icons.source_outlined,
           ),
-          CustomTextField(
-            controller: controller.valueController,
-            labelText: 'Valor',
-            hintText: '0,00',
-            prefixIcon: Icons.attach_money,
-            keyboardType: TextInputType.numberWithOptions(decimal: true),
-            validator: AppValidators.currency,
-          ),
-          Obx(
-            () => DropdownButtonFormField<String>(
-              initialValue: controller.selectedCategory.value,
-              decoration: InputDecoration(
-                labelText: 'Categoria',
-                prefixIcon: const Icon(Icons.category_outlined),
-              ),
-              items: controller.categories.map((category) {
-                return DropdownMenuItem(value: category, child: Text(category));
-              }).toList(),
-              onChanged: (newValue) {
-                controller.selectedCategory.value = newValue;
-              },
-              validator: (value) => AppValidators.notEmpty(
-                value,
-                message: 'Por favor, selecione uma categoria.',
-              ),
-            ),
-          ),
-          CustomTextField(
-            controller: controller.descriptionController,
-            labelText: 'Descrição',
-            hintText: 'Super mercado, aluguel ...',
-            prefixIcon: Icons.description_outlined,
-            keyboardType: TextInputType.text,
-            validator: AppValidators.notEmpty,
-          ),
-        ],
+        ),
+        items: controller.currentPaymentMethods
+            .map(
+              (method) => DropdownMenuItem(value: method, child: Text(method)),
+            )
+            .toList(),
+        onChanged: (newValue) =>
+            controller.selectedPaymentMethod.value = newValue,
+        validator: (value) => AppValidators.notEmpty(
+          value,
+          message: 'Por favor, selecione um método.',
+        ),
+      );
+    });
+  }
+
+  Widget _buildDescriptionField() {
+    return CustomTextField(
+      controller: controller.descriptionController,
+      labelText: 'Descrição',
+      hintText: 'Supermercado, aluguel...',
+      prefixIcon: Icons.description_outlined,
+      keyboardType: TextInputType.text,
+      validator: (value) =>
+          AppValidators.notEmpty(value, message: 'A descrição é obrigatória.'),
+    );
+  }
+
+  Widget _buildSaveButton() {
+    return Obx(
+      () => SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: controller.isLoading.value
+              ? null
+              : controller.saveTransaction,
+          child: controller.isLoading.value
+              ? const SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                )
+              : const Text('Salvar'),
+        ),
       ),
     );
   }
