@@ -23,7 +23,6 @@ class DatabaseService extends GetxService {
       };
 
       await userDocRef.set(userData);
-
     } catch (e) {
       debugPrint("createUserDocument: erro ao criar documento do usuário: $e");
       rethrow;
@@ -43,6 +42,46 @@ class DatabaseService extends GetxService {
       await docRef.set(transaction.toMap(user.uid));
     } catch (e) {
       debugPrint("addTransaction: erro ao adicionar transação: $e");
+      rethrow;
+    }
+  }
+
+  Stream<List<TransactionModel>> getTransactionsStream() {
+    final user = _auth.currentUser;
+    if (user == null) return Stream.value([]);
+
+    return _firestore
+        .collection('transactions')
+        .where('userId', isEqualTo: user.uid)
+        .orderBy('date', descending: true)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => TransactionModel.fromMap(doc))
+              .toList();
+        });
+  }
+
+  Future<void> updateTransaction(TransactionModel transaction) async {
+    final user = _auth.currentUser;
+    if (user == null) {
+      throw Exception('Nenhum usuário autenticado.');
+    }
+
+    try {
+      final docRef = _firestore.collection('transactions').doc(transaction.id);
+      await docRef.update(transaction.toMap(user.uid));
+    } catch (e) {
+      debugPrint("updateTransaction: erro ao atualizar transação: $e");
+      rethrow;
+    }
+  }
+
+  Future<void> deleteTransaction(String transactionId) async {
+    try {
+      await _firestore.collection('transactions').doc(transactionId).delete();
+    } catch (e) {
+      debugPrint("deleteTransaction: erro ao deletar transação: $e");
       rethrow;
     }
   }

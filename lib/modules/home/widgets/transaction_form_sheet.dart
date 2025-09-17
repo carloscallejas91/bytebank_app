@@ -3,15 +3,14 @@ import 'package:get/get.dart';
 import 'package:mobile_app/app/data/enums/transaction_type.dart';
 import 'package:mobile_app/app/ui/widgets/custom_text_field.dart';
 import 'package:mobile_app/app/utils/app_validators.dart';
-import 'package:mobile_app/modules/home/controllers/add_transaction_controller.dart';
+import 'package:mobile_app/modules/home/controllers/transaction_form_controller.dart';
 
-class AddTransactionSheet extends StatelessWidget {
-  final AddTransactionController controller;
-
-  const AddTransactionSheet({super.key, required this.controller});
+class TransactionFormSheet extends GetView<TransactionFormController> {
+  const TransactionFormSheet({super.key});
 
   @override
   Widget build(BuildContext context) {
+    Get.put(TransactionFormController());
     final theme = Theme.of(context);
 
     return Padding(
@@ -22,7 +21,10 @@ class AddTransactionSheet extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Nova Transação', style: theme.textTheme.headlineSmall),
+            Text(
+              controller.isEditMode ? 'Editar Transação' : 'Nova Transação',
+              style: theme.textTheme.headlineSmall,
+            ),
             const SizedBox(height: 24),
             _buildTypeSelector(),
             const SizedBox(height: 16),

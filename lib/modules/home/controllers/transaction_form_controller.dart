@@ -7,12 +7,12 @@ import 'package:mobile_app/app/services/database_service.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 import 'package:uuid/uuid.dart';
 
-class AddTransactionController extends GetxController {
-  // Services
+class TransactionFormController extends GetxController {
+  // --- DEPENDÊNCIAS (SERVICES) ---
   final DatabaseService _databaseService = Get.find();
   final SnackBarService _snackBarService = Get.find();
 
-  // Controllers
+  // --- GERENCIADORES DA UI (UI CONTROLLERS) ---
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController descriptionController = TextEditingController();
   final MoneyMaskedTextController valueController = MoneyMaskedTextController(
@@ -21,11 +21,14 @@ class AddTransactionController extends GetxController {
     leftSymbol: 'R\$ ',
   );
 
+  // --- ESTADO REATIVO ---
   final Rx<TransactionType> selectedType = TransactionType.expense.obs;
   final RxnString selectedPaymentMethod = RxnString();
+  final RxBool isLoading = false.obs;
 
+  // --- PROPRIEDADES INTERNAS --
   final Uuid uuid = Uuid();
-
+  final TransactionModel? editingTransaction;
   final List<String> _expenseMethods = [
     'Boleto',
     'Cartão de débito',
@@ -41,7 +44,8 @@ class AddTransactionController extends GetxController {
     'Outro',
   ];
 
-  final RxBool isLoading = false.obs;
+  // --- GETTERS ---
+  bool get isEditMode => editingTransaction != null;
 
   List<String> get currentPaymentMethods {
     if (selectedType.value == TransactionType.expense) {
@@ -51,14 +55,35 @@ class AddTransactionController extends GetxController {
     }
   }
 
-  bool isFormValid() {
-    if (!formKey.currentState!.validate()) return true;
+  TransactionFormController() : editingTransaction = Get.arguments;
 
-    return false;
+  @override
+  void onInit() {
+    super.onInit();
+
+    if (isEditMode) _prefillForm();
+  }
+
+  @override
+  void onClose() {
+    valueController.dispose();
+    descriptionController.dispose();
+
+    super.onClose();
+  }
+
+  void _prefillForm() {
+    final TransactionModel transaction = editingTransaction!;
+
+    valueController.updateValue(transaction.amount);
+    descriptionController.text = transaction.description;
+    selectedType.value = transaction.type;
+    selectedPaymentMethod.value = transaction.paymentMethod;
   }
 
   void setTransactionType(TransactionType type) {
     if (selectedType.value == type) return;
+
     selectedType.value = type;
     selectedPaymentMethod.value = null;
   }
@@ -67,10 +92,28 @@ class AddTransactionController extends GetxController {
     if (isFormValid()) return;
 
     isLoading.value = true;
+
     try {
-      final newTransaction = _buildTransactionModel();
-      await _submitTransaction(newTransaction);
-      _handleSuccess();
+      if (isEditMode) {
+        final updatedTransaction = TransactionModel(
+          id: editingTransaction!.id,
+          type: selectedType.value,
+          amount: valueController.numberValue,
+          description: descriptionController.text,
+          paymentMethod: selectedPaymentMethod.value!,
+          date: editingTransaction!.date,
+        );
+
+        await _databaseService.updateTransaction(updatedTransaction);
+
+        _handleSuccess(isUpdate: true);
+      } else {
+        final newTransaction = _buildTransactionModel();
+
+        await _databaseService.addTransaction(newTransaction);
+
+        _handleSuccess();
+      }
     } catch (e) {
       _handleError(e);
     } finally {
@@ -89,17 +132,22 @@ class AddTransactionController extends GetxController {
     );
   }
 
-  Future<void> _submitTransaction(TransactionModel transaction) async {
-    await _databaseService.addTransaction(transaction);
-  }
+  void _handleSuccess({bool isUpdate = false}) {
+    if (isUpdate) {
+      Get.back();
 
-  void _handleSuccess() {
-    _snackBarService.showSuccess(
-      title: 'Sucesso!',
-      message: 'Sua transação foi salva.',
-    );
+      _snackBarService.showSuccess(
+        title: 'Sucesso!',
+        message: 'Sua transação foi atualizada.',
+      );
+    } else {
+      clearForm();
 
-    clearForm();
+      _snackBarService.showSuccess(
+        title: 'Sucesso!',
+        message: 'Sua transação foi salva.',
+      );
+    }
   }
 
   void _handleError(Object e) {
@@ -117,10 +165,9 @@ class AddTransactionController extends GetxController {
     selectedType.value = TransactionType.expense;
   }
 
-  @override
-  void onClose() {
-    valueController.dispose();
-    descriptionController.dispose();
-    super.onClose();
+  bool isFormValid() {
+    if (!formKey.currentState!.validate()) return true;
+
+    return false;
   }
 }

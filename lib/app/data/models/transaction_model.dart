@@ -28,4 +28,18 @@ class TransactionModel {
       'date': Timestamp.fromDate(date),
     };
   }
+
+  factory TransactionModel.fromMap(DocumentSnapshot doc) {
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    return TransactionModel(
+      id: doc.id,
+      type: (data['type'] as String) == 'income'
+          ? TransactionType.income
+          : TransactionType.expense,
+      description: data['description'] ?? '',
+      paymentMethod: data['paymentMethod'] ?? '',
+      amount: (data['amount'] as num).toDouble(),
+      date: (data['date'] as Timestamp).toDate(),
+    );
+  }
 }
