@@ -1,66 +1,87 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile_app/app/data/enums/transaction_type.dart';
 import 'package:mobile_app/app/data/models/transaction_model.dart';
+import 'package:mobile_app/app/services/database_service.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
-import 'package:uuid/uuid.dart';
+import 'package:mobile_app/app/ui/widgets/app_dialogs.dart';
+import 'package:mobile_app/modules/home/widgets/transaction_form_sheet.dart';
 
 class TransactionController extends GetxController {
-  // Utils
+  // --- DEPENDÊNCIAS (SERVICES) ---
+  final DatabaseService _databaseService = Get.find();
   final SnackBarService snackBarService = Get.find();
 
-  // List
+  // --- PROPRIEDADES INTERNAS ---
+  late StreamSubscription _transactionSubscription;
+
+  // --- ESTADO REATIVO DA UI ---
   final RxList<TransactionModel> transactions = <TransactionModel>[].obs;
 
   @override
   void onInit() {
     super.onInit();
-    _loadSampleTransactions();
+
+    _listenToTransactionStream();
   }
 
-  void _loadSampleTransactions() {
-    var uuid = Uuid();
-    transactions.assignAll([
-      TransactionModel(
-        id: uuid.v4(),
-        type: TransactionType.expense,
-        description: 'Aluguel',
-        paymentMethod: 'Boleto',
-        amount: 1500.00,
-        date: DateTime.now().subtract(Duration(days: 2)),
-      ),
-      TransactionModel(
-        id: uuid.v4(),
-        type: TransactionType.income,
-        description: 'Salário de Setembro',
-        paymentMethod: 'Deposito bancário',
-        amount: 5000.00,
-        date: DateTime.now().subtract(Duration(days: 5)),
-      ),
-      TransactionModel(
-        id: uuid.v4(),
-        type: TransactionType.expense,
-        description: 'Supermercado',
-        paymentMethod: 'Cartão de crédito',
-        amount: 350.75,
-        date: DateTime.now().subtract(Duration(days: 1)),
-      ),
-    ]);
+  @override
+  void onClose() {
+    _transactionSubscription.cancel();
+
+    super.onClose();
+  }
+
+  void _listenToTransactionStream() {
+    final transactionStream = _databaseService.getTransactionsStream();
+    _transactionSubscription = transactionStream.listen((newTransactions) {
+      transactions.assignAll(newTransactions);
+    });
   }
 
   void editTransaction(String id) {
-    debugPrint("Editar transação com ID: $id");
-    snackBarService.showWarning(
-      title: 'Em breve',
-      message: 'A tela de edição será implementada aqui.',
+    final TransactionModel? transactionToEdit = transactions.firstWhereOrNull(
+      (t) => t.id == id,
+    );
+
+    if (transactionToEdit == null) {
+      snackBarService.showError(
+        title: 'Erro',
+        message: 'Transação não encontrada.',
+      );
+
+      return;
+    }
+
+    Get.bottomSheet(
+      TransactionFormSheet(),
+      backgroundColor: Get.theme.colorScheme.surface,
+      isScrollControlled: true,
+      settings: RouteSettings(arguments: transactionToEdit),
     );
   }
 
   void deleteTransaction(String id) {
-    debugPrint("Deletar transação com ID: $id");
-    snackBarService.showSuccess(
-      title: 'Sucesso!',
-      message: 'Transação deletada.',
+    AppDialogs.showConfirmationDialog(
+      title: 'Confirmar Exclusão',
+      message:
+          'Você tem certeza que deseja deletar esta transação? Esta ação não pode ser desfeita.',
+      onConfirm: () async {
+        try {
+          await _databaseService.deleteTransaction(id);
+
+          snackBarService.showSuccess(
+            title: 'Sucesso!',
+            message: 'Transação deletada.',
+          );
+        } catch (e) {
+          snackBarService.showError(
+            title: 'Erro',
+            message: 'Não foi possível deletar a transação.',
+          );
+        }
+      },
     );
   }
 }

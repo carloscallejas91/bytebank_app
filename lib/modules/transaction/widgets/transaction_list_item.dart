@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_app/app/data/enums/transaction_type.dart';
 import 'package:mobile_app/app/data/models/transaction_model.dart';
+import 'package:mobile_app/app/utils/date_formatter.dart';
 
 class TransactionListItem extends StatelessWidget {
   final TransactionModel transaction;
@@ -59,6 +60,12 @@ class TransactionListItem extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            DateFormatter.formatFriendlyDate(transaction.date),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+            ),
+          ),
           Text(transaction.paymentMethod, style: theme.textTheme.titleMedium),
           Text(
             transaction.description,

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/ui/constants/app_assets.dart';
 import 'package:mobile_app/modules/dashboard/ui/dashboard_screen.dart';
-import 'package:mobile_app/modules/home/controllers/add_transaction_controller.dart';
+import 'package:mobile_app/modules/home/controllers/transaction_form_controller.dart';
 import 'package:mobile_app/modules/home/controllers/home_controller.dart';
-import 'package:mobile_app/modules/home/widgets/add_transaction_sheet.dart';
+import 'package:mobile_app/modules/home/widgets/transaction_form_sheet.dart';
 import 'package:mobile_app/modules/transaction/ui/transaction_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -13,7 +13,6 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final homeController = Get.find<HomeController>();
-    final addTransactionController = Get.find<AddTransactionController>();
 
     final theme = Theme.of(context);
 
@@ -26,10 +25,7 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: _buildAppBar(homeController, theme),
       bottomNavigationBar: _buildNavigationBar(homeController, theme),
-      floatingActionButton: _buildFloatingActionButton(
-        addTransactionController,
-        theme,
-      ),
+      floatingActionButton: _buildFloatingActionButton(theme),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: _buildBody(homeController, screens),
     );
@@ -103,17 +99,14 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFloatingActionButton(
-    AddTransactionController controller,
-    ThemeData theme,
-  ) {
+  Widget _buildFloatingActionButton(ThemeData theme) {
     return FloatingActionButton(
       tooltip: 'Adicionar extrato',
       backgroundColor: theme.colorScheme.secondary,
       elevation: 2.0,
       onPressed: () {
         Get.bottomSheet(
-          AddTransactionSheet(controller: controller),
+          TransactionFormSheet(),
           backgroundColor: Theme.of(Get.context!).colorScheme.surface,
           isScrollControlled: true,
         );
