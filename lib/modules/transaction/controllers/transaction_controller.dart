@@ -40,36 +40,25 @@ class TransactionController extends GetxController {
     });
   }
 
-  void editTransaction(String id) {
-    final TransactionModel? transactionToEdit = transactions.firstWhereOrNull(
-      (t) => t.id == id,
-    );
-
-    if (transactionToEdit == null) {
-      snackBarService.showError(
-        title: 'Erro',
-        message: 'Transação não encontrada.',
-      );
-
-      return;
-    }
-
+  void editTransaction(TransactionModel transactionToEdit) {
     Get.bottomSheet(
-      TransactionFormSheet(),
+      const TransactionFormSheet(),
       backgroundColor: Get.theme.colorScheme.surface,
       isScrollControlled: true,
-      settings: RouteSettings(arguments: transactionToEdit),
+      settings: RouteSettings(
+        arguments: transactionToEdit,
+      ),
     );
   }
 
-  void deleteTransaction(String id) {
+  void deleteTransaction(TransactionModel transaction) {
     AppDialogs.showConfirmationDialog(
       title: 'Confirmar Exclusão',
       message:
-          'Você tem certeza que deseja deletar esta transação? Esta ação não pode ser desfeita.',
+      'Você tem certeza que deseja deletar esta transação? Esta ação não pode ser desfeita.',
       onConfirm: () async {
         try {
-          await _databaseService.deleteTransaction(id);
+          await _databaseService.deleteTransaction(transaction);
 
           snackBarService.showSuccess(
             title: 'Sucesso!',

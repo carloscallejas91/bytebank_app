@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile_app/app/data/enums/transaction_type.dart';
 import 'package:mobile_app/app/data/models/transaction_model.dart';
 
 class DatabaseService extends GetxService {
@@ -14,14 +15,13 @@ class DatabaseService extends GetxService {
   }) async {
     try {
       final userDocRef = _firestore.collection('users').doc(user.uid);
-
       final userData = {
         'uid': user.uid,
         'name': name,
         'email': user.email,
+        'balance': 0.0,
         'createdAt': FieldValue.serverTimestamp(),
       };
-
       await userDocRef.set(userData);
     } catch (e) {
       debugPrint("createUserDocument: erro ao criar documento do usuário: $e");
@@ -29,21 +29,33 @@ class DatabaseService extends GetxService {
     }
   }
 
-  Future<void> addTransaction(TransactionModel transaction) async {
+  Stream<DocumentSnapshot> getUserStream() {
     final user = _auth.currentUser;
 
-    if (user == null) {
-      throw Exception('Nenhum usuário autenticado para adicionar a transação.');
-    }
+    if (user == null) return Stream.empty();
 
-    try {
-      final docRef = _firestore.collection('transactions').doc(transaction.id);
+    return _firestore.collection('users').doc(user.uid).snapshots();
+  }
 
-      await docRef.set(transaction.toMap(user.uid));
-    } catch (e) {
-      debugPrint("addTransaction: erro ao adicionar transação: $e");
-      rethrow;
-    }
+  Future<void> addTransaction(TransactionModel transaction) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('Nenhum usuário autenticado.');
+
+    final userDocRef = _firestore.collection('users').doc(user.uid);
+    final transactionDocRef = _firestore
+        .collection('transactions')
+        .doc(transaction.id);
+
+    return _firestore.runTransaction((firestoreTransaction) async {
+      final double amountChange = transaction.type == TransactionType.income
+          ? transaction.amount
+          : -transaction.amount;
+
+      firestoreTransaction.set(transactionDocRef, transaction.toMap(user.uid));
+      firestoreTransaction.update(userDocRef, {
+        'balance': FieldValue.increment(amountChange),
+      });
+    });
   }
 
   Stream<List<TransactionModel>> getTransactionsStream() {
@@ -62,27 +74,57 @@ class DatabaseService extends GetxService {
         });
   }
 
-  Future<void> updateTransaction(TransactionModel transaction) async {
+  Future<void> updateTransaction(
+    TransactionModel oldTransaction,
+    TransactionModel newTransaction,
+  ) async {
     final user = _auth.currentUser;
-    if (user == null) {
-      throw Exception('Nenhum usuário autenticado.');
-    }
+    if (user == null) throw Exception('Nenhum usuário autenticado.');
 
-    try {
-      final docRef = _firestore.collection('transactions').doc(transaction.id);
-      await docRef.update(transaction.toMap(user.uid));
-    } catch (e) {
-      debugPrint("updateTransaction: erro ao atualizar transação: $e");
-      rethrow;
-    }
+    final userDocRef = _firestore.collection('users').doc(user.uid);
+    final transactionDocRef = _firestore
+        .collection('transactions')
+        .doc(newTransaction.id);
+
+    return _firestore.runTransaction((firestoreTransaction) async {
+      final double oldAmountEffect =
+          oldTransaction.type == TransactionType.income
+          ? -oldTransaction.amount
+          : oldTransaction.amount;
+      final double newAmountEffect =
+          newTransaction.type == TransactionType.income
+          ? newTransaction.amount
+          : -newTransaction.amount;
+      final double balanceChange = oldAmountEffect + newAmountEffect;
+
+      firestoreTransaction.update(
+        transactionDocRef,
+        newTransaction.toMap(user.uid),
+      );
+      firestoreTransaction.update(userDocRef, {
+        'balance': FieldValue.increment(balanceChange),
+      });
+    });
   }
 
-  Future<void> deleteTransaction(String transactionId) async {
-    try {
-      await _firestore.collection('transactions').doc(transactionId).delete();
-    } catch (e) {
-      debugPrint("deleteTransaction: erro ao deletar transação: $e");
-      rethrow;
-    }
+  Future<void> deleteTransaction(TransactionModel transaction) async {
+    final user = _auth.currentUser;
+    if (user == null) throw Exception('Nenhum usuário autenticado.');
+
+    final userDocRef = _firestore.collection('users').doc(user.uid);
+    final transactionDocRef = _firestore
+        .collection('transactions')
+        .doc(transaction.id);
+
+    return _firestore.runTransaction((firestoreTransaction) async {
+      final double amountToRevert = transaction.type == TransactionType.income
+          ? -transaction.amount
+          : transaction.amount;
+
+      firestoreTransaction.delete(transactionDocRef);
+      firestoreTransaction.update(userDocRef, {
+        'balance': FieldValue.increment(amountToRevert),
+      });
+    });
   }
 }
