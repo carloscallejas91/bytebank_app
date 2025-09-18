@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile_app/app/data/models/transaction_model.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
 
 class TransactionOptionsSheet extends StatelessWidget {
   final TransactionController controller;
-  final String transactionId;
+  final TransactionModel transaction;
 
   const TransactionOptionsSheet({
     super.key,
     required this.controller,
-    required this.transactionId,
+    required this.transaction,
   });
 
   @override
@@ -27,7 +28,7 @@ class TransactionOptionsSheet extends StatelessWidget {
             title: Text('Editar Transação'),
             onTap: () {
               Get.back();
-              controller.editTransaction(transactionId);
+              controller.editTransaction(transaction);
             },
           ),
           ListTile(
@@ -38,7 +39,7 @@ class TransactionOptionsSheet extends StatelessWidget {
             title: Text('Deletar Transação'),
             onTap: () {
               Get.back();
-              controller.deleteTransaction(transactionId);
+              controller.deleteTransaction(transaction);
             },
           ),
         ],

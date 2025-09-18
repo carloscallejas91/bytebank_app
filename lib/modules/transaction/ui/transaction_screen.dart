@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile_app/app/data/models/transaction_model.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
 import 'package:mobile_app/modules/transaction/widgets/transaction_list_item.dart';
 import 'package:mobile_app/modules/transaction/widgets/transaction_options_sheet.dart';
@@ -67,7 +68,7 @@ class TransactionScreen extends GetView<TransactionController> {
           final transaction = controller.transactions[index];
           return TransactionListItem(
             transaction: transaction,
-            onTap: () => _showOptionsSheet(transaction.id),
+            onTap: () => _showOptionsSheet(transaction),
           );
         },
         separatorBuilder: (context, index) => const SizedBox(height: 8),
@@ -75,13 +76,13 @@ class TransactionScreen extends GetView<TransactionController> {
     );
   }
 
-  void _showOptionsSheet(String transactionId) {
+  void _showOptionsSheet(TransactionModel transaction) {
     final theme = Theme.of(Get.context!);
 
     Get.bottomSheet(
       TransactionOptionsSheet(
         controller: controller,
-        transactionId: transactionId,
+        transaction: transaction,
       ),
 
       backgroundColor: theme.colorScheme.surface,

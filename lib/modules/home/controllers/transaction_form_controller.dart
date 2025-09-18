@@ -104,7 +104,10 @@ class TransactionFormController extends GetxController {
           date: editingTransaction!.date,
         );
 
-        await _databaseService.updateTransaction(updatedTransaction);
+        await _databaseService.updateTransaction(
+            editingTransaction!,
+            updatedTransaction
+        );
 
         _handleSuccess(isUpdate: true);
       } else {

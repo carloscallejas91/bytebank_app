@@ -28,24 +28,27 @@ class DashboardScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 16,
                 children: [
+                  // TODO: recuperar dados do firestore
                   HeaderWidget(
                     name: 'Carlos Callejas',
                     message: 'Bem vindo de volta!',
                     date: controller.now,
                     url: 'https://randomuser.me/api/portraits/men/76.jpg',
                   ),
-                  CreditCardWidget(
+                  // TODO: recuperar dados do cartão do firestore
+                  Obx(() => CreditCardWidget(
                     controller: controller,
                     number: '4321',
                     validity: '12/26',
-                    balance: '12.555,00',
+                    balance: controller.formattedTotalBalance,
                     accountType: 'Conta Corrente',
-                  ),
-                  const BalanceSummaryWidget(
-                    total: 7000.00,
-                    income: 5000.00,
-                    expenses: 2000.00,
-                  ),
+                  )),
+                  Obx(() => BalanceSummaryWidget(
+                    total: controller.totalBalance.value,
+                    income: controller.monthlyIncome.value,
+                    expenses: controller.monthlyExpenses.value,
+                  )),
+                  // TODO: recuperar dados do firestore
                   SpendingSummaryWidget(
                     spendingData: controller.sampleSpending,
                   ),

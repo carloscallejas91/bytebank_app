@@ -94,7 +94,7 @@ class CreditCardWidget extends StatelessWidget {
                   ),
                   Text(
                     controller.isBalanceVisible.value
-                        ? 'R\$ $balance'
+                        ? balance
                         : 'R\$ ******',
                     style: theme.textTheme.bodyLarge!.copyWith(
                       color: foreground,
