@@ -7,9 +7,14 @@ import 'package:intl/intl.dart';
 
 
 class SpendingSummaryWidget extends StatelessWidget {
+  final String title;
   final Map<String, double> spendingData;
 
-  const SpendingSummaryWidget({super.key, required this.spendingData});
+  const SpendingSummaryWidget({
+    super.key,
+    required this.title,
+    required this.spendingData,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +55,7 @@ class SpendingSummaryWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: 16,
           children: [
-            Text('Gastos por Categoria', style: theme.textTheme.titleMedium),
+            Text(title, style: theme.textTheme.titleMedium),
             const Divider(),
             ...processedCategories.entries.map((entry) {
               final String category = entry.key;

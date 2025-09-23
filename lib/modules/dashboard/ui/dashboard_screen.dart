@@ -44,10 +44,26 @@ class DashboardScreen extends StatelessWidget {
                     accountType: 'Conta Corrente',
                   )),
                   BalanceSummaryWidget(controller: controller,),
-                  // TODO: recuperar dados do firestore
-                  SpendingSummaryWidget(
-                    spendingData: controller.sampleSpending,
-                  ),
+                  Obx(() {
+                    if (controller.spendingByCategory.isNotEmpty) {
+                      return SpendingSummaryWidget(
+                        title: 'Gastos por Categoria',
+                        spendingData: controller.spendingByCategory,
+                      );
+                    } else {
+                      return const SizedBox.shrink();
+                    }
+                  }),
+                  Obx(() {
+                    if (controller.incomeByCategory.isNotEmpty) {
+                      return SpendingSummaryWidget(
+                        title: 'Receitas por Categoria',
+                        spendingData: controller.incomeByCategory,
+                      );
+                    } else {
+                      return const SizedBox.shrink();
+                    }
+                  }),
                 ],
               ),
             ),

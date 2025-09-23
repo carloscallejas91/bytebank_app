@@ -24,30 +24,31 @@ class DashboardController extends GetxController {
   final RxDouble monthlyExpenses = 0.0.obs;
   final RxBool isBalanceVisible = false.obs;
   final Rx<DateTime> selectedMonth = DateTime.now().obs;
+  final RxMap<String, double> spendingByCategory = <String, double>{}.obs;
+  final RxMap<String, double> incomeByCategory = <String, double>{}.obs;
 
   // --- PROPRIEDADES INTERNAS ---
   final String now = DateFormatter.formatDayOfWeekWithDate();
   late StreamSubscription _userSubscription;
-  final Map<String, double> sampleSpending = {
-    'PIX': 1200.0,
-    'Cartão de Crédito': 800.0,
-    'Boleto': 450.0,
-    'Cartão de Débito': 60.0,
-    'Vale Alimentação': 40.0,
-  };
 
   // --- GETTERS ---
-  String get formattedTotalBalance => currencyFormatter.format(totalBalance.value);
-  String get formattedMonthlyIncome => currencyFormatter.format(monthlyIncome.value);
-  String get formattedMonthlyExpenses => currencyFormatter.format(monthlyExpenses.value);
-  // GETTER PARA O RESULTADO DO MÊS
+  String get formattedTotalBalance =>
+      currencyFormatter.format(totalBalance.value);
+
+  String get formattedMonthlyIncome =>
+      currencyFormatter.format(monthlyIncome.value);
+
+  String get formattedMonthlyExpenses =>
+      currencyFormatter.format(monthlyExpenses.value);
+
   String get formattedMonthlyNetResult =>
       currencyFormatter.format(monthlyIncome.value - monthlyExpenses.value);
-  // GETTER PARA EXIBIR O MÊS/ANO SELECIONADO
+
   String get formattedSelectedMonth {
-    // 'MMMM' para o nome completo do mês (ex: "Setembro")
-    String formatted = DateFormat('MMMM yyyy', 'pt_BR').format(selectedMonth.value);
-    // Capitaliza a primeira letra
+    String formatted = DateFormat(
+      'MMMM yyyy',
+      'pt_BR',
+    ).format(selectedMonth.value);
     return formatted[0].toUpperCase() + formatted.substring(1);
   }
 
@@ -83,6 +84,8 @@ class DashboardController extends GetxController {
   void _calculateSummaries() {
     double income = 0.0;
     double expenses = 0.0;
+    Map<String, double> spendingTotals = {};
+    Map<String, double> incomeTotals = {};
 
     final monthlyTransactions = _transactionController.transactions.where((t) {
       return t.date.year == selectedMonth.value.year &&
@@ -90,14 +93,25 @@ class DashboardController extends GetxController {
     });
 
     for (var t in monthlyTransactions) {
+      final category = t.paymentMethod;
       if (t.type == TransactionType.income) {
         income += t.amount;
+
+        // Agrupa os totais de entrada por categoria
+        incomeTotals[category] = (incomeTotals[category] ?? 0) + t.amount;
       } else {
         expenses += t.amount;
+
+        // Agrupa os totais de saída por categoria
+        spendingTotals[category] = (spendingTotals[category] ?? 0) + t.amount;
       }
     }
+
     monthlyIncome.value = income;
     monthlyExpenses.value = expenses;
+
+    spendingByCategory.value = spendingTotals;
+    incomeByCategory.value = incomeTotals;
   }
 
   void goToPreviousMonth() {
