@@ -43,11 +43,7 @@ class DashboardScreen extends StatelessWidget {
                     balance: controller.formattedTotalBalance,
                     accountType: 'Conta Corrente',
                   )),
-                  Obx(() => BalanceSummaryWidget(
-                    total: controller.totalBalance.value,
-                    income: controller.monthlyIncome.value,
-                    expenses: controller.monthlyExpenses.value,
-                  )),
+                  BalanceSummaryWidget(controller: controller,),
                   // TODO: recuperar dados do firestore
                   SpendingSummaryWidget(
                     spendingData: controller.sampleSpending,

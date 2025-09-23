@@ -1,18 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile_app/modules/dashboard/controllers/dashboard_controller.dart';
 
 class BalanceSummaryWidget extends StatelessWidget {
-  final double total;
-  final double income;
-  final double expenses;
+  final DashboardController controller;
 
-  const BalanceSummaryWidget({
-    super.key,
-    required this.total,
-    required this.income,
-    required this.expenses,
-  });
+  const BalanceSummaryWidget({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -32,35 +26,78 @@ class BalanceSummaryWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Valor Total em Conta', style: theme.textTheme.titleMedium),
+            _buildMonthSelector(context),
+            const SizedBox(height: 16),
+            Text('Resultado do Mês', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
-            Text(
-              currencyFormatter.format(total),
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
+            Obx(
+              () => Text(
+                controller.formattedMonthlyNetResult,
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 16),
-            _financialProgressBar(
-              label: 'Entrada',
-              value: income,
-              percentage: total > 0 ? income / total : 0,
-              color: Colors.green,
-              currencyFormatter: currencyFormatter,
+            Obx(
+              () => _financialProgressBar(
+                label: 'Entrada',
+                value: controller.monthlyIncome.value,
+                percentage: controller.calculatePercentage(
+                  controller.monthlyIncome.value,
+                  controller.monthlyExpenses.value,
+                ),
+                color: Colors.green,
+                currencyFormatter: currencyFormatter,
+              ),
             ),
             const SizedBox(height: 24),
-            _financialProgressBar(
-              label: 'Saída',
-              value: expenses,
-              percentage: total > 0 ? expenses / total : 0,
-              color: theme.colorScheme.error,
-              currencyFormatter: currencyFormatter,
+            Obx(
+              () => _financialProgressBar(
+                label: 'Saída',
+                value: controller.monthlyExpenses.value,
+                percentage: controller.calculatePercentage(
+                  controller.monthlyExpenses.value,
+                  controller.monthlyIncome.value,
+                ),
+                color: theme.colorScheme.error,
+                currencyFormatter: currencyFormatter,
+              ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildMonthSelector(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.chevron_left),
+          onPressed: controller.goToPreviousMonth,
+        ),
+        InkWell(
+          onTap: () => controller.selectMonth(context),
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            child: Obx(
+              () => Text(
+                controller.formattedSelectedMonth,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.chevron_right),
+          onPressed: controller.goToNextMonth,
+        ),
+      ],
     );
   }
 

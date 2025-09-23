@@ -1,11 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_app/app/data/enums/transaction_type.dart';
 import 'package:mobile_app/app/services/database_service.dart';
 import 'package:mobile_app/app/utils/date_formatter.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
+import 'package:month_picker_dialog/month_picker_dialog.dart';
 
 class DashboardController extends GetxController {
   // --- DEPENDÊNCIAS ---
@@ -35,14 +37,19 @@ class DashboardController extends GetxController {
   };
 
   // --- GETTERS ---
-  String get formattedTotalBalance =>
-      currencyFormatter.format(totalBalance.value);
-
-  String get formattedMonthlyIncome =>
-      currencyFormatter.format(monthlyIncome.value);
-
-  String get formattedMonthlyExpenses =>
-      currencyFormatter.format(monthlyExpenses.value);
+  String get formattedTotalBalance => currencyFormatter.format(totalBalance.value);
+  String get formattedMonthlyIncome => currencyFormatter.format(monthlyIncome.value);
+  String get formattedMonthlyExpenses => currencyFormatter.format(monthlyExpenses.value);
+  // GETTER PARA O RESULTADO DO MÊS
+  String get formattedMonthlyNetResult =>
+      currencyFormatter.format(monthlyIncome.value - monthlyExpenses.value);
+  // GETTER PARA EXIBIR O MÊS/ANO SELECIONADO
+  String get formattedSelectedMonth {
+    // 'MMMM' para o nome completo do mês (ex: "Setembro")
+    String formatted = DateFormat('MMMM yyyy', 'pt_BR').format(selectedMonth.value);
+    // Capitaliza a primeira letra
+    return formatted[0].toUpperCase() + formatted.substring(1);
+  }
 
   @override
   void onInit() {
@@ -91,6 +98,37 @@ class DashboardController extends GetxController {
     }
     monthlyIncome.value = income;
     monthlyExpenses.value = expenses;
+  }
+
+  void goToPreviousMonth() {
+    selectedMonth.value = DateTime(
+      selectedMonth.value.year,
+      selectedMonth.value.month - 1,
+    );
+  }
+
+  void goToNextMonth() {
+    selectedMonth.value = DateTime(
+      selectedMonth.value.year,
+      selectedMonth.value.month + 1,
+    );
+  }
+
+  Future<void> selectMonth(BuildContext context) async {
+    final pickedMonth = await showMonthPicker(
+      context: context,
+      initialDate: selectedMonth.value,
+    );
+
+    if (pickedMonth != null && pickedMonth != selectedMonth.value) {
+      selectedMonth.value = pickedMonth;
+    }
+  }
+
+  double calculatePercentage(double value, double otherValue) {
+    final maxVal = (value + otherValue);
+    if (maxVal == 0) return 0.0;
+    return value / maxVal;
   }
 
   void toggleBalanceVisibility() => isBalanceVisible.toggle();
