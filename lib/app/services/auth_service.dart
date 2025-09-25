@@ -6,6 +6,17 @@ import 'package:mobile_app/app/services/database_service.dart';
 class AuthService extends GetxService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final DatabaseService _databaseService = Get.find();
+  final Rxn<User> user = Rxn<User>();
+
+  @override
+  void onInit() {
+    super.onInit();
+    _firebaseAuth.userChanges().listen((firebaseUser) {
+      user.value = firebaseUser;
+    });
+  }
+
+  User? get currentUser => user.value;
 
   Future<User?> signIn({
     required String email,

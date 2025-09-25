@@ -28,22 +28,27 @@ class DashboardScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 spacing: 16,
                 children: [
-                  // TODO: recuperar dados do firestore
-                  HeaderWidget(
-                    name: 'Carlos Callejas',
-                    message: 'Bem vindo de volta!',
-                    date: controller.now,
-                    url: 'https://randomuser.me/api/portraits/men/76.jpg',
+                  Obx(
+                    () => HeaderWidget(
+                      name: controller.userName.value,
+                      message: 'Bem vindo de volta!',
+                      date: controller.now,
+                      url: controller.userPhotoUrl.value,
+                      onAvatarTap: controller.changeAvatar,
+                        isAvatarLoading: controller.isAvatarLoading.value
+                    ),
                   ),
                   // TODO: recuperar dados do cartão do firestore
-                  Obx(() => CreditCardWidget(
-                    controller: controller,
-                    number: '4321',
-                    validity: '12/26',
-                    balance: controller.formattedTotalBalance,
-                    accountType: 'Conta Corrente',
-                  )),
-                  BalanceSummaryWidget(controller: controller,),
+                  Obx(
+                    () => CreditCardWidget(
+                      controller: controller,
+                      number: '4321',
+                      validity: '12/26',
+                      balance: controller.formattedTotalBalance,
+                      accountType: 'Conta Corrente',
+                    ),
+                  ),
+                  BalanceSummaryWidget(controller: controller),
                   Obx(() {
                     if (controller.spendingByCategory.isNotEmpty) {
                       return SpendingSummaryWidget(

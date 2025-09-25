@@ -7,6 +7,8 @@ class HeaderWidget extends StatelessWidget {
   final String message;
   final String date;
   final String url;
+  final VoidCallback? onAvatarTap;
+  final bool isAvatarLoading;
 
   const HeaderWidget({
     super.key,
@@ -14,6 +16,8 @@ class HeaderWidget extends StatelessWidget {
     required this.message,
     required this.date,
     required this.url,
+    this.onAvatarTap,
+    this.isAvatarLoading = false,
   });
 
   @override
@@ -31,7 +35,7 @@ class HeaderWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           spacing: 16,
           children: [
-            AvatarWidget(url: url),
+            AvatarWidget(url: url, onTap: onAvatarTap, isLoading: isAvatarLoading),
             UserInfoWidget(name: name, message: message, date: date),
           ],
         ),
