@@ -38,16 +38,13 @@ class DashboardScreen extends StatelessWidget {
                         isAvatarLoading: controller.isAvatarLoading.value
                     ),
                   ),
-                  // TODO: recuperar dados do cartão do firestore
-                  Obx(
-                    () => CreditCardWidget(
-                      controller: controller,
-                      number: '4321',
-                      validity: '12/26',
-                      balance: controller.formattedTotalBalance,
-                      accountType: 'Conta Corrente',
-                    ),
-                  ),
+                  Obx(() => CreditCardWidget(
+                    controller: controller,
+                    number: controller.account.value.last4Digits,
+                    validity: controller.account.value.validity,
+                    accountType: controller.account.value.accountType,
+                    balance: controller.formattedTotalBalance,
+                  )),
                   BalanceSummaryWidget(controller: controller),
                   Obx(() {
                     if (controller.spendingByCategory.isNotEmpty) {

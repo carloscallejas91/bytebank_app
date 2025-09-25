@@ -20,6 +20,9 @@ class DatabaseService extends GetxService {
         'name': name,
         'email': user.email,
         'balance': 0.0,
+        'account_last4': '1234',
+        'account_validity': '12/28',
+        'account_type': 'Conta Corrente',
         'createdAt': FieldValue.serverTimestamp(),
       };
       await userDocRef.set(userData);

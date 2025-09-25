@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_app/app/data/enums/transaction_type.dart';
+import 'package:mobile_app/app/data/models/account_model.dart';
 import 'package:mobile_app/app/services/auth_service.dart';
 import 'package:mobile_app/app/services/database_service.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
@@ -39,6 +40,7 @@ class DashboardController extends GetxController {
   final RxMap<String, double> spendingByCategory = <String, double>{}.obs;
   final RxMap<String, double> incomeByCategory = <String, double>{}.obs;
   final RxBool isAvatarLoading = false.obs;
+  final Rx<AccountModel> account = AccountModel().obs;
 
   // --- PROPRIEDADES INTERNAS ---
   final String now = DateFormatter.formatDayOfWeekWithDate();
@@ -85,6 +87,7 @@ class DashboardController extends GetxController {
         final data = userDoc.data() as Map<String, dynamic>? ?? {};
         totalBalance.value = data['balance']?.toDouble() ?? 0.0;
         userName.value = data['name'] ?? 'Usuário';
+        account.value = AccountModel.fromMap(data);
       }
     });
 
