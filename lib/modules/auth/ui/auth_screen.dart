@@ -80,9 +80,7 @@ class AuthScreen extends GetView<AuthController> {
                     ],
                   ),
                   SizedBox(height: 16),
-                  Text(
-                    'Faça login para acessar sua conta.',
-                  ),
+                  Text('Faça login para acessar sua conta.'),
                   SizedBox(height: 32),
                   CustomTextField(
                     controller: controller.emailController,
@@ -120,23 +118,11 @@ class AuthScreen extends GetView<AuthController> {
                   ),
                   const SizedBox(height: 16),
                   Obx(
-                    () =>
-                        CustomButton(text: 'Entrar', isLoading: controller.isLoading.value, onPressed: controller.signInWithEmail),
-                    //     ElevatedButton(
-                    //   onPressed: controller.isLoading.value
-                    //       ? null
-                    //       : controller.signInWithEmail,
-                    //   child: controller.isLoading.value
-                    //       ? const SizedBox(
-                    //           height: 24,
-                    //           width: 24,
-                    //           child: CircularProgressIndicator(
-                    //             strokeWidth: 2,
-                    //             color: Colors.white,
-                    //           ),
-                    //         )
-                    //       : const Text('Entrar'),
-                    // ),
+                    () => CustomButton(
+                      text: 'Entrar',
+                      isLoading: controller.isLoading.value,
+                      onPressed: controller.signInWithEmail,
+                    ),
                   ),
                 ],
               ),

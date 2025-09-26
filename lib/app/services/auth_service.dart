@@ -5,7 +5,7 @@ import 'package:mobile_app/app/services/database_service.dart';
 
 class AuthService extends GetxService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final DatabaseService _databaseService = Get.find();
+  // final DatabaseService _databaseService = Get.find();
   final Rxn<User> user = Rxn<User>();
 
   @override
@@ -43,6 +43,8 @@ class AuthService extends GetxService {
     required String email,
     required String password,
   }) async {
+    final DatabaseService databaseService = Get.find();
+
     try {
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email.trim(),
@@ -53,7 +55,7 @@ class AuthService extends GetxService {
       if (newUser != null) {
         await newUser.updateDisplayName(name.trim());
 
-        await _databaseService.createUserDocument(user: newUser, name: name.trim());
+        await databaseService.createUserDocument(user: newUser, name: name.trim());
 
         await newUser.reload();
         return _firebaseAuth.currentUser;

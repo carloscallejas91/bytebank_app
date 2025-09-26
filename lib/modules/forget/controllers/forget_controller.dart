@@ -1,31 +1,37 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile_app/app/services/auth_service.dart';
-import 'package:mobile_app/app/services/snack_bar_service.dart';
 
 class ForgotController extends GetxController {
   // Services
-  final AuthService _authService = Get.find();
-  final SnackBarService _snackBarService = Get.find();
+  final _authService = Get.find();
+  final _snackBarService = Get.find();
 
   // Form
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final formKey = GlobalKey<FormState>();
 
   // Controllers
-  final TextEditingController emailController = TextEditingController();
+  final emailController = TextEditingController();
 
   // Conditionals
-  final RxBool isLoading = false.obs;
+  final isLoading = false.obs;
 
-  bool isFormValid() {
-    if (!formKey.currentState!.validate()) return true;
+  //================================================================
+  // Lifecycle Methods
+  //================================================================
 
-    return false;
+  @override
+  void onClose() {
+    emailController.dispose();
+    super.onClose();
   }
 
+  //================================================================
+  // Public Functions
+  //================================================================
+
   Future<void> sendPasswordResetEmail() async {
-    if (isFormValid()) return;
+    if (_isFormValid()) return;
 
     isLoading.value = true;
 
@@ -37,11 +43,12 @@ class ForgotController extends GetxController {
       _snackBarService.showSuccess(
         title: 'Sucesso!',
         message:
-            'Um e-mail de recuperação foi enviado para ${emailController.text.trim()}. Verifique '
+            'Um e-mail de recuperação foi enviado '
+            'para ${emailController.text.trim()}. Verifique '
             'sua caixa de entrada.',
       );
 
-      clearForm();
+      _clearForm();
     } on FirebaseAuthException catch (e) {
       debugPrint(e.message);
 
@@ -59,13 +66,17 @@ class ForgotController extends GetxController {
     }
   }
 
-  void clearForm() {
-    emailController.clear();
+  //================================================================
+  // Private Functions
+  //================================================================
+
+  bool _isFormValid() {
+    if (!formKey.currentState!.validate()) return true;
+
+    return false;
   }
 
-  @override
-  void onClose() {
-    emailController.dispose();
-    super.onClose();
+  void _clearForm() {
+    emailController.clear();
   }
 }
