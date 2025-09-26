@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile_app/app/data/models/transaction_model.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
 import 'package:mobile_app/modules/transaction/widgets/transaction_list_item.dart';
-import 'package:mobile_app/modules/transaction/widgets/transaction_options_sheet.dart';
 
 class TransactionScreen extends GetView<TransactionController> {
   const TransactionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
@@ -17,7 +17,7 @@ class TransactionScreen extends GetView<TransactionController> {
         if (controller.transactions.isEmpty) {
           return _buildEmptyState();
         } else {
-          return _buildContent();
+          return _buildContent(theme);
         }
       }),
     );
@@ -27,9 +27,7 @@ class TransactionScreen extends GetView<TransactionController> {
     return const Center(child: Text('Nenhuma transação encontrada.'));
   }
 
-  Widget _buildContent() {
-    final theme = Theme.of(Get.context!);
-
+  Widget _buildContent(ThemeData theme) {
     return Card(
       margin: EdgeInsets.zero,
       color: theme.colorScheme.surface,
@@ -39,7 +37,7 @@ class TransactionScreen extends GetView<TransactionController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildListHeader(),
+            _buildListHeader(theme),
             const SizedBox(height: 16),
             _buildTransactionList(),
           ],
@@ -48,9 +46,7 @@ class TransactionScreen extends GetView<TransactionController> {
     );
   }
 
-  Widget _buildListHeader() {
-    final theme = Theme.of(Get.context!);
-
+  Widget _buildListHeader(ThemeData theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -68,24 +64,11 @@ class TransactionScreen extends GetView<TransactionController> {
           final transaction = controller.transactions[index];
           return TransactionListItem(
             transaction: transaction,
-            onTap: () => _showOptionsSheet(transaction),
+            onTap: () => controller.showOptionsSheet(transaction),
           );
         },
         separatorBuilder: (context, index) => const SizedBox(height: 8),
       ),
-    );
-  }
-
-  void _showOptionsSheet(TransactionModel transaction) {
-    final theme = Theme.of(Get.context!);
-
-    Get.bottomSheet(
-      TransactionOptionsSheet(
-        controller: controller,
-        transaction: transaction,
-      ),
-
-      backgroundColor: theme.colorScheme.surface,
     );
   }
 }
