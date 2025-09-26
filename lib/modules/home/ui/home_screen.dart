@@ -2,18 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/ui/constants/app_assets.dart';
 import 'package:mobile_app/modules/dashboard/ui/dashboard_screen.dart';
-import 'package:mobile_app/modules/home/controllers/transaction_form_controller.dart';
 import 'package:mobile_app/modules/home/controllers/home_controller.dart';
 import 'package:mobile_app/modules/home/widgets/transaction_form_sheet.dart';
 import 'package:mobile_app/modules/transaction/ui/transaction_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends GetView<HomeController> {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final homeController = Get.find<HomeController>();
-
     final theme = Theme.of(context);
 
     final List<Widget> screens = [
@@ -23,15 +20,15 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: _buildAppBar(homeController, theme),
-      bottomNavigationBar: _buildNavigationBar(homeController, theme),
+      appBar: _buildAppBar(theme),
+      bottomNavigationBar: _buildNavigationBar(theme),
       floatingActionButton: _buildFloatingActionButton(theme),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      body: _buildBody(homeController, screens),
+      body: _buildBody(screens),
     );
   }
 
-  AppBar _buildAppBar(HomeController controller, ThemeData theme) {
+  AppBar _buildAppBar(ThemeData theme) {
     return AppBar(
       title: Padding(
         padding: const EdgeInsets.only(left: 8.0),
@@ -53,7 +50,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildNavigationBar(HomeController controller, ThemeData theme) {
+  Widget _buildNavigationBar(ThemeData theme) {
     final navigationBar = Obx(
       () => NavigationBar(
         selectedIndex: controller.selectedIndex.value,
@@ -115,7 +112,7 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBody(HomeController controller, List<Widget> screens) {
+  Widget _buildBody(List<Widget> screens) {
     return Obx(() => screens[controller.selectedIndex.value]);
   }
 }

@@ -7,17 +7,22 @@ import 'package:mobile_app/app/services/database_service.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 import 'package:mobile_app/app/ui/widgets/app_dialogs.dart';
 import 'package:mobile_app/modules/home/widgets/transaction_form_sheet.dart';
+import 'package:mobile_app/modules/transaction/widgets/transaction_options_sheet.dart';
 
 class TransactionController extends GetxController {
-  // --- DEPENDÊNCIAS (SERVICES) ---
-  final DatabaseService _databaseService = Get.find();
-  final SnackBarService snackBarService = Get.find();
+  // Services
+  final _databaseService = Get.find<DatabaseService>();
+  final _snackBarService = Get.find<SnackBarService>();
 
-  // --- PROPRIEDADES INTERNAS ---
+  // Streams
   late StreamSubscription _transactionSubscription;
 
-  // --- ESTADO REATIVO DA UI ---
+  // List
   final RxList<TransactionModel> transactions = <TransactionModel>[].obs;
+
+  //================================================================
+  // Lifecycle Methods
+  //================================================================
 
   @override
   void onInit() {
@@ -33,11 +38,17 @@ class TransactionController extends GetxController {
     super.onClose();
   }
 
-  void _listenToTransactionStream() {
-    final transactionStream = _databaseService.getTransactionsStream();
-    _transactionSubscription = transactionStream.listen((newTransactions) {
-      transactions.assignAll(newTransactions);
-    });
+  //================================================================
+  // Public Functions
+  //================================================================
+  void showOptionsSheet(TransactionModel transaction) {
+    final theme = Theme.of(Get.context!);
+
+    Get.bottomSheet(
+      TransactionOptionsSheet(transaction: transaction),
+
+      backgroundColor: theme.colorScheme.surface,
+    );
   }
 
   void editTransaction(TransactionModel transactionToEdit) {
@@ -45,9 +56,7 @@ class TransactionController extends GetxController {
       const TransactionFormSheet(),
       backgroundColor: Get.theme.colorScheme.surface,
       isScrollControlled: true,
-      settings: RouteSettings(
-        arguments: transactionToEdit,
-      ),
+      settings: RouteSettings(arguments: transactionToEdit),
     );
   }
 
@@ -55,22 +64,34 @@ class TransactionController extends GetxController {
     AppDialogs.showConfirmationDialog(
       title: 'Confirmar Exclusão',
       message:
-      'Você tem certeza que deseja deletar esta transação? Esta ação não pode ser desfeita.',
+          'Você tem certeza que deseja deletar esta transação? '
+          'Esta ação não pode ser desfeita.',
       onConfirm: () async {
         try {
           await _databaseService.deleteTransaction(transaction);
 
-          snackBarService.showSuccess(
+          _snackBarService.showSuccess(
             title: 'Sucesso!',
             message: 'Transação deletada.',
           );
         } catch (e) {
-          snackBarService.showError(
+          _snackBarService.showError(
             title: 'Erro',
             message: 'Não foi possível deletar a transação.',
           );
         }
       },
     );
+  }
+
+  //================================================================
+  // Private Functions
+  //================================================================
+
+  void _listenToTransactionStream() {
+    final transactionStream = _databaseService.getTransactionsStream();
+    _transactionSubscription = transactionStream.listen((newTransactions) {
+      transactions.assignAll(newTransactions);
+    });
   }
 }

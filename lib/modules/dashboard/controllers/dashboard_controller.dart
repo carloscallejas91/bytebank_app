@@ -19,34 +19,69 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path/path.dart' as p;
 
 class DashboardController extends GetxController {
-  // --- DEPENDÊNCIAS ---
-  final SnackBarService _snackBarService = Get.find();
-  final AuthService _authService = Get.find();
-  final DatabaseService _databaseService = Get.find();
-  final TransactionController _transactionController = Get.find();
-  final NumberFormat currencyFormatter = NumberFormat.currency(
+  // Services
+  final _snackBarService = Get.find<SnackBarService>();
+  final _authService = Get.find<AuthService>();
+  final _databaseService = Get.find<DatabaseService>();
+
+  // Class controllers
+  final _transactionController = Get.find<TransactionController>();
+
+  // Controllers
+  final currencyFormatter = NumberFormat.currency(
     locale: 'pt_BR',
     symbol: 'R\$',
   );
 
-  // --- ESTADO REATIVO ---
-  final RxString userName = ''.obs;
-  final RxString userPhotoUrl = ''.obs;
-  final RxDouble totalBalance = 0.0.obs;
-  final RxDouble monthlyIncome = 0.0.obs;
-  final RxDouble monthlyExpenses = 0.0.obs;
-  final RxBool isBalanceVisible = false.obs;
-  final Rx<DateTime> selectedMonth = DateTime.now().obs;
-  final RxMap<String, double> spendingByCategory = <String, double>{}.obs;
-  final RxMap<String, double> incomeByCategory = <String, double>{}.obs;
-  final RxBool isAvatarLoading = false.obs;
-  final Rx<AccountModel> account = AccountModel().obs;
+  // Models
+  final account = AccountModel().obs;
 
-  // --- PROPRIEDADES INTERNAS ---
-  final String now = DateFormatter.formatDayOfWeekWithDate();
+  // Header
+  final userName = ''.obs;
+  final userPhotoUrl = ''.obs;
+  final now = DateFormatter.formatDayOfWeekWithDate();
+
+  // Credit Card
+  final totalBalance = 0.0.obs;
+  final monthlyIncome = 0.0.obs;
+  final monthlyExpenses = 0.0.obs;
+
+  // Resume Summary
+  final selectedMonth = DateTime.now().obs;
+
+  // Category Summary
+  final spendingByCategory = <String, double>{}.obs;
+  final incomeByCategory = <String, double>{}.obs;
+
+  // Streams
   late StreamSubscription _userSubscription;
 
-  // --- GETTERS ---
+  // Conditionals
+  final isBalanceVisible = false.obs;
+  final isAvatarLoading = false.obs;
+
+  //================================================================
+  // Lifecycle Methods
+  //================================================================
+
+  @override
+  void onInit() {
+    super.onInit();
+
+    _setupDataListeners();
+  }
+
+  @override
+  void onClose() {
+    _userSubscription.cancel();
+
+    super.onClose();
+  }
+
+  //================================================================
+  // Getters
+  //================================================================
+
   String get formattedTotalBalance =>
       currencyFormatter.format(totalBalance.value);
 
@@ -67,81 +102,11 @@ class DashboardController extends GetxController {
     return formatted[0].toUpperCase() + formatted.substring(1);
   }
 
-  @override
-  void onInit() {
-    super.onInit();
+  //================================================================
+  // Public Functions
+  //================================================================
 
-    _setupDataListeners();
-  }
-
-  @override
-  void onClose() {
-    _userSubscription.cancel();
-
-    super.onClose();
-  }
-
-  void _setupDataListeners() {
-    _userSubscription = _databaseService.getUserStream().listen((userDoc) {
-      if (userDoc.exists) {
-        final data = userDoc.data() as Map<String, dynamic>? ?? {};
-        totalBalance.value = data['balance']?.toDouble() ?? 0.0;
-        userName.value = data['name'] ?? 'Usuário';
-        account.value = AccountModel.fromMap(data);
-      }
-    });
-
-    // Worker para o usuário do Firebase Auth
-    ever(_authService.user, (User? firebaseUser) {
-      _loadCachedAvatar().then((localPath) {
-        userPhotoUrl.value = localPath ?? firebaseUser?.photoURL ?? '';
-      });
-    });
-
-    // Workers para recalcular os resumos
-    ever(_transactionController.transactions, (_) => _calculateSummaries());
-    ever(selectedMonth, (_) => _calculateSummaries());
-  }
-
-  Future<String?> _loadCachedAvatar() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('user_avatar_path');
-  }
-
-  Future<void> changeAvatar() async {
-    final theme = Theme.of(Get.context!);
-
-    Get.bottomSheet(
-      Container(
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.photo_camera),
-              title: const Text('Tirar Foto'),
-              onTap: () {
-                Get.back();
-                _pickAndSaveImage(ImageSource.camera);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Escolher da Galeria'),
-              onTap: () {
-                Get.back();
-                _pickAndSaveImage(ImageSource.gallery);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _pickAndSaveImage(ImageSource source) async {
+  Future<void> pickAndSaveImage(ImageSource source) async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: source, imageQuality: 50);
 
@@ -171,6 +136,70 @@ class DashboardController extends GetxController {
     } finally {
       isAvatarLoading.value = false;
     }
+  }
+
+  Future<void> selectMonth(BuildContext context) async {
+    final pickedMonth = await showMonthPicker(
+      context: context,
+      initialDate: selectedMonth.value,
+    );
+
+    if (pickedMonth != null && pickedMonth != selectedMonth.value) {
+      selectedMonth.value = pickedMonth;
+    }
+  }
+
+  void goToPreviousMonth() {
+    selectedMonth.value = DateTime(
+      selectedMonth.value.year,
+      selectedMonth.value.month - 1,
+    );
+  }
+
+  void goToNextMonth() {
+    selectedMonth.value = DateTime(
+      selectedMonth.value.year,
+      selectedMonth.value.month + 1,
+    );
+  }
+
+  double calculatePercentage(double value, double otherValue) {
+    final maxVal = (value + otherValue);
+    if (maxVal == 0) return 0.0;
+    return value / maxVal;
+  }
+
+  void toggleBalanceVisibility() => isBalanceVisible.toggle();
+
+  //================================================================
+  // Private Functions
+  //================================================================
+
+  void _setupDataListeners() {
+    _userSubscription = _databaseService.getUserStream().listen((userDoc) {
+      if (userDoc.exists) {
+        final data = userDoc.data() as Map<String, dynamic>? ?? {};
+        totalBalance.value = data['balance']?.toDouble() ?? 0.0;
+        userName.value = data['name'] ?? 'Usuário';
+        account.value = AccountModel.fromMap(data);
+      }
+    });
+
+    // Worker para o usuário do Firebase Auth
+    ever(_authService.user, (User? firebaseUser) {
+      _loadCachedAvatar().then((localPath) {
+        userPhotoUrl.value = localPath ?? firebaseUser?.photoURL ?? '';
+      });
+    });
+
+    // Workers para recalcular os resumos
+    ever(_transactionController.transactions, (_) => _calculateSummaries());
+    ever(selectedMonth, (_) => _calculateSummaries());
+  }
+
+  Future<String?> _loadCachedAvatar() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('user_avatar_path');
   }
 
   void _calculateSummaries() {
@@ -205,37 +234,4 @@ class DashboardController extends GetxController {
     spendingByCategory.value = spendingTotals;
     incomeByCategory.value = incomeTotals;
   }
-
-  void goToPreviousMonth() {
-    selectedMonth.value = DateTime(
-      selectedMonth.value.year,
-      selectedMonth.value.month - 1,
-    );
-  }
-
-  void goToNextMonth() {
-    selectedMonth.value = DateTime(
-      selectedMonth.value.year,
-      selectedMonth.value.month + 1,
-    );
-  }
-
-  Future<void> selectMonth(BuildContext context) async {
-    final pickedMonth = await showMonthPicker(
-      context: context,
-      initialDate: selectedMonth.value,
-    );
-
-    if (pickedMonth != null && pickedMonth != selectedMonth.value) {
-      selectedMonth.value = pickedMonth;
-    }
-  }
-
-  double calculatePercentage(double value, double otherValue) {
-    final maxVal = (value + otherValue);
-    if (maxVal == 0) return 0.0;
-    return value / maxVal;
-  }
-
-  void toggleBalanceVisibility() => isBalanceVisible.toggle();
 }

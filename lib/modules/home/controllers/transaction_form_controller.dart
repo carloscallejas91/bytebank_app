@@ -8,27 +8,28 @@ import 'package:mobile_app/app/services/snack_bar_service.dart';
 import 'package:uuid/uuid.dart';
 
 class TransactionFormController extends GetxController {
-  // --- DEPENDÊNCIAS (SERVICES) ---
-  final DatabaseService _databaseService = Get.find();
-  final SnackBarService _snackBarService = Get.find();
+  // Services
+  final _databaseService = Get.find<DatabaseService>();
+  final _snackBarService = Get.find<SnackBarService>();
 
-  // --- GERENCIADORES DA UI (UI CONTROLLERS) ---
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  final TextEditingController descriptionController = TextEditingController();
-  final MoneyMaskedTextController valueController = MoneyMaskedTextController(
+  // Form
+  final formKey = GlobalKey<FormState>();
+
+  // Controllers
+  final descriptionController = TextEditingController();
+  final valueController = MoneyMaskedTextController(
     decimalSeparator: ',',
     thousandSeparator: '.',
     leftSymbol: 'R\$ ',
   );
 
-  // --- ESTADO REATIVO ---
-  final Rx<TransactionType> selectedType = TransactionType.expense.obs;
-  final RxnString selectedPaymentMethod = RxnString();
-  final RxBool isLoading = false.obs;
-
-  // --- PROPRIEDADES INTERNAS --
-  final Uuid uuid = Uuid();
+  // Models
   final TransactionModel? editingTransaction;
+
+  // Form parameters
+  final selectedType = TransactionType.expense.obs;
+  final selectedPaymentMethod = RxnString();
+
   final List<String> _expenseMethods = [
     'Boleto',
     'Cartão de débito',
@@ -36,6 +37,7 @@ class TransactionFormController extends GetxController {
     'Pix',
     'Outro',
   ];
+
   final List<String> _incomeMethods = [
     'Salário',
     'Depósito bancário',
@@ -44,18 +46,18 @@ class TransactionFormController extends GetxController {
     'Outro',
   ];
 
-  // --- GETTERS ---
-  bool get isEditMode => editingTransaction != null;
+  // Conditionals
+  final isLoading = false.obs;
 
-  List<String> get currentPaymentMethods {
-    if (selectedType.value == TransactionType.expense) {
-      return _expenseMethods;
-    } else {
-      return _incomeMethods;
-    }
-  }
+  // Others
+  final Uuid uuid = Uuid();
 
+  // Constructor
   TransactionFormController() : editingTransaction = Get.arguments;
+
+  //================================================================
+  // Lifecycle Methods
+  //================================================================
 
   @override
   void onInit() {
@@ -72,14 +74,23 @@ class TransactionFormController extends GetxController {
     super.onClose();
   }
 
-  void _prefillForm() {
-    final TransactionModel transaction = editingTransaction!;
+  //================================================================
+  // Getters
+  //================================================================
 
-    valueController.updateValue(transaction.amount);
-    descriptionController.text = transaction.description;
-    selectedType.value = transaction.type;
-    selectedPaymentMethod.value = transaction.paymentMethod;
+  bool get isEditMode => editingTransaction != null;
+
+  List<String> get currentPaymentMethods {
+    if (selectedType.value == TransactionType.expense) {
+      return _expenseMethods;
+    } else {
+      return _incomeMethods;
+    }
   }
+
+  //================================================================
+  // Getters
+  //================================================================
 
   void setTransactionType(TransactionType type) {
     if (selectedType.value == type) return;
@@ -89,34 +100,30 @@ class TransactionFormController extends GetxController {
   }
 
   Future<void> saveTransaction() async {
-    if (isFormValid()) return;
+    if (_isFormValid()) return;
 
     isLoading.value = true;
 
     try {
+      final transaction = TransactionModel(
+        id: editingTransaction?.id ?? uuid.v4(),
+        type: selectedType.value,
+        amount: valueController.numberValue,
+        description: descriptionController.text,
+        paymentMethod: selectedPaymentMethod.value!,
+        date: editingTransaction?.date ?? DateTime.now(),
+      );
+
       if (isEditMode) {
-        final updatedTransaction = TransactionModel(
-          id: editingTransaction!.id,
-          type: selectedType.value,
-          amount: valueController.numberValue,
-          description: descriptionController.text,
-          paymentMethod: selectedPaymentMethod.value!,
-          date: editingTransaction!.date,
-        );
-
         await _databaseService.updateTransaction(
-            editingTransaction!,
-            updatedTransaction
+          editingTransaction!,
+          transaction,
         );
-
-        _handleSuccess(isUpdate: true);
       } else {
-        final newTransaction = _buildTransactionModel();
-
-        await _databaseService.addTransaction(newTransaction);
-
-        _handleSuccess();
+        await _databaseService.addTransaction(transaction);
       }
+
+      _handleSuccess(isUpdate: isEditMode);
     } catch (e) {
       _handleError(e);
     } finally {
@@ -124,33 +131,32 @@ class TransactionFormController extends GetxController {
     }
   }
 
-  TransactionModel _buildTransactionModel() {
-    return TransactionModel(
-      id: uuid.v4(),
-      type: selectedType.value,
-      amount: valueController.numberValue,
-      description: descriptionController.text,
-      paymentMethod: selectedPaymentMethod.value!,
-      date: DateTime.now(),
-    );
+  //================================================================
+  // Private Functions
+  //================================================================
+
+  void _prefillForm() {
+    final TransactionModel transaction = editingTransaction!;
+
+    valueController.updateValue(transaction.amount);
+    descriptionController.text = transaction.description;
+    selectedType.value = transaction.type;
+    selectedPaymentMethod.value = transaction.paymentMethod;
   }
 
   void _handleSuccess({bool isUpdate = false}) {
     if (isUpdate) {
       Get.back();
-
-      _snackBarService.showSuccess(
-        title: 'Sucesso!',
-        message: 'Sua transação foi atualizada.',
-      );
     } else {
-      clearForm();
-
-      _snackBarService.showSuccess(
-        title: 'Sucesso!',
-        message: 'Sua transação foi salva.',
-      );
+      _clearForm();
     }
+
+    _snackBarService.showSuccess(
+      title: 'Sucesso!',
+      message: isUpdate
+          ? 'Sua transação foi atualizada.'
+          : 'Sua transação foi salva.',
+    );
   }
 
   void _handleError(Object e) {
@@ -160,7 +166,7 @@ class TransactionFormController extends GetxController {
     );
   }
 
-  void clearForm() {
+  void _clearForm() {
     formKey.currentState?.reset();
     valueController.updateValue(0.0);
     descriptionController.clear();
@@ -168,7 +174,7 @@ class TransactionFormController extends GetxController {
     selectedType.value = TransactionType.expense;
   }
 
-  bool isFormValid() {
+  bool _isFormValid() {
     if (!formKey.currentState!.validate()) return true;
 
     return false;

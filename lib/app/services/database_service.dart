@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -5,9 +7,61 @@ import 'package:get/get.dart';
 import 'package:mobile_app/app/data/enums/transaction_type.dart';
 import 'package:mobile_app/app/data/models/transaction_model.dart';
 
+import 'auth_service.dart';
+
 class DatabaseService extends GetxService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  // Firebase
+  final _firestore = FirebaseFirestore.instance;
+  final _auth = FirebaseAuth.instance;
+
+  // Services
+  final _authService = Get.find<AuthService>();
+
+  // Streams
+  final StreamController<List<TransactionModel>> _transactionsController =
+      StreamController.broadcast();
+  StreamSubscription? _transactionsFirestoreSubscription;
+
+  final StreamController<DocumentSnapshot> _userController =
+      StreamController.broadcast();
+  StreamSubscription? _userFirestoreSubscription;
+
+  late StreamSubscription _authSubscription;
+
+  //================================================================
+  // Lifecycle Methods
+  //================================================================
+
+  @override
+  void onInit() {
+    super.onInit();
+
+    _authSubscription = _authService.user.stream.listen(_onUserChanged);
+  }
+
+  @override
+  void onClose() {
+    _transactionsController.close();
+    _userController.close();
+    _transactionsFirestoreSubscription?.cancel();
+    _userFirestoreSubscription?.cancel();
+    _authSubscription.cancel();
+
+    super.onClose();
+  }
+
+  //================================================================
+  // Getters
+  //================================================================
+
+  Stream<DocumentSnapshot> getUserStream() => _userController.stream;
+
+  Stream<List<TransactionModel>> getTransactionsStream() =>
+      _transactionsController.stream;
+
+  //================================================================
+  // Public Functions
+  //================================================================
 
   Future<void> createUserDocument({
     required User user,
@@ -32,14 +86,6 @@ class DatabaseService extends GetxService {
     }
   }
 
-  Stream<DocumentSnapshot> getUserStream() {
-    final user = _auth.currentUser;
-
-    if (user == null) return Stream.empty();
-
-    return _firestore.collection('users').doc(user.uid).snapshots();
-  }
-
   Future<void> addTransaction(TransactionModel transaction) async {
     final user = _auth.currentUser;
     if (user == null) throw Exception('Nenhum usuário autenticado.');
@@ -59,22 +105,6 @@ class DatabaseService extends GetxService {
         'balance': FieldValue.increment(amountChange),
       });
     });
-  }
-
-  Stream<List<TransactionModel>> getTransactionsStream() {
-    final user = _auth.currentUser;
-    if (user == null) return Stream.value([]);
-
-    return _firestore
-        .collection('transactions')
-        .where('userId', isEqualTo: user.uid)
-        .orderBy('date', descending: true)
-        .snapshots()
-        .map((snapshot) {
-          return snapshot.docs
-              .map((doc) => TransactionModel.fromMap(doc))
-              .toList();
-        });
   }
 
   Future<void> updateTransaction(
@@ -129,5 +159,40 @@ class DatabaseService extends GetxService {
         'balance': FieldValue.increment(amountToRevert),
       });
     });
+  }
+
+  //================================================================
+  // Private Functions
+  //================================================================
+
+  void _onUserChanged(User? user) {
+    _transactionsFirestoreSubscription?.cancel();
+    _userFirestoreSubscription?.cancel();
+
+    if (user == null) {
+      _transactionsController.add([]);
+    } else {
+      _userFirestoreSubscription = _firestore
+          .collection('users')
+          .doc(user.uid)
+          .snapshots()
+          .listen((snapshot) {
+            _userController.add(snapshot);
+          });
+
+      _transactionsFirestoreSubscription = _firestore
+          .collection('transactions')
+          .where('userId', isEqualTo: user.uid)
+          .orderBy('date', descending: true)
+          .snapshots()
+          .map(
+            (snapshot) => snapshot.docs
+                .map((doc) => TransactionModel.fromMap(doc))
+                .toList(),
+          )
+          .listen((transactions) {
+            _transactionsController.add(transactions);
+          });
+    }
   }
 }

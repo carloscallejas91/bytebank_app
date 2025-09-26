@@ -7,28 +7,46 @@ import 'package:mobile_app/app/services/snack_bar_service.dart';
 
 class AuthController extends GetxController {
   // Services
-  final AuthService _authService = Get.find();
-  final SnackBarService _snackBarService = Get.find();
+  final _authService = Get.find<AuthService>();
+  final _snackBarService = Get.find<SnackBarService>();
 
   // Form
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final formKey = GlobalKey<FormState>();
 
   // Controllers
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
   // Conditionals
-  final RxBool isLoading = false.obs;
-  final RxBool isPasswordHidden = true.obs;
+  final isLoading = false.obs;
+  final isPasswordHidden = true.obs;
 
-  bool isFormValid() {
-    if (!formKey.currentState!.validate()) return true;
+  //================================================================
+  // Lifecycle Methods
+  //================================================================
 
-    return false;
+  @override
+  void onReady() {
+    super.onReady();
+
+    _handleAuthChanged(_authService.currentUser);
+
+    ever(_authService.user, _handleAuthChanged);
   }
 
+  @override
+  void onClose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.onClose();
+  }
+
+  //================================================================
+  // Public Functions
+  //================================================================
+
   Future<void> signInWithEmail() async {
-    if (isFormValid()) return;
+    if (_isFormValid()) return;
 
     isLoading.value = true;
 
@@ -39,10 +57,9 @@ class AuthController extends GetxController {
       );
 
       if (user != null) {
-        clearForm();
+        _clearForm();
         Get.offAllNamed(Routes.HOME);
       }
-
     } on FirebaseAuthException catch (e) {
       debugPrint(e.message);
 
@@ -64,15 +81,26 @@ class AuthController extends GetxController {
     isPasswordHidden.value = !isPasswordHidden.value;
   }
 
-  void clearForm() {
-    emailController.clear();
-    passwordController.clear();
+  //================================================================
+  // Private Functions
+  //================================================================
+
+  void _handleAuthChanged(User? firebaseUser) {
+    if (firebaseUser != null) {
+      Get.offAllNamed(Routes.HOME);
+    } else {
+      Get.offAllNamed(Routes.AUTH);
+    }
   }
 
-  @override
-  void onClose() {
-    emailController.dispose();
-    passwordController.dispose();
-    super.onClose();
+  bool _isFormValid() {
+    if (!formKey.currentState!.validate()) return true;
+
+    return false;
+  }
+
+  void _clearForm() {
+    emailController.clear();
+    passwordController.clear();
   }
 }

@@ -3,28 +3,24 @@ import 'package:get/get.dart';
 import 'package:mobile_app/app/data/models/transaction_model.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
 
-class TransactionOptionsSheet extends StatelessWidget {
-  final TransactionController controller;
+class TransactionOptionsSheet extends GetView<TransactionController> {
   final TransactionModel transaction;
 
   const TransactionOptionsSheet({
     super.key,
-    required this.controller,
     required this.transaction,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
       child: Wrap(
-        spacing: 8,
         children: <Widget>[
           ListTile(
-            leading: Icon(
-              Icons.edit,
-              color: Theme.of(context).colorScheme.primary,
-            ),
+            leading: Icon(Icons.edit, color: theme.colorScheme.onSurface),
             title: Text('Editar Transação'),
             onTap: () {
               Get.back();
@@ -32,10 +28,7 @@ class TransactionOptionsSheet extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: Icon(
-              Icons.delete,
-              color: Theme.of(context).colorScheme.error,
-            ),
+            leading: Icon(Icons.delete, color: theme.colorScheme.error),
             title: Text('Deletar Transação'),
             onTap: () {
               Get.back();

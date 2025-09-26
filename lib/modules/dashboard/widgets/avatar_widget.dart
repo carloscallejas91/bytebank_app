@@ -25,12 +25,12 @@ class AvatarWidget extends StatelessWidget {
         backgroundColor: theme.colorScheme.surfaceContainerHigh,
         child: isLoading
             ? const CircularProgressIndicator(strokeWidth: 2)
-            : _buildAvatarContent(context),
+            : _buildAvatarContent(theme),
       ),
     );
   }
 
-  Widget _buildAvatarContent(BuildContext context) {
+  Widget _buildAvatarContent(ThemeData theme) {
     final hasUrl = url.isNotEmpty;
     final isNetworkImage = hasUrl && url.startsWith('http');
 
@@ -44,8 +44,8 @@ class AvatarWidget extends StatelessWidget {
     } else {
       return Icon(
         Icons.person,
-        size: 40,
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
+        size: 35,
+        color: theme.colorScheme.onSurfaceVariant,
       );
     }
   }

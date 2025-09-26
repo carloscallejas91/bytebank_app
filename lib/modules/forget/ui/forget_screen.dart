@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/ui/constants/app_assets.dart';
+import 'package:mobile_app/app/ui/widgets/custom_button.dart';
 import 'package:mobile_app/app/ui/widgets/custom_text_field.dart';
 import 'package:mobile_app/app/utils/app_validators.dart';
 import 'package:mobile_app/modules/forget/controllers/forget_controller.dart';
 
-class ForgotScreen extends StatelessWidget {
+class ForgotScreen extends GetView<ForgotController> {
   const ForgotScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<ForgotController>();
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -91,23 +91,12 @@ class ForgotScreen extends StatelessWidget {
                     keyboardType: TextInputType.emailAddress,
                     validator: AppValidators.email,
                   ),
-
                   const SizedBox(height: 16),
                   Obx(
-                    () => ElevatedButton(
-                      onPressed: controller.isLoading.value
-                          ? null
-                          : controller.sendPasswordResetEmail,
-                      child: controller.isLoading.value
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text('Recuperar'),
+                    () => CustomButton(
+                      text: 'Recuperar',
+                      isLoading: controller.isLoading.value,
+                      onPressed: controller.sendPasswordResetEmail,
                     ),
                   ),
                 ],

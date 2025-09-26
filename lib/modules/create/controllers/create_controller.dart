@@ -6,36 +6,43 @@ import 'package:mobile_app/app/services/auth_service.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 
 class CreateController extends GetxController {
-  // Firebase
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  // Utils
-  final AuthService _authService = Get.find();
-  final SnackBarService _snackBarService = Get.find();
+  // Services
+  final _authService = Get.find<AuthService>();
+  final _snackBarService = Get.find<SnackBarService>();
 
   // Form
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final formKey = GlobalKey<FormState>();
 
   // Controllers
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
+  final nameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
 
   // Conditionals
-  final RxBool isLoading = false.obs;
-  final RxBool isPasswordHidden = true.obs;
-  final RxBool isConfirmPasswordHidden = true.obs;
+  final isLoading = false.obs;
+  final isPasswordHidden = true.obs;
+  final isConfirmPasswordHidden = true.obs;
 
-  bool isFormValid() {
-    if (!formKey.currentState!.validate()) return true;
+  //================================================================
+  // Lifecycle Methods
+  //================================================================
 
-    return false;
+  @override
+  void onClose() {
+    nameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    super.onClose();
   }
 
+  //================================================================
+  // Public Functions
+  //================================================================
+
   Future<void> createAccount() async {
-    if (isFormValid()) return;
+    if (_isFormValid()) return;
 
     isLoading.value = true;
 
@@ -47,7 +54,7 @@ class CreateController extends GetxController {
       );
 
       if (user != null) {
-        clearForm();
+        _clearForm();
 
         _snackBarService.showSuccess(
           title: 'Bem-vindo(a), ${user.displayName}!',
@@ -81,19 +88,20 @@ class CreateController extends GetxController {
     isConfirmPasswordHidden.value = !isConfirmPasswordHidden.value;
   }
 
-  void clearForm(){
+  //================================================================
+  // Private Functions
+  //================================================================
+
+  bool _isFormValid() {
+    if (!formKey.currentState!.validate()) return true;
+
+    return false;
+  }
+
+  void _clearForm() {
     nameController.clear();
     emailController.clear();
     passwordController.clear();
     confirmPasswordController.clear();
-  }
-
-  @override
-  void onClose() {
-    nameController.dispose();
-    emailController.dispose();
-    passwordController.dispose();
-    confirmPasswordController.dispose();
-    super.onClose();
   }
 }
