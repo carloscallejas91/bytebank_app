@@ -6,12 +6,12 @@ import 'package:mobile_app/app/ui/widgets/custom_text_field.dart';
 import 'package:mobile_app/app/utils/app_validators.dart';
 import 'package:mobile_app/modules/home/controllers/transaction_form_controller.dart';
 
-class TransactionFormSheet extends GetView<TransactionFormController> {
+class TransactionFormSheet extends StatelessWidget {
   const TransactionFormSheet({super.key});
 
   @override
   Widget build(BuildContext context) {
-    Get.put(TransactionFormController());
+    final controller = Get.put(TransactionFormController());
     final theme = Theme.of(context);
 
     return Padding(
@@ -27,22 +27,22 @@ class TransactionFormSheet extends GetView<TransactionFormController> {
               style: theme.textTheme.headlineSmall,
             ),
             const SizedBox(height: 24),
-            _buildTypeSelector(),
+            _buildTypeSelector(controller),
             const SizedBox(height: 16),
-            _buildValueField(),
+            _buildValueField(controller),
             const SizedBox(height: 16),
-            _buildPaymentMethodDropdown(),
+            _buildPaymentMethodDropdown(controller),
             const SizedBox(height: 16),
-            _buildDescriptionField(),
+            _buildDescriptionField(controller),
             const SizedBox(height: 32),
-            _buildSaveButton(),
+            _buildSaveButton(controller),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTypeSelector() {
+  Widget _buildTypeSelector(TransactionFormController controller) {
     return Obx(
       () => SegmentedButton<TransactionType>(
         segments: const [
@@ -64,7 +64,7 @@ class TransactionFormSheet extends GetView<TransactionFormController> {
     );
   }
 
-  Widget _buildValueField() {
+  Widget _buildValueField(TransactionFormController controller) {
     return CustomTextField(
       controller: controller.valueController,
       labelText: 'Valor',
@@ -80,7 +80,7 @@ class TransactionFormSheet extends GetView<TransactionFormController> {
     );
   }
 
-  Widget _buildPaymentMethodDropdown() {
+  Widget _buildPaymentMethodDropdown(TransactionFormController controller) {
     return Obx(() {
       final isExpense =
           controller.selectedType.value == TransactionType.expense;
@@ -113,7 +113,7 @@ class TransactionFormSheet extends GetView<TransactionFormController> {
     });
   }
 
-  Widget _buildDescriptionField() {
+  Widget _buildDescriptionField(TransactionFormController controller) {
     return CustomTextField(
       controller: controller.descriptionController,
       labelText: 'Descrição',
@@ -125,7 +125,7 @@ class TransactionFormSheet extends GetView<TransactionFormController> {
     );
   }
 
-  Widget _buildSaveButton() {
+  Widget _buildSaveButton(TransactionFormController controller) {
     return Obx(
       () => SizedBox(
         width: double.infinity,

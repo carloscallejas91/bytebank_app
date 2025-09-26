@@ -4,13 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-
-
-class SpendingSummaryWidget extends StatelessWidget {
+class CategorySummaryWidget extends StatelessWidget {
   final String title;
   final Map<String, double> spendingData;
 
-  const SpendingSummaryWidget({
+  const CategorySummaryWidget({
     super.key,
     required this.title,
     required this.spendingData,
@@ -20,7 +18,7 @@ class SpendingSummaryWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final List<Color> progressBarColors = [
+    final progressBarColors = [
       Colors.blueAccent,
       Colors.purpleAccent,
       Colors.orangeAccent,
@@ -30,20 +28,16 @@ class SpendingSummaryWidget extends StatelessWidget {
       Colors.greenAccent,
     ];
 
-    final NumberFormat currencyFormatter = NumberFormat.currency(
+    final currencyFormatter = NumberFormat.currency(
       locale: 'pt_BR',
       symbol: 'R\$',
     );
 
-    final Map<String, double> processedCategories = _processSpendingData(
-      spendingData,
-    );
+    final processedCategories = _processSpendingData(spendingData);
 
-    final double totalSpending = spendingData.values.reduce(
-      (sum, item) => sum + item,
-    );
+    final totalSpending = spendingData.values.reduce((sum, item) => sum + item);
 
-    final Random random = Random();
+    final random = Random();
 
     return Card(
       margin: EdgeInsets.zero,

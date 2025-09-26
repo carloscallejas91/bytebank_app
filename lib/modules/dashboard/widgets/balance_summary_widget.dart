@@ -12,7 +12,7 @@ class BalanceSummaryWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final NumberFormat currencyFormatter = NumberFormat.currency(
+    final currencyFormatter = NumberFormat.currency(
       locale: 'pt_BR',
       symbol: 'R\$',
     );
