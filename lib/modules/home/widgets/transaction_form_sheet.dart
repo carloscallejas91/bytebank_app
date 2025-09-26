@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/data/enums/transaction_type.dart';
+import 'package:mobile_app/app/ui/widgets/custom_button.dart';
 import 'package:mobile_app/app/ui/widgets/custom_text_field.dart';
 import 'package:mobile_app/app/utils/app_validators.dart';
 import 'package:mobile_app/modules/home/controllers/transaction_form_controller.dart';
@@ -128,20 +129,10 @@ class TransactionFormSheet extends GetView<TransactionFormController> {
     return Obx(
       () => SizedBox(
         width: double.infinity,
-        child: ElevatedButton(
-          onPressed: controller.isLoading.value
-              ? null
-              : controller.saveTransaction,
-          child: controller.isLoading.value
-              ? const SizedBox(
-                  height: 24,
-                  width: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                )
-              : const Text('Salvar'),
+        child: CustomButton(
+          text: 'Salvar',
+          isLoading: controller.isLoading.value,
+          onPressed: controller.saveTransaction,
         ),
       ),
     );

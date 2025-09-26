@@ -2,11 +2,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/routes/app_pages.dart';
+import 'package:mobile_app/app/services/auth_service.dart';
+import 'package:mobile_app/app/services/snack_bar_service.dart';
 
 class AuthController extends GetxController {
   // Services
-  final _authService = Get.find();
-  final _snackBarService = Get.find();
+  final _authService = Get.find<AuthService>();
+  final _snackBarService = Get.find<SnackBarService>();
 
   // Form
   final formKey = GlobalKey<FormState>();

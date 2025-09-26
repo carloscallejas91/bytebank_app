@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app/modules/home/widgets/gradient_text_widget.dart';
+import 'package:mobile_app/app/ui/widgets/custom_gradient_text.dart';
 
 class UserInfoWidget extends StatelessWidget {
   final String name;
@@ -31,7 +31,7 @@ class UserInfoWidget extends StatelessWidget {
             ),
           ],
         ),
-        GradientTextWidget(gradientText: message),
+        CustomGradientText(gradientText: message),
         Text(date, style: theme.textTheme.bodySmall),
       ],
     );

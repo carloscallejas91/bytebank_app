@@ -5,10 +5,14 @@ import 'package:mobile_app/app/ui/widgets/app_dialogs.dart';
 
 class HomeController extends GetxController {
   // Services
-  final AuthService _authService = Get.find();
+  final _authService = Get.find<AuthService>();
 
   // Others
   final RxInt selectedIndex = 0.obs;
+
+  //================================================================
+  // Public Functions
+  //================================================================
 
   void changePage(int index) {
     selectedIndex.value = index;

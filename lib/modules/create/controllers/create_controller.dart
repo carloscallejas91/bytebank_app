@@ -7,8 +7,8 @@ import 'package:mobile_app/app/services/snack_bar_service.dart';
 
 class CreateController extends GetxController {
   // Services
-  final _authService = Get.find();
-  final _snackBarService = Get.find();
+  final _authService = Get.find<AuthService>();
+  final _snackBarService = Get.find<SnackBarService>();
 
   // Form
   final formKey = GlobalKey<FormState>();
