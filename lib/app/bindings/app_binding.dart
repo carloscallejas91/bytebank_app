@@ -8,9 +8,9 @@ class AppBinding extends Bindings {
   @override
   void dependencies() {
     // Services
-    Get.put<DatabaseService>(DatabaseService());
-    Get.put<AuthService>(AuthService());
     Get.put<SnackBarService>(SnackBarService());
+    Get.put<AuthService>(AuthService());
+    Get.put<DatabaseService>(DatabaseService());
 
     // Controllers
     Get.put<AuthController>(AuthController(), permanent: true);

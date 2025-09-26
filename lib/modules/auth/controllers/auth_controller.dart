@@ -21,6 +21,23 @@ class AuthController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxBool isPasswordHidden = true.obs;
 
+  @override
+  void onReady() {
+    super.onReady();
+
+    _handleAuthChanged(_authService.currentUser);
+
+    ever(_authService.user, _handleAuthChanged);
+  }
+
+  void _handleAuthChanged(User? firebaseUser) {
+    if (firebaseUser != null) {
+      Get.offAllNamed(Routes.HOME);
+    } else {
+      Get.offAllNamed(Routes.AUTH);
+    }
+  }
+
   bool isFormValid() {
     if (!formKey.currentState!.validate()) return true;
 

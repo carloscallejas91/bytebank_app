@@ -20,8 +20,6 @@ class HomeController extends GetxController {
       message: 'Você tem certeza que deseja sair do aplicativo?',
       onConfirm: () async {
         await _authService.signOut();
-
-        Get.offAllNamed(Routes.AUTH);
       },
     );
   }

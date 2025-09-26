@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/routes/app_pages.dart';
 import 'package:mobile_app/app/ui/constants/app_assets.dart';
+import 'package:mobile_app/app/ui/widgets/custom_button.dart';
 import 'package:mobile_app/app/ui/widgets/custom_text_field.dart';
 import 'package:mobile_app/app/utils/app_validators.dart';
 import 'package:mobile_app/modules/auth/controllers/auth_controller.dart';
 
-class AuthScreen extends StatelessWidget {
+class AuthScreen extends GetView<AuthController> {
   const AuthScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<AuthController>();
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -120,21 +120,23 @@ class AuthScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Obx(
-                    () => ElevatedButton(
-                      onPressed: controller.isLoading.value
-                          ? null
-                          : controller.signInWithEmail,
-                      child: controller.isLoading.value
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text('Entrar'),
-                    ),
+                    () =>
+                        CustomButton(text: 'Entrar', isLoading: controller.isLoading.value, onPressed: controller.signInWithEmail),
+                    //     ElevatedButton(
+                    //   onPressed: controller.isLoading.value
+                    //       ? null
+                    //       : controller.signInWithEmail,
+                    //   child: controller.isLoading.value
+                    //       ? const SizedBox(
+                    //           height: 24,
+                    //           width: 24,
+                    //           child: CircularProgressIndicator(
+                    //             strokeWidth: 2,
+                    //             color: Colors.white,
+                    //           ),
+                    //         )
+                    //       : const Text('Entrar'),
+                    // ),
                   ),
                 ],
               ),

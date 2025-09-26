@@ -6,13 +6,15 @@ import 'package:mobile_app/modules/forget/forget_binding.dart';
 import 'package:mobile_app/modules/forget/ui/forget_screen.dart';
 import 'package:mobile_app/modules/home/home_binding.dart';
 import 'package:mobile_app/modules/home/ui/home_screen.dart';
+import 'package:mobile_app/modules/splash/ui/redirect_screen.dart';
 
 part 'app_routes.dart';
 
 class AppPages {
-  static const INITIAL = Routes.AUTH;
+  static const INITIAL = '/';
 
   static final List<GetPage<dynamic>> routes = [
+    GetPage(name: '/', page: () => const RedirectScreen()),
     GetPage(name: Routes.AUTH, page: () => const AuthScreen()),
     GetPage(
       name: Routes.CREATE_ACCOUNT,
