@@ -4,9 +4,15 @@ import 'package:get/get.dart';
 import 'package:mobile_app/app/services/database_service.dart';
 
 class AuthService extends GetxService {
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  // final DatabaseService _databaseService = Get.find();
-  final Rxn<User> user = Rxn<User>();
+  // Firebase
+  final _firebaseAuth = FirebaseAuth.instance;
+
+  // User
+  final user = Rxn<User>();
+
+  //================================================================
+  // Lifecycle Methods
+  //================================================================
 
   @override
   void onInit() {
@@ -16,7 +22,15 @@ class AuthService extends GetxService {
     });
   }
 
+  //================================================================
+  // Getters
+  //================================================================
+
   User? get currentUser => user.value;
+
+  //================================================================
+  // Public Functions
+  //================================================================
 
   Future<User?> signIn({
     required String email,
@@ -32,7 +46,8 @@ class AuthService extends GetxService {
       rethrow;
     } catch (e) {
       debugPrint(
-        "signInWithEmailAndPassword: um erro inesperado ocorreu durante o login: $e",
+        "signInWithEmailAndPassword: um erro inesperado ocorreu durante o "
+        "login: $e",
       );
       rethrow;
     }
@@ -52,10 +67,14 @@ class AuthService extends GetxService {
       );
 
       final newUser = userCredential.user;
+
       if (newUser != null) {
         await newUser.updateDisplayName(name.trim());
 
-        await databaseService.createUserDocument(user: newUser, name: name.trim());
+        await databaseService.createUserDocument(
+          user: newUser,
+          name: name.trim(),
+        );
 
         await newUser.reload();
         return _firebaseAuth.currentUser;
@@ -78,7 +97,8 @@ class AuthService extends GetxService {
       rethrow;
     } catch (e) {
       debugPrint(
-        "sendPasswordResetEmail: um erro inesperado ocorreu ao enviar o e-mail de recuperação: $e",
+        "sendPasswordResetEmail: um erro inesperado ocorreu ao enviar o e-mail "
+        "de recuperação: $e",
       );
       rethrow;
     }
