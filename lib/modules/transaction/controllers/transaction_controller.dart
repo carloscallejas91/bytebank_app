@@ -62,10 +62,10 @@ class TransactionController extends GetxController {
 
   void deleteTransaction(TransactionModel transaction) {
     AppDialogs.showConfirmationDialog(
-      title: 'Confirmar Exclusão',
+      title: 'Confirmar exclusão',
       message:
-          'Você tem certeza que deseja deletar esta transação? '
-          'Esta ação não pode ser desfeita.',
+          'Você tem certeza que deseja excluir esta transação? '
+          'Esta ação não poderá ser desfeita.',
       onConfirm: () async {
         try {
           await _databaseService.deleteTransaction(transaction);

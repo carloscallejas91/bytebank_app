@@ -140,7 +140,7 @@ class AuthScreen extends GetView<AuthController> {
         Text('Não tem uma conta?'),
         TextButton(
           onPressed: () => Get.toNamed(Routes.CREATE_ACCOUNT),
-          child: const Text('Crie uma agora'),
+          child: const Text('Crie uma agora!'),
         ),
       ],
     );

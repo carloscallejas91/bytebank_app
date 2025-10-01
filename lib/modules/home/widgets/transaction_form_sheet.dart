@@ -23,7 +23,7 @@ class TransactionFormSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              controller.isEditMode ? 'Editar Transação' : 'Nova Transação',
+              controller.isEditMode ? 'Editar transação' : 'Nova transação',
               style: theme.textTheme.headlineSmall,
             ),
             const SizedBox(height: 24),
@@ -47,14 +47,14 @@ class TransactionFormSheet extends StatelessWidget {
       () => SegmentedButton<TransactionType>(
         segments: const [
           ButtonSegment(
-            value: TransactionType.expense,
-            label: Text('Saída'),
-            icon: Icon(Icons.arrow_downward),
-          ),
-          ButtonSegment(
             value: TransactionType.income,
             label: Text('Entrada'),
             icon: Icon(Icons.arrow_upward),
+          ),
+          ButtonSegment(
+            value: TransactionType.expense,
+            label: Text('Saída'),
+            icon: Icon(Icons.arrow_downward),
           ),
         ],
         selected: {controller.selectedType.value},
@@ -117,7 +117,7 @@ class TransactionFormSheet extends StatelessWidget {
     return CustomTextField(
       controller: controller.descriptionController,
       labelText: 'Descrição',
-      hintText: 'Supermercado, aluguel...',
+      hintText: 'Descrição',
       prefixIcon: Icons.description_outlined,
       keyboardType: TextInputType.text,
       validator: (value) =>

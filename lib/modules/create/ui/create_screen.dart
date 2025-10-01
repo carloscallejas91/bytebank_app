@@ -163,7 +163,7 @@ class CreateScreen extends GetView<CreateController> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text('Já tenho uma conta?'),
-        TextButton(onPressed: Get.back, child: const Text('Login')),
+        TextButton(onPressed: Get.back, child: const Text('Faça login')),
       ],
     );
   }
