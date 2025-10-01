@@ -57,14 +57,11 @@ Siga os passos abaixo para configurar e rodar o projeto localmente.
 ### 1. Configuração do Projeto Local
 
 1. Clone este repositório:  
-   ``  
- git clone https://github.com/carloscallejas91/bytebank_app.git ``
+   ``git clone https://github.com/carloscallejas91/bytebank_app.git``
 2. Instale as dependências:  
-   `` 
- flutter pub get ``
+   ``flutter pub get``
 3. Execute o aplicativo:  
-   `` 
- flutter run ``
+   ``flutter run``
 ## 📂 Estrutura de Pastas
 
 O projeto segue uma estrutura modular para manter o código organizado e desacoplado.
