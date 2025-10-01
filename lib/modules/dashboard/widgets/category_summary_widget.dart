@@ -25,7 +25,6 @@ class CategorySummaryWidget extends StatelessWidget {
       Colors.teal,
       Colors.redAccent,
       Colors.indigoAccent,
-      Colors.greenAccent,
     ];
 
     final currencyFormatter = NumberFormat.currency(
@@ -97,6 +96,7 @@ class CategorySummaryWidget extends StatelessWidget {
                 currencyFormatter.format(value),
                 style: theme.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.bold,
+                  color: barColor,
                 ),
               ),
             ],

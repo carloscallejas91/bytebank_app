@@ -113,7 +113,7 @@ class ForgotScreen extends GetView<ForgotController> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text('Lembrou sua senha?'),
-        TextButton(onPressed: Get.back, child: const Text('Login')),
+        TextButton(onPressed: Get.back, child: const Text('Faça login')),
       ],
     );
   }

@@ -20,8 +20,8 @@ class TransactionOptionsSheet extends GetView<TransactionController> {
       child: Wrap(
         children: <Widget>[
           ListTile(
-            leading: Icon(Icons.edit, color: theme.colorScheme.onSurface),
-            title: Text('Editar Transação'),
+            leading: Icon(Icons.edit, color: theme.colorScheme.secondary),
+            title: Text('Editar transação'),
             onTap: () {
               Get.back();
               controller.editTransaction(transaction);
@@ -29,7 +29,7 @@ class TransactionOptionsSheet extends GetView<TransactionController> {
           ),
           ListTile(
             leading: Icon(Icons.delete, color: theme.colorScheme.error),
-            title: Text('Deletar Transação'),
+            title: Text('Deletar transação'),
             onTap: () {
               Get.back();
               controller.deleteTransaction(transaction);
