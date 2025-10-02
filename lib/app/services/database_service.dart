@@ -4,7 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile_app/app/data/enums/sort_order.dart';
 import 'package:mobile_app/app/data/enums/transaction_type.dart';
+import 'package:mobile_app/app/data/models/paginated_transactions.dart';
+import 'package:mobile_app/app/data/models/transaction_filter_model.dart';
 import 'package:mobile_app/app/data/models/transaction_model.dart';
 
 import 'auth_service.dart';
@@ -18,10 +21,6 @@ class DatabaseService extends GetxService {
   final _authService = Get.find<AuthService>();
 
   // Streams
-  // final StreamController<List<TransactionModel>> _transactionsController =
-  //     StreamController.broadcast();
-  // StreamSubscription? _transactionsFirestoreSubscription;
-
   final StreamController<DocumentSnapshot> _userController =
       StreamController.broadcast();
   StreamSubscription? _userFirestoreSubscription;
@@ -156,17 +155,33 @@ class DatabaseService extends GetxService {
     });
   }
 
-  Future<List<TransactionModel>> fetchTransactionsPage({
+  Future<PaginatedTransactions> fetchTransactionsPage({
     required int limit,
     DocumentSnapshot? startAfter,
+    TransactionFilter? filter,
+    SortOrder sortOrder = SortOrder.desc,
   }) async {
     final user = _auth.currentUser;
-    if (user == null) return [];
+
+    if (user == null) {
+      return PaginatedTransactions(transactions: [], lastDocument: null);
+    }
 
     Query query = _firestore
         .collection('transactions')
-        .where('userId', isEqualTo: user.uid)
-        .orderBy('date', descending: true)
+        .where('userId', isEqualTo: user.uid);
+
+    if (filter != null && filter.isEnabled) {
+      if (filter.type != null) {
+        query = query.where('type', isEqualTo: filter.type!.name);
+      }
+      if (filter.paymentMethod != null) {
+        query = query.where('paymentMethod', isEqualTo: filter.paymentMethod);
+      }
+    }
+
+    query = query
+        .orderBy('date', descending: sortOrder == SortOrder.desc)
         .limit(limit);
 
     if (startAfter != null) {
@@ -174,7 +189,16 @@ class DatabaseService extends GetxService {
     }
 
     final snapshot = await query.get();
-    return snapshot.docs.map((doc) => TransactionModel.fromMap(doc)).toList();
+
+    final transactions = snapshot.docs
+        .map((doc) => TransactionModel.fromMap(doc))
+        .toList();
+    final lastDocument = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
+
+    return PaginatedTransactions(
+      transactions: transactions,
+      lastDocument: lastDocument,
+    );
   }
 
   //================================================================
