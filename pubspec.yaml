@@ -51,6 +51,7 @@ dependencies:
   flutter_masked_text2: ^0.9.1
   month_picker_dialog: ^6.5.0
   image_picker: ^1.2.0
+  flutter_animate: ^4.5.2
 
 
   # The following adds the Cupertino Icons font to your application.
