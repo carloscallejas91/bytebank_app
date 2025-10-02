@@ -7,6 +7,8 @@ import 'package:mobile_app/app/services/database_service.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../transaction/controllers/transaction_controller.dart';
+
 class TransactionFormController extends GetxController {
   // Services
   final _databaseService = Get.find<DatabaseService>();
@@ -145,6 +147,9 @@ class TransactionFormController extends GetxController {
   }
 
   void _handleSuccess({bool isUpdate = false}) {
+    final transactionListController = Get.find<TransactionController>();
+    transactionListController.refreshTransactions();
+
     if (isUpdate) {
       Get.back();
     } else {
