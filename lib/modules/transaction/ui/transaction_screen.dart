@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile_app/app/data/enums/sort_order.dart';
+import 'package:mobile_app/app/data/enums/transaction_type.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
 import 'package:mobile_app/modules/transaction/widgets/transaction_list_item.dart';
 
@@ -13,18 +15,14 @@ class TransactionScreen extends GetView<TransactionController> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-      child: Obx(() {
-        if (controller.transactions.isEmpty) {
-          return _buildEmptyState();
-        } else {
-          return _buildContent(theme);
-        }
-      }),
+      child: _buildContent(theme),
     );
   }
 
   Widget _buildEmptyState() {
-    return const Center(child: Text('Nenhuma transação encontrada.'));
+    return Expanded(
+      child: const Center(child: Text('Nenhuma transação encontrada.')),
+    );
   }
 
   Widget _buildContent(ThemeData theme) {
@@ -36,10 +34,17 @@ class TransactionScreen extends GetView<TransactionController> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 16,
           children: [
             _buildListHeader(theme),
-            const SizedBox(height: 16),
-            _buildTransactionList(),
+            _buildFilters(),
+            Obx(() {
+              if (controller.transactions.isEmpty) {
+                return _buildEmptyState();
+              } else {
+                return _buildTransactionList();
+              }
+            }),
           ],
         ),
       ),
@@ -50,9 +55,48 @@ class TransactionScreen extends GetView<TransactionController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Lista de Transações', style: theme.textTheme.titleMedium),
+        Row(
+          children: [
+            Text('Lista de Transações', style: theme.textTheme.titleMedium),
+            Obx(
+              () => IconButton(
+                icon: Icon(
+                  controller.sortOrder.value == SortOrder.desc
+                      ? Icons.arrow_downward
+                      : Icons.arrow_upward,
+                ),
+                tooltip: 'Alterar ordenação',
+                onPressed: controller.toggleSortOrder,
+              ),
+            ),
+          ],
+        ),
         const Divider(),
       ],
+    );
+  }
+
+  Widget _buildFilters() {
+    return Obx(
+      () => Wrap(
+        spacing: 8.0,
+        children: [
+          FilterChip(
+            label: const Text('Saídas'),
+            selected: controller.filter.value.type == TransactionType.expense,
+            onSelected: (selected) {
+              controller.toggleTypeFilter(TransactionType.expense);
+            },
+          ),
+          FilterChip(
+            label: const Text('Entradas'),
+            selected: controller.filter.value.type == TransactionType.income,
+            onSelected: (selected) {
+              controller.toggleTypeFilter(TransactionType.income);
+            },
+          ),
+        ],
+      ),
     );
   }
 

@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile_app/app/data/enums/sort_order.dart';
+import 'package:mobile_app/app/data/enums/transaction_type.dart';
+import 'package:mobile_app/app/data/models/transaction_filter_model.dart';
 import 'package:mobile_app/app/data/models/transaction_model.dart';
 import 'package:mobile_app/app/services/database_service.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
@@ -26,6 +29,10 @@ class TransactionController extends GetxController {
   DocumentSnapshot? _lastDocument;
   final RxBool isLoadingMore = false.obs;
   final RxBool hasMore = true.obs;
+
+  // Filter
+  final Rx<TransactionFilter> filter = TransactionFilter().obs;
+  final Rx<SortOrder> sortOrder = SortOrder.desc.obs;
 
   //================================================================
   // Lifecycle Methods
@@ -63,17 +70,18 @@ class TransactionController extends GetxController {
   Future<void> fetchFirstPage() async {
     isLoadingMore.value = true;
     try {
-      final newTransactions = await _databaseService.fetchTransactionsPage(
+      final pageResult = await _databaseService.fetchTransactionsPage(
         limit: _limit,
+        filter: filter.value,
+        sortOrder: sortOrder.value,
       );
-      if (newTransactions.isNotEmpty) {
-        _lastDocument = (await _databaseService.fetchTransactionsPage(
-          limit: _limit,
-          startAfter: _lastDocument,
-        )).last.snapshot;
+      if (pageResult.transactions.isNotEmpty) {
+        _lastDocument = pageResult.lastDocument;
       }
-      transactions.assignAll(newTransactions);
-      hasMore.value = newTransactions.length == _limit;
+
+      transactions.assignAll(pageResult.transactions);
+
+      hasMore.value = pageResult.transactions.length == _limit;
     } catch (e) {
       _snackBarService.showError(
         title: 'Erro',
@@ -89,18 +97,22 @@ class TransactionController extends GetxController {
 
     isLoadingMore.value = true;
     try {
-      final newTransactions = await _databaseService.fetchTransactionsPage(
+      final pageResult = await _databaseService.fetchTransactionsPage(
         limit: _limit,
         startAfter: _lastDocument,
+        filter: filter.value,
+        sortOrder: sortOrder.value,
       );
-      if (newTransactions.isNotEmpty) {
-        _lastDocument = (await _databaseService.fetchTransactionsPage(
-          limit: _limit,
-          startAfter: _lastDocument,
-        )).last.snapshot;
-        transactions.addAll(newTransactions);
+      if (pageResult.transactions.isNotEmpty) {
+        _lastDocument = pageResult.lastDocument;
+        transactions.addAll(pageResult.transactions);
+      } else {
+        hasMore.value = false;
       }
-      hasMore.value = newTransactions.length == _limit;
+
+      if (pageResult.transactions.length < _limit) {
+        hasMore.value = false;
+      }
     } catch (e) {
       _snackBarService.showError(
         title: 'Erro',
@@ -109,6 +121,24 @@ class TransactionController extends GetxController {
     } finally {
       isLoadingMore.value = false;
     }
+  }
+
+  void toggleTypeFilter(TransactionType type) {
+    if (filter.value.type == type) {
+      filter.value.type = null;
+    } else {
+      filter.value.type = type;
+    }
+
+    filter.refresh();
+
+    refreshTransactions();
+  }
+
+  void toggleSortOrder() {
+    sortOrder.value = (sortOrder.value == SortOrder.desc) ? SortOrder.asc : SortOrder.desc;
+
+    refreshTransactions();
   }
 
   void _scrollListener() {
@@ -146,6 +176,8 @@ class TransactionController extends GetxController {
       onConfirm: () async {
         try {
           await _databaseService.deleteTransaction(transaction);
+
+          refreshTransactions();
 
           _snackBarService.showSuccess(
             title: 'Sucesso!',

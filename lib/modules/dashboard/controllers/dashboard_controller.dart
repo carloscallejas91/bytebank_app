@@ -217,13 +217,9 @@ class DashboardController extends GetxController {
       final category = t.paymentMethod;
       if (t.type == TransactionType.income) {
         income += t.amount;
-
-        // Agrupa os totais de entrada por categoria
         incomeTotals[category] = (incomeTotals[category] ?? 0) + t.amount;
       } else {
         expenses += t.amount;
-
-        // Agrupa os totais de saída por categoria
         spendingTotals[category] = (spendingTotals[category] ?? 0) + t.amount;
       }
     }
