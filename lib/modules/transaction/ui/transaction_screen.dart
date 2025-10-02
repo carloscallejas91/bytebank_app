@@ -58,16 +58,34 @@ class TransactionScreen extends GetView<TransactionController> {
 
   Widget _buildTransactionList() {
     return Expanded(
-      child: ListView.separated(
-        itemCount: controller.transactions.length,
-        itemBuilder: (context, index) {
-          final transaction = controller.transactions[index];
-          return TransactionListItem(
-            transaction: transaction,
-            onTap: () => controller.showOptionsSheet(transaction),
-          );
-        },
-        separatorBuilder: (context, index) => const SizedBox(height: 8),
+      child: RefreshIndicator(
+        onRefresh: controller.refreshTransactions,
+        child: Obx(
+          () => ListView.separated(
+            controller: controller.scrollController,
+            itemCount:
+                controller.transactions.length +
+                (controller.hasMore.value ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == controller.transactions.length) {
+                return controller.isLoadingMore.value
+                    ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: CircularProgressIndicator(),
+                        ),
+                      )
+                    : const SizedBox.shrink();
+              }
+              final transaction = controller.transactions[index];
+              return TransactionListItem(
+                transaction: transaction,
+                onTap: () => controller.showOptionsSheet(transaction),
+              );
+            },
+            separatorBuilder: (context, index) => const SizedBox(height: 8),
+          ),
+        ),
       ),
     );
   }

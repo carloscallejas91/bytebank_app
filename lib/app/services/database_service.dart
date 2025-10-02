@@ -18,9 +18,9 @@ class DatabaseService extends GetxService {
   final _authService = Get.find<AuthService>();
 
   // Streams
-  final StreamController<List<TransactionModel>> _transactionsController =
-      StreamController.broadcast();
-  StreamSubscription? _transactionsFirestoreSubscription;
+  // final StreamController<List<TransactionModel>> _transactionsController =
+  //     StreamController.broadcast();
+  // StreamSubscription? _transactionsFirestoreSubscription;
 
   final StreamController<DocumentSnapshot> _userController =
       StreamController.broadcast();
@@ -41,9 +41,7 @@ class DatabaseService extends GetxService {
 
   @override
   void onClose() {
-    _transactionsController.close();
     _userController.close();
-    _transactionsFirestoreSubscription?.cancel();
     _userFirestoreSubscription?.cancel();
     _authSubscription.cancel();
 
@@ -55,9 +53,6 @@ class DatabaseService extends GetxService {
   //================================================================
 
   Stream<DocumentSnapshot> getUserStream() => _userController.stream;
-
-  Stream<List<TransactionModel>> getTransactionsStream() =>
-      _transactionsController.stream;
 
   //================================================================
   // Public Functions
@@ -161,16 +156,35 @@ class DatabaseService extends GetxService {
     });
   }
 
+  Future<List<TransactionModel>> fetchTransactionsPage({
+    required int limit,
+    DocumentSnapshot? startAfter,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null) return [];
+
+    Query query = _firestore
+        .collection('transactions')
+        .where('userId', isEqualTo: user.uid)
+        .orderBy('date', descending: true)
+        .limit(limit);
+
+    if (startAfter != null) {
+      query = query.startAfterDocument(startAfter);
+    }
+
+    final snapshot = await query.get();
+    return snapshot.docs.map((doc) => TransactionModel.fromMap(doc)).toList();
+  }
+
   //================================================================
   // Private Functions
   //================================================================
 
   void _onUserChanged(User? user) {
-    _transactionsFirestoreSubscription?.cancel();
     _userFirestoreSubscription?.cancel();
 
     if (user == null) {
-      _transactionsController.add([]);
     } else {
       _userFirestoreSubscription = _firestore
           .collection('users')
@@ -178,20 +192,6 @@ class DatabaseService extends GetxService {
           .snapshots()
           .listen((snapshot) {
             _userController.add(snapshot);
-          });
-
-      _transactionsFirestoreSubscription = _firestore
-          .collection('transactions')
-          .where('userId', isEqualTo: user.uid)
-          .orderBy('date', descending: true)
-          .snapshots()
-          .map(
-            (snapshot) => snapshot.docs
-                .map((doc) => TransactionModel.fromMap(doc))
-                .toList(),
-          )
-          .listen((transactions) {
-            _transactionsController.add(transactions);
           });
     }
   }

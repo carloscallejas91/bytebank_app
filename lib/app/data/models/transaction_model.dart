@@ -8,6 +8,7 @@ class TransactionModel {
   final String paymentMethod;
   final double amount;
   final DateTime date;
+  final DocumentSnapshot? snapshot;
 
   TransactionModel({
     required this.id,
@@ -16,6 +17,7 @@ class TransactionModel {
     required this.paymentMethod,
     required this.amount,
     required this.date,
+    this.snapshot,
   });
 
   Map<String, dynamic> toMap(String userId) {
@@ -40,6 +42,7 @@ class TransactionModel {
       paymentMethod: data['paymentMethod'] ?? '',
       amount: (data['amount'] as num).toDouble(),
       date: (data['date'] as Timestamp).toDate(),
+      snapshot: doc,
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/data/models/transaction_model.dart';
@@ -14,11 +15,17 @@ class TransactionController extends GetxController {
   final _databaseService = Get.find<DatabaseService>();
   final _snackBarService = Get.find<SnackBarService>();
 
-  // Streams
-  late StreamSubscription _transactionSubscription;
+  // Controller
+  final ScrollController scrollController = ScrollController();
 
   // List
   final RxList<TransactionModel> transactions = <TransactionModel>[].obs;
+
+  // Pagination
+  final int _limit = 6;
+  DocumentSnapshot? _lastDocument;
+  final RxBool isLoadingMore = false.obs;
+  final RxBool hasMore = true.obs;
 
   //================================================================
   // Lifecycle Methods
@@ -28,12 +35,14 @@ class TransactionController extends GetxController {
   void onInit() {
     super.onInit();
 
-    _listenToTransactionStream();
+    fetchFirstPage();
+
+    scrollController.addListener(_scrollListener);
   }
 
   @override
   void onClose() {
-    _transactionSubscription.cancel();
+    scrollController.dispose();
 
     super.onClose();
   }
@@ -41,6 +50,74 @@ class TransactionController extends GetxController {
   //================================================================
   // Public Functions
   //================================================================
+
+  Future<void> refreshTransactions() async {
+    _lastDocument = null;
+    hasMore.value = true;
+
+    transactions.clear();
+
+    await fetchFirstPage();
+  }
+
+  Future<void> fetchFirstPage() async {
+    isLoadingMore.value = true;
+    try {
+      final newTransactions = await _databaseService.fetchTransactionsPage(
+        limit: _limit,
+      );
+      if (newTransactions.isNotEmpty) {
+        _lastDocument = (await _databaseService.fetchTransactionsPage(
+          limit: _limit,
+          startAfter: _lastDocument,
+        )).last.snapshot;
+      }
+      transactions.assignAll(newTransactions);
+      hasMore.value = newTransactions.length == _limit;
+    } catch (e) {
+      _snackBarService.showError(
+        title: 'Erro',
+        message: 'Não foi possível buscar as transações.',
+      );
+    } finally {
+      isLoadingMore.value = false;
+    }
+  }
+
+  Future<void> fetchNextPage() async {
+    if (isLoadingMore.value || !hasMore.value) return;
+
+    isLoadingMore.value = true;
+    try {
+      final newTransactions = await _databaseService.fetchTransactionsPage(
+        limit: _limit,
+        startAfter: _lastDocument,
+      );
+      if (newTransactions.isNotEmpty) {
+        _lastDocument = (await _databaseService.fetchTransactionsPage(
+          limit: _limit,
+          startAfter: _lastDocument,
+        )).last.snapshot;
+        transactions.addAll(newTransactions);
+      }
+      hasMore.value = newTransactions.length == _limit;
+    } catch (e) {
+      _snackBarService.showError(
+        title: 'Erro',
+        message: 'Não foi possível buscar mais transações.',
+      );
+    } finally {
+      isLoadingMore.value = false;
+    }
+  }
+
+  void _scrollListener() {
+    if (scrollController.position.pixels >=
+        scrollController.position.maxScrollExtent - 200) {
+      fetchNextPage();
+    }
+  }
+
   void showOptionsSheet(TransactionModel transaction) {
     final theme = Theme.of(Get.context!);
 
@@ -88,10 +165,10 @@ class TransactionController extends GetxController {
   // Private Functions
   //================================================================
 
-  void _listenToTransactionStream() {
-    final transactionStream = _databaseService.getTransactionsStream();
-    _transactionSubscription = transactionStream.listen((newTransactions) {
-      transactions.assignAll(newTransactions);
-    });
-  }
+  // void _listenToTransactionStream() {
+  //   final transactionStream = _databaseService.getTransactionsStream();
+  //   _transactionSubscription = transactionStream.listen((newTransactions) {
+  //     transactions.assignAll(newTransactions);
+  //   });
+  // }
 }
