@@ -45,6 +45,7 @@ class TransactionFormSheet extends StatelessWidget {
   Widget _buildTypeSelector(TransactionFormController controller) {
     return Obx(
       () => SegmentedButton<TransactionType>(
+        showSelectedIcon: false,
         segments: const [
           ButtonSegment(
             value: TransactionType.income,
@@ -55,6 +56,7 @@ class TransactionFormSheet extends StatelessWidget {
             value: TransactionType.expense,
             label: Text('Saída'),
             icon: Icon(Icons.arrow_downward),
+
           ),
         ],
         selected: {controller.selectedType.value},

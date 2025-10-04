@@ -37,6 +37,7 @@ class TransactionScreen extends GetView<TransactionController> {
           spacing: 16,
           children: [
             _buildListHeader(theme),
+            _buildSearchField(),
             _buildFilters(),
             Obx(() {
               if (controller.transactions.isEmpty) {
@@ -56,23 +57,52 @@ class TransactionScreen extends GetView<TransactionController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text('Lista de Transações', style: theme.textTheme.titleMedium),
-            Obx(
-              () => IconButton(
-                icon: Icon(
-                  controller.sortOrder.value == SortOrder.desc
-                      ? Icons.arrow_downward
-                      : Icons.arrow_upward,
+            Row(
+              children: [
+                Icon(Icons.calendar_today_outlined, size: 14),
+                SizedBox(width: 4),
+                Text(
+                  'Data',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                tooltip: 'Alterar ordenação',
-                onPressed: controller.toggleSortOrder,
-              ),
+                Obx(
+                  () => IconButton(
+                    icon: Icon(
+                      controller.sortOrder.value == SortOrder.desc
+                          ? Icons.arrow_downward
+                          : Icons.arrow_upward,
+                    ),
+                    tooltip: 'Alterar ordenação',
+                    onPressed: controller.toggleSortOrder,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
         const Divider(),
       ],
+    );
+  }
+
+  Widget _buildSearchField() {
+    return TextField(
+      controller: controller.searchController,
+      decoration: InputDecoration(
+        labelText: 'Pesquisar por descrição',
+        prefixIcon: const Icon(Icons.search),
+        suffixIcon: Obx(() => controller.filter.value.descriptionSearch.isNotEmpty
+            ? IconButton(
+          icon: const Icon(Icons.clear),
+          onPressed: controller.clearSearch,
+        )
+            : const SizedBox.shrink()),
+      ),
     );
   }
 

@@ -25,6 +25,7 @@ class TransactionModel {
       'userId': userId,
       'type': type.name,
       'description': description,
+      'description_lowercase': description.toLowerCase(),
       'paymentMethod': paymentMethod,
       'amount': amount,
       'date': Timestamp.fromDate(date),

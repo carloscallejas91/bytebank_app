@@ -171,7 +171,7 @@ class DatabaseService extends GetxService {
         .collection('transactions')
         .where('userId', isEqualTo: user.uid);
 
-    if (filter != null && filter.isEnabled) {
+    if (filter != null) {
       if (filter.type != null) {
         query = query.where('type', isEqualTo: filter.type!.name);
       }
@@ -180,9 +180,17 @@ class DatabaseService extends GetxService {
       }
     }
 
-    query = query
-        .orderBy('date', descending: sortOrder == SortOrder.desc)
-        .limit(limit);
+    if (filter != null && filter.descriptionSearch.isNotEmpty) {
+      query = query
+          .where('description_lowercase', isGreaterThanOrEqualTo: filter.descriptionSearch)
+          .where('description_lowercase', isLessThanOrEqualTo: '${filter.descriptionSearch}\uf8ff');
+      query = query.orderBy('description_lowercase');
+      query = query.orderBy('date', descending: sortOrder == SortOrder.desc);
+    } else {
+      query = query.orderBy('date', descending: sortOrder == SortOrder.desc);
+    }
+
+    query = query.limit(limit);
 
     if (startAfter != null) {
       query = query.startAfterDocument(startAfter);
@@ -190,9 +198,8 @@ class DatabaseService extends GetxService {
 
     final snapshot = await query.get();
 
-    final transactions = snapshot.docs
-        .map((doc) => TransactionModel.fromMap(doc))
-        .toList();
+    final transactions =
+    snapshot.docs.map((doc) => TransactionModel.fromMap(doc)).toList();
     final lastDocument = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
 
     return PaginatedTransactions(
