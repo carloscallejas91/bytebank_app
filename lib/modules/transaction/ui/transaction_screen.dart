@@ -37,7 +37,7 @@ class TransactionScreen extends GetView<TransactionController> {
           spacing: 16,
           children: [
             _buildListHeader(theme),
-            _buildSearchField(),
+            _buildSearchField(theme),
             _buildFilters(),
             Obx(() {
               if (controller.transactions.isEmpty) {
@@ -90,18 +90,34 @@ class TransactionScreen extends GetView<TransactionController> {
     );
   }
 
-  Widget _buildSearchField() {
+  Widget _buildSearchField(ThemeData theme) {
     return TextField(
       controller: controller.searchController,
       decoration: InputDecoration(
         labelText: 'Pesquisar por descrição',
         prefixIcon: const Icon(Icons.search),
-        suffixIcon: Obx(() => controller.filter.value.descriptionSearch.isNotEmpty
-            ? IconButton(
-          icon: const Icon(Icons.clear),
-          onPressed: controller.clearSearch,
-        )
-            : const SizedBox.shrink()),
+        suffixIcon: Obx(
+          () => controller.filter.value.descriptionSearch.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: controller.clearSearch,
+                )
+              : const SizedBox.shrink(),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: BorderSide(width: 1.0),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: BorderSide(width: 1.0),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: BorderSide(width: 1.0),
+        ),
       ),
     );
   }
