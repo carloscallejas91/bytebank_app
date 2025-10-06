@@ -20,6 +20,7 @@ class TransactionController extends GetxController {
 
   // Controller
   final ScrollController scrollController = ScrollController();
+  final TextEditingController searchController = TextEditingController();
 
   // List
   final RxList<TransactionModel> transactions = <TransactionModel>[].obs;
@@ -33,6 +34,7 @@ class TransactionController extends GetxController {
   // Filter
   final Rx<TransactionFilter> filter = TransactionFilter().obs;
   final Rx<SortOrder> sortOrder = SortOrder.desc.obs;
+  Timer? _debounce;
 
   //================================================================
   // Lifecycle Methods
@@ -45,11 +47,15 @@ class TransactionController extends GetxController {
     fetchFirstPage();
 
     scrollController.addListener(_scrollListener);
+
+    _setupSearchListener();
   }
 
   @override
   void onClose() {
     scrollController.dispose();
+    searchController.dispose();
+    _debounce?.cancel();
 
     super.onClose();
   }
@@ -192,15 +198,26 @@ class TransactionController extends GetxController {
       },
     );
   }
+  void clearSearch() {
+    searchController.clear();
+  }
 
   //================================================================
   // Private Functions
   //================================================================
 
-  // void _listenToTransactionStream() {
-  //   final transactionStream = _databaseService.getTransactionsStream();
-  //   _transactionSubscription = transactionStream.listen((newTransactions) {
-  //     transactions.assignAll(newTransactions);
-  //   });
-  // }
+  void _setupSearchListener() {
+    searchController.addListener(() {
+      if (_debounce?.isActive ?? false) _debounce!.cancel();
+
+      _debounce = Timer(const Duration(milliseconds: 500), () {
+        final searchTerm = searchController.text.toLowerCase();
+
+        if (filter.value.descriptionSearch != searchTerm) {
+          filter.value.descriptionSearch = searchTerm;
+          refreshTransactions();
+        }
+      });
+    });
+  }
 }
