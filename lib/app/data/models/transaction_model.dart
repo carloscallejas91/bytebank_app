@@ -7,6 +7,7 @@ class TransactionModel {
   final String description;
   final String paymentMethod;
   final double amount;
+  final String? receiptUrl;
   final DateTime date;
   final DocumentSnapshot? snapshot;
 
@@ -16,6 +17,7 @@ class TransactionModel {
     required this.description,
     required this.paymentMethod,
     required this.amount,
+    this.receiptUrl,
     required this.date,
     this.snapshot,
   });
@@ -28,6 +30,7 @@ class TransactionModel {
       'description_lowercase': description.toLowerCase(),
       'paymentMethod': paymentMethod,
       'amount': amount,
+      'receiptUrl': receiptUrl,
       'date': Timestamp.fromDate(date),
     };
   }
@@ -42,6 +45,7 @@ class TransactionModel {
       description: data['description'] ?? '',
       paymentMethod: data['paymentMethod'] ?? '',
       amount: (data['amount'] as num).toDouble(),
+      receiptUrl: data['receiptUrl'],
       date: (data['date'] as Timestamp).toDate(),
       snapshot: doc,
     );

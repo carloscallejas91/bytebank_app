@@ -5,6 +5,7 @@ import 'package:mobile_app/app/ui/widgets/custom_button.dart';
 import 'package:mobile_app/app/ui/widgets/custom_text_field.dart';
 import 'package:mobile_app/app/utils/app_validators.dart';
 import 'package:mobile_app/modules/home/controllers/transaction_form_controller.dart';
+import 'package:path/path.dart' as p;
 
 class TransactionFormSheet extends StatelessWidget {
   const TransactionFormSheet({super.key});
@@ -34,6 +35,8 @@ class TransactionFormSheet extends StatelessWidget {
             _buildPaymentMethodDropdown(controller),
             const SizedBox(height: 16),
             _buildDescriptionField(controller),
+            const SizedBox(height: 16),
+            _buildReceiptPicker(controller, theme),
             const SizedBox(height: 32),
             _buildSaveButton(controller),
           ],
@@ -56,7 +59,6 @@ class TransactionFormSheet extends StatelessWidget {
             value: TransactionType.expense,
             label: Text('Saída'),
             icon: Icon(Icons.arrow_downward),
-
           ),
         ],
         selected: {controller.selectedType.value},
@@ -125,6 +127,57 @@ class TransactionFormSheet extends StatelessWidget {
       validator: (value) =>
           AppValidators.notEmpty(value, message: 'A descrição é obrigatória.'),
     );
+  }
+
+  Widget _buildReceiptPicker(
+    TransactionFormController controller,
+    ThemeData theme,
+  ) {
+    return Obx(() {
+      if (controller.selectedReceipt.value != null) {
+        return Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.green),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                p.basename(controller.selectedReceipt.value!.path),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: controller.removeReceipt,
+            ),
+          ],
+        );
+      }
+      else if (controller.existingReceiptUrl.value != null &&
+          controller.existingReceiptUrl.value!.isNotEmpty) {
+        return Row(
+          children: [
+            const Icon(Icons.cloud_done, color: Colors.blue),
+            const SizedBox(width: 8),
+            Expanded(child: Text('Comprovante salvo')),
+            TextButton(
+              onPressed: controller.viewReceipt,
+              child: const Text('Ver'),
+            ),
+            IconButton(
+              icon: Icon(Icons.close, color: theme.colorScheme.error),
+              onPressed: controller.removeReceipt,
+            ),
+          ],
+        );
+      }
+      else {
+        return OutlinedButton.icon(
+          icon: Icon(Icons.attach_file, color: theme.colorScheme.onSurface,),
+          label: Text('Anexar', style: TextStyle(color: theme.colorScheme.onSurface),),
+          onPressed: controller.pickReceipt,
+        );
+      }
+    });
   }
 
   Widget _buildSaveButton(TransactionFormController controller) {

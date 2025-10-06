@@ -1,17 +1,25 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_app/app/data/enums/transaction_type.dart';
 import 'package:mobile_app/app/data/models/transaction_model.dart';
+import 'package:mobile_app/app/services/auth_service.dart';
 import 'package:mobile_app/app/services/database_service.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
+import 'package:mobile_app/app/services/storage_service.dart';
+import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../transaction/controllers/transaction_controller.dart';
+
 
 class TransactionFormController extends GetxController {
   // Services
   final _databaseService = Get.find<DatabaseService>();
+  final _storageService = Get.find<StorageService>();
   final _snackBarService = Get.find<SnackBarService>();
 
   // Form
@@ -47,6 +55,10 @@ class TransactionFormController extends GetxController {
     'Pix',
     'Outro',
   ];
+
+  // File
+  final Rxn<File> selectedReceipt = Rxn<File>();
+  final RxnString existingReceiptUrl = RxnString();
 
   // Conditionals
   final isLoading = false.obs;
@@ -91,7 +103,7 @@ class TransactionFormController extends GetxController {
   }
 
   //================================================================
-  // Getters
+  // Public Functions
   //================================================================
 
   void setTransactionType(TransactionType type) {
@@ -107,12 +119,25 @@ class TransactionFormController extends GetxController {
     isLoading.value = true;
 
     try {
+      String? finalReceiptUrl = existingReceiptUrl.value;
+      final transactionId = editingTransaction?.id ?? uuid.v4();
+
+      if (selectedReceipt.value != null) {
+        final userId = Get.find<AuthService>().currentUser!.uid;
+        finalReceiptUrl  = await _storageService.uploadTransactionReceipt(
+          userId: userId,
+          transactionId: transactionId,
+          file: selectedReceipt.value!,
+        );
+      }
+
       final transaction = TransactionModel(
         id: editingTransaction?.id ?? uuid.v4(),
         type: selectedType.value,
         amount: valueController.numberValue,
         description: descriptionController.text,
         paymentMethod: selectedPaymentMethod.value!,
+        receiptUrl: finalReceiptUrl,
         date: editingTransaction?.date ?? DateTime.now(),
       );
 
@@ -133,6 +158,31 @@ class TransactionFormController extends GetxController {
     }
   }
 
+  Future<void> pickReceipt() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
+
+    if (pickedFile != null) {
+      selectedReceipt.value = File(pickedFile.path);
+    }
+  }
+
+  Future<void> viewReceipt() async {
+    if (existingReceiptUrl.value != null) {
+      final uri = Uri.parse(existingReceiptUrl.value!);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        _snackBarService.showError(title: 'Erro', message: 'Não foi possível abrir o link.');
+      }
+    }
+  }
+
+  void removeReceipt() {
+    selectedReceipt.value = null;
+    existingReceiptUrl.value = null;
+  }
+
   //================================================================
   // Private Functions
   //================================================================
@@ -144,6 +194,8 @@ class TransactionFormController extends GetxController {
     descriptionController.text = transaction.description;
     selectedType.value = transaction.type;
     selectedPaymentMethod.value = transaction.paymentMethod;
+    existingReceiptUrl.value = transaction.receiptUrl;
+    selectedReceipt.value = null;
   }
 
   void _handleSuccess({bool isUpdate = false}) {
@@ -177,6 +229,8 @@ class TransactionFormController extends GetxController {
     descriptionController.clear();
     selectedPaymentMethod.value = null;
     selectedType.value = TransactionType.expense;
+    selectedReceipt.value = null;
+    existingReceiptUrl.value = null;
   }
 
   bool _isFormValid() {
