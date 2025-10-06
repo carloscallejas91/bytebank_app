@@ -15,31 +15,33 @@ class TransactionFormSheet extends StatelessWidget {
     final controller = Get.put(TransactionFormController());
     final theme = Theme.of(context);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-      child: Form(
-        key: controller.formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              controller.isEditMode ? 'Editar transação' : 'Nova transação',
-              style: theme.textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 24),
-            _buildTypeSelector(controller),
-            const SizedBox(height: 16),
-            _buildValueField(controller),
-            const SizedBox(height: 16),
-            _buildPaymentMethodDropdown(controller),
-            const SizedBox(height: 16),
-            _buildDescriptionField(controller),
-            const SizedBox(height: 16),
-            _buildReceiptPicker(controller, theme),
-            const SizedBox(height: 32),
-            _buildSaveButton(controller),
-          ],
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+        child: Form(
+          key: controller.formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                controller.isEditMode ? 'Editar transação' : 'Nova transação',
+                style: theme.textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 24),
+              _buildTypeSelector(controller),
+              const SizedBox(height: 16),
+              _buildValueField(controller),
+              const SizedBox(height: 16),
+              _buildPaymentMethodDropdown(controller),
+              const SizedBox(height: 16),
+              _buildDescriptionField(controller),
+              const SizedBox(height: 16),
+              _buildReceiptPicker(controller, theme),
+              const SizedBox(height: 32),
+              _buildSaveButton(controller),
+            ],
+          ),
         ),
       ),
     );
