@@ -80,6 +80,17 @@ Antes de começar, garanta que você tenha o seguinte instalado:
 > 2.  **Cole-o** dentro da pasta `android/app/` do projeto.
 >
 > Neste caso não é necessário realizar nenhuma configuração adicional do Firebase.
+>
+> **Usuário de Teste:**
+> -   **E-mail:** `avaliador@bytebank.com`
+> -   **Senha:** `Teste@01`
+>
+> **Observação:** Fique a vontade para criar uma conta caso queira.
+>
+> ---
+> **Observação sobre Recuperação de Senha:**
+> Ao testar a funcionalidade de "Recuperar Senha", o e-mail enviado pelo Firebase pode, por padrão, chegar na sua caixa de **Spam** ou **Lixo Eletrônico**. Por favor, verifique estas pastas caso não o encontre na sua caixa de entrada. Isso é um comportamento comum para e-mails automáticos enviados a partir de projetos em ambiente de desenvolvimento.
+
 
 ### 2. Opcional: Configuração do Firebase
 
