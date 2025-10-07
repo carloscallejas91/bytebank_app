@@ -46,3 +46,6 @@ app.*.map.json
 
 # FVM Version Cache
 .fvm/
+
+# Arquivos de configuração do Firebase
+android/app/google-services.json
