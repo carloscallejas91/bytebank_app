@@ -133,7 +133,11 @@ class DashboardController extends GetxController {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_avatar_path', savedImage.path);
 
-      userPhotoUrl.value = savedImage.path;
+      if (userPhotoUrl.value != savedImage.path) {
+        userPhotoUrl(savedImage.path);
+      } else {
+        userPhotoUrl.refresh();
+      }
 
       _snackBarService.showSuccess(
         title: 'Sucesso!',
