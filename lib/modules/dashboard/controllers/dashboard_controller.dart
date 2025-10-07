@@ -68,6 +68,11 @@ class DashboardController extends GetxController {
   void onInit() {
     super.onInit();
 
+    final initialUser = _authService.currentUser;
+    if (initialUser != null) {
+      userName.value = initialUser.displayName ?? 'Usuário';
+    }
+
     _setupDataListeners();
   }
 

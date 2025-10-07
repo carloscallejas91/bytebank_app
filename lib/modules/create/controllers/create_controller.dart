@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/routes/app_pages.dart';
 import 'package:mobile_app/app/services/auth_service.dart';
+import 'package:mobile_app/app/services/database_service.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 
 class CreateController extends GetxController {
   // Services
   final _authService = Get.find<AuthService>();
+  final _databaseService = Get.find<DatabaseService>();
   final _snackBarService = Get.find<SnackBarService>();
 
   // Form
@@ -56,12 +58,19 @@ class CreateController extends GetxController {
       if (user != null) {
         _clearForm();
 
-        _snackBarService.showSuccess(
-          title: 'Bem-vindo(a), ${user.displayName}!',
-          message: 'Sua conta foi criada com sucesso.',
-        );
+        final bool documentReady = await _databaseService.waitForUserDocument(user.uid);
 
-        Get.offAllNamed(Routes.HOME);
+        if (documentReady) {
+          _snackBarService.showSuccess(
+            title: 'Bem-vindo(a), ${user.displayName}!',
+            message: 'Sua conta foi criada com sucesso.',
+          );
+
+          Get.offAllNamed(Routes.HOME);
+        } else {
+          debugPrint('Falha ao inicializar os dados do usuário.');
+        }
+
       }
     } on FirebaseAuthException catch (e) {
       debugPrint(e.message);
@@ -71,10 +80,7 @@ class CreateController extends GetxController {
         message: 'Ocorreu um erro, tente novamente!',
       );
     } catch (e) {
-      _snackBarService.showError(
-        title: 'Erro Inesperado',
-        message: 'Ocorreu um erro. Por favor, tente novamente.',
-      );
+      debugPrint('Falha ao inicializar os dados do usuário.');
     } finally {
       isLoading.value = false;
     }
