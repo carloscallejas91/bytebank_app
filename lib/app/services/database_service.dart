@@ -80,6 +80,18 @@ class DatabaseService extends GetxService {
     }
   }
 
+  Future<bool> waitForUserDocument(String uid, {int retries = 5, Duration delay = const Duration(milliseconds: 400)}) async {
+    for (int i = 0; i < retries; i++) {
+      final doc = await _firestore.collection('users').doc(uid).get();
+      if (doc.exists) {
+        return true;
+      }
+
+      await Future.delayed(delay);
+    }
+    return false;
+  }
+
   Future<void> addTransaction(TransactionModel transaction) async {
     final user = _auth.currentUser;
     if (user == null) throw Exception('Nenhum usuário autenticado.');
