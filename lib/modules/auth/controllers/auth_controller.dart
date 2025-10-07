@@ -86,9 +86,9 @@ class AuthController extends GetxController {
   //================================================================
 
   void _handleAuthChanged(User? firebaseUser) {
-    if (firebaseUser != null) {
+    if (firebaseUser != null && !_authService.isCreatingUser) {
       Get.offAllNamed(Routes.HOME);
-    } else {
+    }  else if (firebaseUser == null) {
       Get.offAllNamed(Routes.AUTH);
     }
   }

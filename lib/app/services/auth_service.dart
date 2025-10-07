@@ -10,6 +10,9 @@ class AuthService extends GetxService {
   // User
   final user = Rxn<User>();
 
+  // Conditionals
+  bool isCreatingUser = false;
+
   //================================================================
   // Lifecycle Methods
   //================================================================
@@ -60,6 +63,8 @@ class AuthService extends GetxService {
   }) async {
     final DatabaseService databaseService = Get.find();
 
+    isCreatingUser = true;
+
     try {
       final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email.trim(),
@@ -76,8 +81,9 @@ class AuthService extends GetxService {
           name: name.trim(),
         );
 
-        await newUser.reload();
-        return _firebaseAuth.currentUser;
+        await _firebaseAuth.signOut();
+
+        return newUser;
       }
       return null;
     } on FirebaseAuthException {
@@ -87,6 +93,8 @@ class AuthService extends GetxService {
         "createUserWithEmailAndPassword: um erro inesperado ocorreu: $e",
       );
       rethrow;
+    } finally {
+      isCreatingUser = false;
     }
   }
 

@@ -58,19 +58,20 @@ class CreateController extends GetxController {
       if (user != null) {
         _clearForm();
 
-        final bool documentReady = await _databaseService.waitForUserDocument(user.uid);
+        final bool documentReady = await _databaseService.waitForUserDocument(
+          user.uid,
+        );
 
         if (documentReady) {
           _snackBarService.showSuccess(
-            title: 'Bem-vindo(a), ${user.displayName}!',
-            message: 'Sua conta foi criada com sucesso.',
+            title: 'Sucesso!',
+            message:
+                'Sua conta foi criada com sucesso. Realize o '
+                'login para continuar.',
           );
-
-          Get.offAllNamed(Routes.HOME);
         } else {
           debugPrint('Falha ao inicializar os dados do usuário.');
         }
-
       }
     } on FirebaseAuthException catch (e) {
       debugPrint(e.message);
