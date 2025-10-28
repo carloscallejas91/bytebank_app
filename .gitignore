@@ -49,3 +49,15 @@ app.*.map.json
 
 # Arquivos de configuração do Firebase
 android/app/google-services.json
+
+# Arquivos gerados pelo Flutter para plataformas desktop/web
+/linux/flutter/generated_*.{cc,cmake}
+/windows/flutter/generated_*.{cc,cmake}
+/macos/Flutter/GeneratedPluginRegistrant.*
+
+# Arquivos de configuração do IDE/Ferramentas
+.vscode/
+devtools_options.yaml
+
+# AGENTS.md
+AGENTS.md
