@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:mobile_app/app/data/enums/sort_order.dart';
-import 'package:mobile_app/app/data/models/paginated_transactions.dart';
-import 'package:mobile_app/app/data/models/transaction_filter_model.dart';
-import 'package:mobile_app/app/data/models/transaction_model.dart';
+import 'package:bytebank_app/domain/enums/sort_order.dart';
+import 'package:bytebank_app/domain/entities/transaction_entity.dart';
+import 'package:bytebank_app/domain/entities/transaction_filter_model.dart';
+import 'package:bytebank_app/data/models/paginated_transactions.dart';
 
 abstract class ITransactionRepository {
   Future<PaginatedTransactions> fetchTransactionsPage({
@@ -13,13 +13,13 @@ abstract class ITransactionRepository {
     SortOrder sortOrder = SortOrder.desc,
   });
 
-  Future<void> addTransaction(String userId, TransactionModel transaction);
+  Future<void> addTransaction(String userId, TransactionEntity transaction);
 
   Future<void> updateTransaction(
     String userId,
-    TransactionModel oldTransaction,
-    TransactionModel newTransaction,
+    TransactionEntity oldTransaction,
+    TransactionEntity newTransaction,
   );
 
-  Future<void> deleteTransaction(String userId, TransactionModel transaction);
+  Future<void> deleteTransaction(String userId, TransactionEntity transaction);
 }
