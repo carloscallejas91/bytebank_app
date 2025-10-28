@@ -1,9 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mobile_app/app/data/enums/sort_order.dart';
 import 'package:mobile_app/app/data/models/paginated_transactions.dart';
 import 'package:mobile_app/app/data/models/transaction_filter_model.dart';
 import 'package:mobile_app/app/data/models/transaction_model.dart';
-
-enum SortOrder { asc, desc }
 
 abstract class ITransactionRepository {
   Future<PaginatedTransactions> fetchTransactionsPage({
