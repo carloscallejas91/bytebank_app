@@ -4,11 +4,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile_app/app/data/enums/sort_order.dart';
-import 'package:mobile_app/app/data/enums/transaction_type.dart';
-import 'package:mobile_app/app/data/models/paginated_transactions.dart';
-import 'package:mobile_app/app/data/models/transaction_filter_model.dart';
-import 'package:mobile_app/app/data/models/transaction_model.dart';
+import 'package:mobile_app/data/models/paginated_transactions.dart';
+import 'package:mobile_app/data/models/transaction_data_model.dart';
+import 'package:mobile_app/domain/entities/transaction_filter_model.dart';
+import 'package:mobile_app/domain/enums/sort_order.dart';
+import 'package:mobile_app/domain/enums/transaction_type.dart';
 
 import 'auth_service.dart';
 
@@ -92,7 +92,7 @@ class DatabaseService extends GetxService {
     return false;
   }
 
-  Future<void> addTransaction(TransactionModel transaction) async {
+  Future<void> addTransaction(TransactionDataModel transaction) async {
     final user = _auth.currentUser;
     if (user == null) throw Exception('Nenhum usuário autenticado.');
 
@@ -114,8 +114,8 @@ class DatabaseService extends GetxService {
   }
 
   Future<void> updateTransaction(
-    TransactionModel oldTransaction,
-    TransactionModel newTransaction,
+      TransactionDataModel oldTransaction,
+      TransactionDataModel newTransaction,
   ) async {
     final user = _auth.currentUser;
     if (user == null) throw Exception('Nenhum usuário autenticado.');
@@ -146,7 +146,7 @@ class DatabaseService extends GetxService {
     });
   }
 
-  Future<void> deleteTransaction(TransactionModel transaction) async {
+  Future<void> deleteTransaction(TransactionDataModel transaction) async {
     final user = _auth.currentUser;
     if (user == null) throw Exception('Nenhum usuário autenticado.');
 
@@ -211,7 +211,7 @@ class DatabaseService extends GetxService {
     final snapshot = await query.get();
 
     final transactions =
-    snapshot.docs.map((doc) => TransactionModel.fromMap(doc)).toList();
+    snapshot.docs.map((doc) => TransactionDataModel.fromMap(doc)).toList();
     final lastDocument = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
 
     return PaginatedTransactions(

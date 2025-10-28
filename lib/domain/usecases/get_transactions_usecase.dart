@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:bytebank_app/app/data/enums/sort_order.dart';
-import 'package:bytebank_app/app/data/models/paginated_transactions.dart';
-import 'package:bytebank_app/app/data/models/transaction_filter_model.dart';
-import 'package:bytebank_app/domain/repositories/i_transaction_repository.dart';
+import 'package:mobile_app/data/models/paginated_transactions.dart';
+import 'package:mobile_app/domain/entities/transaction_filter_model.dart';
+import 'package:mobile_app/domain/enums/sort_order.dart';
+import 'package:mobile_app/domain/repositories/i_transaction_repository.dart';
 
 class GetTransactionsUseCase {
   final ITransactionRepository _repository;

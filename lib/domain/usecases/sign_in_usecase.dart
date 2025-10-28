@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:bytebank_app/domain/repositories/i_auth_repository.dart';
+import 'package:mobile_app/domain/repositories/i_auth_repository.dart';
 
 class SignInUseCase {
   final IAuthRepository _repository;

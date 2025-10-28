@@ -1,5 +1,5 @@
-import 'package:bytebank_app/app/data/models/transaction_model.dart';
-import 'package:bytebank_app/domain/repositories/i_transaction_repository.dart';
+import 'package:mobile_app/data/models/transaction_data_model.dart';
+import 'package:mobile_app/domain/repositories/i_transaction_repository.dart';
 
 class DeleteTransactionUseCase {
   final ITransactionRepository _repository;
@@ -8,7 +8,7 @@ class DeleteTransactionUseCase {
 
   Future<void> call({
     required String userId,
-    required TransactionModel transaction,
+    required TransactionDataModel transaction,
   }) {
     return _repository.deleteTransaction(userId, transaction);
   }

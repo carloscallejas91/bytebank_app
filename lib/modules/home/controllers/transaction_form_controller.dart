@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mobile_app/app/data/enums/transaction_type.dart';
-import 'package:mobile_app/app/data/models/transaction_model.dart';
 import 'package:mobile_app/app/services/auth_service.dart';
 import 'package:mobile_app/app/services/database_service.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 import 'package:mobile_app/app/services/storage_service.dart';
+import 'package:mobile_app/data/models/transaction_data_model.dart';
+import 'package:mobile_app/domain/enums/transaction_type.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
@@ -34,7 +34,7 @@ class TransactionFormController extends GetxController {
   );
 
   // Models
-  final TransactionModel? editingTransaction;
+  final TransactionDataModel? editingTransaction;
 
   // Form parameters
   final selectedType = TransactionType.expense.obs;
@@ -131,7 +131,7 @@ class TransactionFormController extends GetxController {
         );
       }
 
-      final transaction = TransactionModel(
+      final transaction = TransactionDataModel(
         id: editingTransaction?.id ?? uuid.v4(),
         type: selectedType.value,
         amount: valueController.numberValue,
@@ -188,7 +188,7 @@ class TransactionFormController extends GetxController {
   //================================================================
 
   void _prefillForm() {
-    final TransactionModel transaction = editingTransaction!;
+    final TransactionDataModel transaction = editingTransaction!;
 
     valueController.updateValue(transaction.amount);
     descriptionController.text = transaction.description;

@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mobile_app/app/data/enums/sort_order.dart';
-import 'package:mobile_app/app/data/enums/transaction_type.dart';
-import 'package:mobile_app/app/data/models/paginated_transactions.dart';
-import 'package:mobile_app/app/data/models/transaction_filter_model.dart';
-import 'package:mobile_app/app/data/models/transaction_model.dart';
+import 'package:mobile_app/data/models/paginated_transactions.dart';
+import 'package:mobile_app/data/models/transaction_data_model.dart';
+import 'package:mobile_app/domain/entities/transaction_filter_model.dart';
+import 'package:mobile_app/domain/enums/sort_order.dart';
+import 'package:mobile_app/domain/enums/transaction_type.dart';
 
 class FirebaseDataSource {
   final FirebaseAuth _firebaseAuth;
@@ -74,7 +74,7 @@ class FirebaseDataSource {
   }
 
   // Transaction
-  Future<void> addTransaction(String userId, TransactionModel transaction) {
+  Future<void> addTransaction(String userId, TransactionDataModel transaction) {
     final userDocRef = _firestore.collection('users').doc(userId);
     final transactionDocRef = _firestore
         .collection('transactions')
@@ -94,8 +94,8 @@ class FirebaseDataSource {
 
   Future<void> updateTransaction(
     String userId,
-    TransactionModel oldTransaction,
-    TransactionModel newTransaction,
+    TransactionDataModel oldTransaction,
+    TransactionDataModel newTransaction,
   ) {
     final userDocRef = _firestore.collection('users').doc(userId);
     final transactionDocRef = _firestore
@@ -123,7 +123,10 @@ class FirebaseDataSource {
     });
   }
 
-  Future<void> deleteTransaction(String userId, TransactionModel transaction) {
+  Future<void> deleteTransaction(
+    String userId,
+    TransactionDataModel transaction,
+  ) {
     final userDocRef = _firestore.collection('users').doc(userId);
     final transactionDocRef = _firestore
         .collection('transactions')
@@ -168,7 +171,7 @@ class FirebaseDataSource {
 
     final snapshot = await query.get();
     final transactions = snapshot.docs
-        .map((doc) => TransactionModel.fromMap(doc))
+        .map((doc) => TransactionDataModel.fromMap(doc))
         .toList();
     final lastDocument = snapshot.docs.isNotEmpty ? snapshot.docs.last : null;
 

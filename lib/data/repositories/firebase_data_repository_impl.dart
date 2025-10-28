@@ -1,15 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:bytebank_app/data/datasources/firebase_data_source.dart';
-import 'package:bytebank_app/data/models/paginated_transactions.dart';
-import 'package:bytebank_app/data/models/transaction_data_model.dart';
-import 'package:bytebank_app/domain/entities/transaction_entity.dart';
-import 'package:bytebank_app/domain/entities/transaction_filter_model.dart';
-import 'package:bytebank_app/domain/enums/sort_order.dart';
-import 'package:bytebank_app/domain/repositories/i_transaction_repository.dart';
-import 'package:bytebank_app/domain/repositories/i_user_repository.dart';
+import 'package:mobile_app/data/datasources/firebase_data_source.dart';
+import 'package:mobile_app/data/models/paginated_transactions.dart';
+import 'package:mobile_app/data/models/transaction_data_model.dart';
+import 'package:mobile_app/domain/entities/transaction_entity.dart';
+import 'package:mobile_app/domain/entities/transaction_filter_model.dart';
+import 'package:mobile_app/domain/enums/sort_order.dart';
+import 'package:mobile_app/domain/repositories/i_transaction_repository.dart';
+import 'package:mobile_app/domain/repositories/i_user_repository.dart';
 
-class FirebaseDataRepositoryImpl implements IUserRepository, ITransactionRepository {
+class FirebaseDataRepositoryImpl
+    implements IUserRepository, ITransactionRepository {
   final FirebaseDataSource _dataSource;
 
   FirebaseDataRepositoryImpl(this._dataSource);
@@ -102,6 +103,10 @@ class FirebaseDataRepositoryImpl implements IUserRepository, ITransactionReposit
       date: newTransaction.date,
       receiptUrl: newTransaction.receiptUrl,
     );
-    return _dataSource.updateTransaction(userId, oldTransactionModel, newTransactionModel);
+    return _dataSource.updateTransaction(
+      userId,
+      oldTransactionModel,
+      newTransactionModel,
+    );
   }
 }

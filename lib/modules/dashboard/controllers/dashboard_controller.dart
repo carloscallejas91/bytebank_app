@@ -6,12 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile_app/app/data/enums/transaction_type.dart';
-import 'package:mobile_app/app/data/models/account_model.dart';
 import 'package:mobile_app/app/services/auth_service.dart';
 import 'package:mobile_app/app/services/database_service.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 import 'package:mobile_app/app/utils/date_formatter.dart';
+import 'package:mobile_app/domain/entities/account_entity.dart';
+import 'package:mobile_app/domain/enums/transaction_type.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 import 'package:path_provider/path_provider.dart';
@@ -34,7 +34,7 @@ class DashboardController extends GetxController {
   );
 
   // Models
-  final account = AccountModel().obs;
+  final account = AccountEntity().obs;
 
   // Header
   final userName = ''.obs;
@@ -72,7 +72,7 @@ class DashboardController extends GetxController {
     if (initialUser != null) {
       userName.value = initialUser.displayName ?? 'Usuário';
 
-      account.value = AccountModel(
+      account.value = AccountEntity(
         last4Digits: '4321',
         validity: '12/26',
         accountType: 'Conta Corrente',
@@ -196,7 +196,7 @@ class DashboardController extends GetxController {
         final data = userDoc.data() as Map<String, dynamic>? ?? {};
         totalBalance.value = data['balance']?.toDouble() ?? 0.0;
         userName.value = data['name'] ?? 'Usuário';
-        account.value = AccountModel.fromMap(data);
+        account.value = AccountEntity.fromMap(data);
       }
     });
 

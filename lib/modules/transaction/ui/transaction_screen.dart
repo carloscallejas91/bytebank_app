@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile_app/app/data/enums/sort_order.dart';
-import 'package:mobile_app/app/data/enums/transaction_type.dart';
+import 'package:mobile_app/domain/enums/sort_order.dart';
+import 'package:mobile_app/domain/enums/transaction_type.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
 import 'package:mobile_app/modules/transaction/widgets/transaction_list_item.dart';
 

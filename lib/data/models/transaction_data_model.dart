@@ -1,28 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:bytebank_app/domain/entities/transaction_entity.dart';
-import 'package:bytebank_app/domain/enums/transaction_type.dart';
+import 'package:mobile_app/domain/entities/transaction_entity.dart';
+import 'package:mobile_app/domain/enums/transaction_type.dart';
 
 class TransactionDataModel extends TransactionEntity {
   final DocumentSnapshot? snapshot;
 
   TransactionDataModel({
-    required String id,
-    required TransactionType type,
-    required String description,
-    required String paymentMethod,
-    required double amount,
-    required DateTime date,
-    String? receiptUrl,
+    required super.id,
+    required TransactionType super.type,
+    required super.description,
+    required super.paymentMethod,
+    required super.amount,
+    required super.date,
+    super.receiptUrl,
     this.snapshot,
-  }) : super(
-          id: id,
-          type: type,
-          description: description,
-          paymentMethod: paymentMethod,
-          amount: amount,
-          date: date,
-          receiptUrl: receiptUrl,
-        );
+  });
 
   Map<String, dynamic> toMap(String userId) {
     return {

@@ -1,4 +1,4 @@
-import 'package:bytebank_app/domain/repositories/i_auth_repository.dart';
+import 'package:mobile_app/domain/repositories/i_auth_repository.dart';
 
 class SendPasswordResetEmailUseCase {
   final IAuthRepository _repository;

@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:bytebank_app/domain/repositories/i_user_repository.dart';
+import 'package:mobile_app/domain/repositories/i_user_repository.dart';
 
 class GetUserStreamUseCase {
   final IUserRepository _repository;

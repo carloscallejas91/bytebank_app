@@ -1,5 +1,5 @@
-import 'package:bytebank_app/app/data/models/transaction_model.dart';
-import 'package:bytebank_app/domain/repositories/i_transaction_repository.dart';
+import 'package:mobile_app/data/models/transaction_data_model.dart';
+import 'package:mobile_app/domain/repositories/i_transaction_repository.dart';
 
 class UpdateTransactionUseCase {
   final ITransactionRepository _repository;
@@ -8,9 +8,13 @@ class UpdateTransactionUseCase {
 
   Future<void> call({
     required String userId,
-    required TransactionModel oldTransaction,
-    required TransactionModel newTransaction,
+    required TransactionDataModel oldTransaction,
+    required TransactionDataModel newTransaction,
   }) {
-    return _repository.updateTransaction(userId, oldTransaction, newTransaction);
+    return _repository.updateTransaction(
+      userId,
+      oldTransaction,
+      newTransaction,
+    );
   }
 }

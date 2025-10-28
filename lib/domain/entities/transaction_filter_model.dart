@@ -1,4 +1,4 @@
-import 'package:bytebank_app/domain/enums/transaction_type.dart';
+import 'package:mobile_app/domain/enums/transaction_type.dart';
 
 class TransactionFilter {
   TransactionType? type;

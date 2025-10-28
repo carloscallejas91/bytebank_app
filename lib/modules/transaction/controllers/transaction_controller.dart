@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile_app/app/data/enums/sort_order.dart';
-import 'package:mobile_app/app/data/enums/transaction_type.dart';
-import 'package:mobile_app/app/data/models/transaction_filter_model.dart';
-import 'package:mobile_app/app/data/models/transaction_model.dart';
 import 'package:mobile_app/app/services/database_service.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 import 'package:mobile_app/app/ui/widgets/app_dialogs.dart';
+import 'package:mobile_app/data/models/transaction_data_model.dart';
+import 'package:mobile_app/domain/entities/transaction_filter_model.dart';
+import 'package:mobile_app/domain/enums/sort_order.dart';
+import 'package:mobile_app/domain/enums/transaction_type.dart';
 import 'package:mobile_app/modules/home/widgets/transaction_form_sheet.dart';
 import 'package:mobile_app/modules/transaction/widgets/transaction_options_sheet.dart';
 
@@ -23,7 +23,7 @@ class TransactionController extends GetxController {
   final TextEditingController searchController = TextEditingController();
 
   // List
-  final RxList<TransactionModel> transactions = <TransactionModel>[].obs;
+  final RxList<TransactionDataModel> transactions = <TransactionDataModel>[].obs;
 
   // Pagination
   final int _limit = 6;
@@ -154,7 +154,7 @@ class TransactionController extends GetxController {
     }
   }
 
-  void showOptionsSheet(TransactionModel transaction) {
+  void showOptionsSheet(TransactionDataModel transaction) {
     final theme = Theme.of(Get.context!);
 
     Get.bottomSheet(
@@ -164,7 +164,7 @@ class TransactionController extends GetxController {
     );
   }
 
-  void editTransaction(TransactionModel transactionToEdit) {
+  void editTransaction(TransactionDataModel transactionToEdit) {
     Get.bottomSheet(
       const TransactionFormSheet(),
       backgroundColor: Get.theme.colorScheme.surface,
@@ -173,7 +173,7 @@ class TransactionController extends GetxController {
     );
   }
 
-  void deleteTransaction(TransactionModel transaction) {
+  void deleteTransaction(TransactionDataModel transaction) {
     AppDialogs.showConfirmationDialog(
       title: 'Confirmar exclusão',
       message:
