@@ -1,8 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mobile_app/domain/entities/account_entity.dart';
 
 abstract class IUserRepository {
-  Stream<DocumentSnapshot> getUserStream(String uid);
+  Stream<AccountEntity> getUserStream(String uid);
 
   Future<void> createUserDocument({required User user, required String name});
 

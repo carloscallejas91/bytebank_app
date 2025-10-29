@@ -7,7 +7,7 @@ class TransactionDataModel extends TransactionEntity {
 
   TransactionDataModel({
     required super.id,
-    required TransactionType super.type,
+    required super.type,
     required super.description,
     required super.paymentMethod,
     required super.amount,
@@ -15,6 +15,18 @@ class TransactionDataModel extends TransactionEntity {
     super.receiptUrl,
     this.snapshot,
   });
+
+  factory TransactionDataModel.fromEntity(TransactionEntity entity) {
+    return TransactionDataModel(
+      id: entity.id,
+      type: entity.type,
+      description: entity.description,
+      paymentMethod: entity.paymentMethod,
+      amount: entity.amount,
+      date: entity.date,
+      receiptUrl: entity.receiptUrl,
+    );
+  }
 
   Map<String, dynamic> toMap(String userId) {
     return {

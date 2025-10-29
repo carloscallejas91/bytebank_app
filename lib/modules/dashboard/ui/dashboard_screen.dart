@@ -3,10 +3,10 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:mobile_app/modules/dashboard/widgets/balance_summary_widget.dart';
+import 'package:mobile_app/modules/dashboard/widgets/category_summary_widget.dart';
 import 'package:mobile_app/modules/dashboard/widgets/change_avatar_sheet.dart';
 import 'package:mobile_app/modules/dashboard/widgets/credit_card_widget.dart';
 import 'package:mobile_app/modules/dashboard/widgets/header_widget.dart';
-import 'package:mobile_app/modules/dashboard/widgets/category_summary_widget.dart';
 
 class DashboardScreen extends GetView<DashboardController> {
   const DashboardScreen({super.key});
@@ -28,7 +28,7 @@ class DashboardScreen extends GetView<DashboardController> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 16,
+                spacing: 8,
                 children:
                     [
                           Obx(
@@ -39,7 +39,7 @@ class DashboardScreen extends GetView<DashboardController> {
                               url: controller.userPhotoUrl.value,
                               onAvatarTap: () {
                                 Get.bottomSheet(
-                                  ChangeAvatarSheet(),
+                                  const ChangeAvatarSheet(),
                                   backgroundColor: theme.colorScheme.surface,
                                   isScrollControlled: true,
                                 );
@@ -47,15 +47,20 @@ class DashboardScreen extends GetView<DashboardController> {
                               isAvatarLoading: controller.isAvatarLoading.value,
                             ),
                           ),
-                          Obx(
-                            () => CreditCardWidget(
-                              controller: controller,
-                              number: controller.account.value.last4Digits,
-                              validity: controller.account.value.validity,
-                              accountType: controller.account.value.accountType,
-                              balance: controller.formattedTotalBalance,
-                            ),
-                          ),
+                          Obx(() {
+                            if (controller.account.value != null) {
+                              return CreditCardWidget(
+                                controller: controller,
+                                number: controller.account.value!.last4Digits,
+                                validity: controller.account.value!.validity,
+                                accountType:
+                                    controller.account.value!.accountType,
+                                balance: controller.formattedTotalBalance,
+                              );
+                            } else {
+                              return const SizedBox.shrink();
+                            }
+                          }),
                           BalanceSummaryWidget(controller: controller),
                           Obx(() {
                             if (controller.spendingByCategory.isNotEmpty) {

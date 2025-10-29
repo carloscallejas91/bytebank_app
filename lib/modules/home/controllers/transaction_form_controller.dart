@@ -4,23 +4,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mobile_app/app/services/auth_service.dart';
-import 'package:mobile_app/app/services/database_service.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 import 'package:mobile_app/app/services/storage_service.dart';
-import 'package:mobile_app/data/models/transaction_data_model.dart';
+import 'package:mobile_app/domain/entities/transaction_entity.dart';
 import 'package:mobile_app/domain/enums/transaction_type.dart';
+import 'package:mobile_app/domain/repositories/i_auth_repository.dart';
+import 'package:mobile_app/domain/usecases/add_transaction_usecase.dart';
+import 'package:mobile_app/domain/usecases/update_transaction_usecase.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
-
-
 class TransactionFormController extends GetxController {
   // Services
-  final _databaseService = Get.find<DatabaseService>();
   final _storageService = Get.find<StorageService>();
   final _snackBarService = Get.find<SnackBarService>();
+
+  // Repositories & UseCases
+  final _authRepository = Get.find<IAuthRepository>();
+  final _addTransactionUseCase = Get.find<AddTransactionUseCase>();
+  final _updateTransactionUseCase = Get.find<UpdateTransactionUseCase>();
 
   // Form
   final formKey = GlobalKey<FormState>();
@@ -34,7 +37,7 @@ class TransactionFormController extends GetxController {
   );
 
   // Models
-  final TransactionDataModel? editingTransaction;
+  final TransactionEntity? editingTransaction;
 
   // Form parameters
   final selectedType = TransactionType.expense.obs;
@@ -47,7 +50,6 @@ class TransactionFormController extends GetxController {
     'Pix',
     'Outro',
   ];
-
   final List<String> _incomeMethods = [
     'Salário',
     'Depósito bancário',
@@ -64,19 +66,14 @@ class TransactionFormController extends GetxController {
   final isLoading = false.obs;
 
   // Others
-  final Uuid uuid = Uuid();
+  final Uuid uuid = const Uuid();
 
   // Constructor
   TransactionFormController() : editingTransaction = Get.arguments;
 
-  //================================================================
-  // Lifecycle Methods
-  //================================================================
-
   @override
   void onInit() {
     super.onInit();
-
     if (isEditMode) _prefillForm();
   }
 
@@ -84,37 +81,28 @@ class TransactionFormController extends GetxController {
   void onClose() {
     valueController.dispose();
     descriptionController.dispose();
-
     super.onClose();
   }
-
-  //================================================================
-  // Getters
-  //================================================================
 
   bool get isEditMode => editingTransaction != null;
 
   List<String> get currentPaymentMethods {
-    if (selectedType.value == TransactionType.expense) {
-      return _expenseMethods;
-    } else {
-      return _incomeMethods;
-    }
+    return selectedType.value == TransactionType.expense
+        ? _expenseMethods
+        : _incomeMethods;
   }
-
-  //================================================================
-  // Public Functions
-  //================================================================
 
   void setTransactionType(TransactionType type) {
     if (selectedType.value == type) return;
-
     selectedType.value = type;
     selectedPaymentMethod.value = null;
   }
 
   Future<void> saveTransaction() async {
-    if (_isFormValid()) return;
+    if (formKey.currentState?.validate() != true) return;
+
+    final userId = _authRepository.currentUser?.uid;
+    if (userId == null) return;
 
     isLoading.value = true;
 
@@ -123,16 +111,15 @@ class TransactionFormController extends GetxController {
       final transactionId = editingTransaction?.id ?? uuid.v4();
 
       if (selectedReceipt.value != null) {
-        final userId = Get.find<AuthService>().currentUser!.uid;
-        finalReceiptUrl  = await _storageService.uploadTransactionReceipt(
+        finalReceiptUrl = await _storageService.uploadTransactionReceipt(
           userId: userId,
           transactionId: transactionId,
           file: selectedReceipt.value!,
         );
       }
 
-      final transaction = TransactionDataModel(
-        id: editingTransaction?.id ?? uuid.v4(),
+      final transaction = TransactionEntity(
+        id: transactionId,
         type: selectedType.value,
         amount: valueController.numberValue,
         description: descriptionController.text,
@@ -142,12 +129,16 @@ class TransactionFormController extends GetxController {
       );
 
       if (isEditMode) {
-        await _databaseService.updateTransaction(
-          editingTransaction!,
-          transaction,
+        await _updateTransactionUseCase.call(
+          userId: userId,
+          oldTransaction: editingTransaction!,
+          newTransaction: transaction,
         );
       } else {
-        await _databaseService.addTransaction(transaction);
+        await _addTransactionUseCase.call(
+          userId: userId,
+          transaction: transaction,
+        );
       }
 
       _handleSuccess(isUpdate: isEditMode);
@@ -160,8 +151,10 @@ class TransactionFormController extends GetxController {
 
   Future<void> pickReceipt() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
-
+    final pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 50,
+    );
     if (pickedFile != null) {
       selectedReceipt.value = File(pickedFile.path);
     }
@@ -173,7 +166,10 @@ class TransactionFormController extends GetxController {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri);
       } else {
-        _snackBarService.showError(title: 'Erro', message: 'Não foi possível abrir o link.');
+        _snackBarService.showError(
+          title: 'Erro',
+          message: 'Não foi possível abrir o link.',
+        );
       }
     }
   }
@@ -183,13 +179,8 @@ class TransactionFormController extends GetxController {
     existingReceiptUrl.value = null;
   }
 
-  //================================================================
-  // Private Functions
-  //================================================================
-
   void _prefillForm() {
-    final TransactionDataModel transaction = editingTransaction!;
-
+    final transaction = editingTransaction!;
     valueController.updateValue(transaction.amount);
     descriptionController.text = transaction.description;
     selectedType.value = transaction.type;
@@ -199,14 +190,8 @@ class TransactionFormController extends GetxController {
   }
 
   void _handleSuccess({bool isUpdate = false}) {
-    final transactionListController = Get.find<TransactionController>();
-    transactionListController.refreshTransactions();
-
-    if (isUpdate) {
-      Get.back();
-    } else {
-      _clearForm();
-    }
+    Get.find<TransactionController>().refreshTransactions();
+    Get.back(); // Fecha o BottomSheet em ambos os casos (criação e edição)
 
     _snackBarService.showSuccess(
       title: 'Sucesso!',
@@ -221,21 +206,5 @@ class TransactionFormController extends GetxController {
       title: 'Erro',
       message: 'Não foi possível salvar a transação. Tente novamente.',
     );
-  }
-
-  void _clearForm() {
-    formKey.currentState?.reset();
-    valueController.updateValue(0.0);
-    descriptionController.clear();
-    selectedPaymentMethod.value = null;
-    selectedType.value = TransactionType.expense;
-    selectedReceipt.value = null;
-    existingReceiptUrl.value = null;
-  }
-
-  bool _isFormValid() {
-    if (!formKey.currentState!.validate()) return true;
-
-    return false;
   }
 }

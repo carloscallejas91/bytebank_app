@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_app/app/utils/date_formatter.dart';
-import 'package:mobile_app/data/models/transaction_data_model.dart';
+import 'package:mobile_app/domain/entities/transaction_entity.dart';
 import 'package:mobile_app/domain/enums/transaction_type.dart';
 
 class TransactionListItem extends StatelessWidget {
-  final TransactionDataModel transaction;
+  final TransactionEntity transaction;
   final VoidCallback onTap;
 
   const TransactionListItem({

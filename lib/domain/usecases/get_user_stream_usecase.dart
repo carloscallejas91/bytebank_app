@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mobile_app/domain/entities/account_entity.dart';
 import 'package:mobile_app/domain/repositories/i_user_repository.dart';
 
 class GetUserStreamUseCase {
@@ -6,7 +6,7 @@ class GetUserStreamUseCase {
 
   GetUserStreamUseCase(this._repository);
 
-  Stream<DocumentSnapshot> call(String uid) {
+  Stream<AccountEntity> call(String uid) {
     return _repository.getUserStream(uid);
   }
 }

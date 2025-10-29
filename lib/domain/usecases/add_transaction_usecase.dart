@@ -1,4 +1,4 @@
-import 'package:mobile_app/data/models/transaction_data_model.dart';
+import 'package:mobile_app/domain/entities/transaction_entity.dart';
 import 'package:mobile_app/domain/repositories/i_transaction_repository.dart';
 
 class AddTransactionUseCase {
@@ -8,7 +8,7 @@ class AddTransactionUseCase {
 
   Future<void> call({
     required String userId,
-    required TransactionDataModel transaction,
+    required TransactionEntity transaction,
   }) {
     return _repository.addTransaction(userId, transaction);
   }

@@ -1,19 +1,15 @@
 class AccountEntity {
+  final String name;
+  final double balance;
   final String last4Digits;
   final String validity;
   final String accountType;
 
   AccountEntity({
-    this.last4Digits = '0000',
-    this.validity = '00/00',
-    this.accountType = 'indefinido',
+    required this.name,
+    required this.balance,
+    required this.last4Digits,
+    required this.validity,
+    required this.accountType,
   });
-
-  factory AccountEntity.fromMap(Map<String, dynamic> data) {
-    return AccountEntity(
-      last4Digits: data['account_last4'] ?? '0000',
-      validity: data['account_validity'] ?? '00/00',
-      accountType: data['account_type'] ?? 'indefinido',
-    );
-  }
 }

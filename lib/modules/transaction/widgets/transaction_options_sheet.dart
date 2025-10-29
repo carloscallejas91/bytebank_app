@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile_app/data/models/transaction_data_model.dart';
+import 'package:mobile_app/domain/entities/transaction_entity.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
 
 class TransactionOptionsSheet extends GetView<TransactionController> {
-  final TransactionDataModel transaction;
+  final TransactionEntity transaction;
 
   const TransactionOptionsSheet({
     super.key,

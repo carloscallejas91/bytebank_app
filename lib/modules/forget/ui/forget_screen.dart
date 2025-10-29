@@ -6,7 +6,7 @@ import 'package:mobile_app/app/ui/widgets/custom_text_field.dart';
 import 'package:mobile_app/app/utils/app_validators.dart';
 import 'package:mobile_app/modules/forget/controllers/forget_controller.dart';
 
-class ForgotScreen extends GetView<ForgotController> {
+class ForgotScreen extends GetView<ForgetController> {
   const ForgotScreen({super.key});
 
   @override
@@ -48,7 +48,7 @@ class ForgotScreen extends GetView<ForgotController> {
     return Image.asset(AppAssets.logo);
   }
 
-  Widget _buildForm(ForgotController controller, ThemeData theme) {
+  Widget _buildForm(ForgetController controller, ThemeData theme) {
     return Form(
       key: controller.formKey,
       child: Column(
