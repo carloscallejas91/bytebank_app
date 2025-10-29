@@ -16,6 +16,7 @@ import 'package:mobile_app/domain/usecases/send_password_reset_email_usecase.dar
 import 'package:mobile_app/domain/usecases/sign_in_usecase.dart';
 import 'package:mobile_app/domain/usecases/sign_out_usecase.dart';
 import 'package:mobile_app/domain/usecases/update_transaction_usecase.dart';
+import 'package:mobile_app/modules/splash/controllers/redirect_controller.dart';
 
 class AppBinding extends Bindings {
   @override
@@ -24,7 +25,7 @@ class AppBinding extends Bindings {
     Get.put<SnackBarService>(SnackBarService(), permanent: true);
     Get.put<StorageService>(StorageService(), permanent: true);
 
-    // DataSource
+    // Data
     Get.put<FirebaseDataSource>(FirebaseDataSource(), permanent: true);
 
     // Repositories
@@ -37,19 +38,18 @@ class AppBinding extends Bindings {
     Get.put<IUserRepository>(dataRepository, permanent: true);
     Get.put<ITransactionRepository>(dataRepository, permanent: true);
 
-    // Auth Use Cases
-    Get.lazyPut(() => SignInUseCase(Get.find()));
-    Get.lazyPut(() => CreateUserUseCase(Get.find()));
-    Get.lazyPut(() => SignOutUseCase(Get.find()));
-    Get.lazyPut(() => SendPasswordResetEmailUseCase(Get.find()));
+    // Use Cases
+    Get.lazyPut(() => SignInUseCase(Get.find()), fenix: true);
+    Get.lazyPut(() => CreateUserUseCase(Get.find()), fenix: true);
+    Get.lazyPut(() => SignOutUseCase(Get.find()), fenix: true);
+    Get.lazyPut(() => SendPasswordResetEmailUseCase(Get.find()), fenix: true);
+    Get.lazyPut(() => GetUserStreamUseCase(Get.find()), fenix: true);
+    Get.lazyPut(() => GetTransactionsUseCase(Get.find()), fenix: true);
+    Get.lazyPut(() => AddTransactionUseCase(Get.find()), fenix: true);
+    Get.lazyPut(() => UpdateTransactionUseCase(Get.find()), fenix: true);
+    Get.lazyPut(() => DeleteTransactionUseCase(Get.find()), fenix: true);
 
-    // User Use Cases
-    Get.lazyPut(() => GetUserStreamUseCase(Get.find()));
-
-    // Transaction Use Cases
-    Get.lazyPut(() => GetTransactionsUseCase(Get.find()));
-    Get.lazyPut(() => AddTransactionUseCase(Get.find()));
-    Get.lazyPut(() => UpdateTransactionUseCase(Get.find()));
-    Get.lazyPut(() => DeleteTransactionUseCase(Get.find()));
+    // Controllers
+    Get.put<RedirectController>(RedirectController(), permanent: true);
   }
 }

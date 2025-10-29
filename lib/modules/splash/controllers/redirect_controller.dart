@@ -5,16 +5,14 @@ import 'package:get/get.dart';
 import 'package:mobile_app/app/routes/app_pages.dart';
 import 'package:mobile_app/domain/repositories/i_auth_repository.dart';
 
-class RedirectController extends GetxController {
+class RedirectController extends GetxService {
   final _authRepository = Get.find<IAuthRepository>();
   StreamSubscription<User?>? _userSubscription;
 
   @override
-  void onReady() {
-    super.onReady();
+  void onInit() {
+    super.onInit();
     _userSubscription = _authRepository.userChanges.listen(_handleAuthChanged);
-    // A verificação inicial também é feita pelo listener, pois o `userChanges`
-    // emite o estado atual assim que é ouvido.
   }
 
   @override
@@ -24,12 +22,17 @@ class RedirectController extends GetxController {
   }
 
   void _handleAuthChanged(User? firebaseUser) {
-    // Um pequeno delay para evitar flashes de tela durante a transição inicial
-    Future.delayed(const Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 200), () {
       if (firebaseUser != null) {
-        Get.offAllNamed(Routes.HOME);
+        // Se a rota atual não for a HOME, navega para ela.
+        if (Get.currentRoute != Routes.HOME) {
+          Get.offAllNamed(Routes.HOME);
+        }
       } else {
-        Get.offAllNamed(Routes.AUTH);
+        // Se a rota atual não for a AUTH, navega para ela.
+        if (Get.currentRoute != Routes.AUTH) {
+          Get.offAllNamed(Routes.AUTH);
+        }
       }
     });
   }
