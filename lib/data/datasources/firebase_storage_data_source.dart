@@ -1,10 +1,12 @@
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter/foundation.dart';
 
-class StorageService extends GetxService {
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+class FirebaseStorageDataSource {
+  final FirebaseStorage _storage;
+
+  FirebaseStorageDataSource({FirebaseStorage? storage})
+    : _storage = storage ?? FirebaseStorage.instance;
 
   Future<String> uploadTransactionReceipt({
     required String userId,

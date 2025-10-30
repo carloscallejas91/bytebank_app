@@ -16,7 +16,6 @@ class AppPages {
   static const INITIAL = Routes.SPLASH;
 
   static final List<GetPage<dynamic>> routes = [
-    // GetPage(name: '/', page: () => const RedirectScreen()),
     GetPage(
       name: Routes.SPLASH,
       page: () => const RedirectScreen(),

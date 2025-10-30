@@ -1,10 +1,12 @@
 import 'package:get/get.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
-import 'package:mobile_app/app/services/storage_service.dart';
 import 'package:mobile_app/data/datasources/firebase_data_source.dart';
+import 'package:mobile_app/data/datasources/firebase_storage_data_source.dart';
 import 'package:mobile_app/data/repositories/firebase_auth_repository_impl.dart';
 import 'package:mobile_app/data/repositories/firebase_data_repository_impl.dart';
+import 'package:mobile_app/data/repositories/firebase_storage_repository_impl.dart';
 import 'package:mobile_app/domain/repositories/i_auth_repository.dart';
+import 'package:mobile_app/domain/repositories/i_storage_repository.dart';
 import 'package:mobile_app/domain/repositories/i_transaction_repository.dart';
 import 'package:mobile_app/domain/repositories/i_user_repository.dart';
 import 'package:mobile_app/domain/usecases/add_transaction_usecase.dart';
@@ -16,6 +18,7 @@ import 'package:mobile_app/domain/usecases/send_password_reset_email_usecase.dar
 import 'package:mobile_app/domain/usecases/sign_in_usecase.dart';
 import 'package:mobile_app/domain/usecases/sign_out_usecase.dart';
 import 'package:mobile_app/domain/usecases/update_transaction_usecase.dart';
+import 'package:mobile_app/domain/usecases/upload_receipt_usecase.dart';
 import 'package:mobile_app/modules/splash/controllers/redirect_controller.dart';
 
 class AppBinding extends Bindings {
@@ -23,20 +26,31 @@ class AppBinding extends Bindings {
   void dependencies() {
     // Services
     Get.put<SnackBarService>(SnackBarService(), permanent: true);
-    Get.put<StorageService>(StorageService(), permanent: true);
 
     // Data
     Get.put<FirebaseDataSource>(FirebaseDataSource(), permanent: true);
+    Get.put<FirebaseStorageDataSource>(
+      FirebaseStorageDataSource(),
+      permanent: true,
+    );
 
     // Repositories
     Get.put<IAuthRepository>(
       FirebaseAuthRepositoryImpl(Get.find()),
       permanent: true,
     );
-
-    final dataRepository = FirebaseDataRepositoryImpl(Get.find());
-    Get.put<IUserRepository>(dataRepository, permanent: true);
-    Get.put<ITransactionRepository>(dataRepository, permanent: true);
+    Get.put<IStorageRepository>(
+      FirebaseStorageRepositoryImpl(Get.find()),
+      permanent: true,
+    );
+    Get.put<IUserRepository>(
+      FirebaseDataRepositoryImpl(Get.find()),
+      permanent: true,
+    );
+    Get.put<ITransactionRepository>(
+      FirebaseDataRepositoryImpl(Get.find()),
+      permanent: true,
+    );
 
     // Use Cases
     Get.lazyPut(() => SignInUseCase(Get.find()), fenix: true);
@@ -48,6 +62,7 @@ class AppBinding extends Bindings {
     Get.lazyPut(() => AddTransactionUseCase(Get.find()), fenix: true);
     Get.lazyPut(() => UpdateTransactionUseCase(Get.find()), fenix: true);
     Get.lazyPut(() => DeleteTransactionUseCase(Get.find()), fenix: true);
+    Get.lazyPut(() => UploadReceiptUseCase(Get.find()), fenix: true);
 
     // Controllers
     Get.put<RedirectController>(RedirectController(), permanent: true);

@@ -5,25 +5,25 @@ import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
-import 'package:mobile_app/app/services/storage_service.dart';
 import 'package:mobile_app/domain/entities/transaction_entity.dart';
 import 'package:mobile_app/domain/enums/transaction_type.dart';
 import 'package:mobile_app/domain/repositories/i_auth_repository.dart';
 import 'package:mobile_app/domain/usecases/add_transaction_usecase.dart';
 import 'package:mobile_app/domain/usecases/update_transaction_usecase.dart';
+import 'package:mobile_app/domain/usecases/upload_receipt_usecase.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
 class TransactionFormController extends GetxController {
   // Services
-  final _storageService = Get.find<StorageService>();
   final _snackBarService = Get.find<SnackBarService>();
 
   // Repositories & UseCases
   final _authRepository = Get.find<IAuthRepository>();
   final _addTransactionUseCase = Get.find<AddTransactionUseCase>();
   final _updateTransactionUseCase = Get.find<UpdateTransactionUseCase>();
+  final _uploadReceiptUseCase = Get.find<UploadReceiptUseCase>();
 
   // Form
   final formKey = GlobalKey<FormState>();
@@ -111,7 +111,7 @@ class TransactionFormController extends GetxController {
       final transactionId = editingTransaction?.id ?? uuid.v4();
 
       if (selectedReceipt.value != null) {
-        finalReceiptUrl = await _storageService.uploadTransactionReceipt(
+        finalReceiptUrl = await _uploadReceiptUseCase.call(
           userId: userId,
           transactionId: transactionId,
           file: selectedReceipt.value!,
