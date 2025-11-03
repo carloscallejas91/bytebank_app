@@ -55,7 +55,7 @@ class DashboardScreen extends GetView<DashboardController> {
                                 validity: controller.account.value!.validity,
                                 accountType:
                                     controller.account.value!.accountType,
-                                balance: controller.formattedTotalBalance,
+                                balance: controller.formattedTotalBalance.value,
                               );
                             } else {
                               return const SizedBox.shrink();

@@ -9,40 +9,63 @@ import 'package:intl/intl.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 import 'package:mobile_app/app/utils/date_formatter.dart';
 import 'package:mobile_app/domain/entities/account_entity.dart';
-import 'package:mobile_app/domain/enums/transaction_type.dart';
 import 'package:mobile_app/domain/repositories/i_auth_repository.dart';
+import 'package:mobile_app/domain/usecases/calculate_dashboard_summaries_usecase.dart';
+import 'package:mobile_app/domain/usecases/get_cached_avatar_path_usecase.dart';
 import 'package:mobile_app/domain/usecases/get_user_stream_usecase.dart';
+import 'package:mobile_app/domain/usecases/pick_image_usecase.dart';
+import 'package:mobile_app/domain/usecases/save_avatar_usecase.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:path/path.dart' as p;
 
 class DashboardController extends GetxController {
-  // Services, Repositories & UseCases
+  // Services
   final _snackBarService = Get.find<SnackBarService>();
+
+  // Repositories
   final _authRepository = Get.find<IAuthRepository>();
+
+  // Use Cases
   final _getUserStreamUseCase = Get.find<GetUserStreamUseCase>();
+  final _calculateSummariesUseCase =
+      Get.find<CalculateDashboardSummariesUseCase>();
+  final _saveAvatarUseCase = Get.find<SaveAvatarUseCase>();
+  final _getCachedAvatarPathUseCase = Get.find<GetCachedAvatarPathUseCase>();
+  final _pickImageUseCase = Get.find<PickImageUseCase>();
 
   // Class controllers
   final _transactionController = Get.find<TransactionController>();
 
   // Formatters
-  final currencyFormatter = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\\\$');
+  final currencyFormatter = NumberFormat.currency(
+    locale: 'pt_BR',
+    symbol: 'R\$',
+  );
+  final now = DateFormatter.formatDayOfWeekWithDate();
 
-  // State
+  // Account and User Data
   final Rxn<AccountEntity> account = Rxn<AccountEntity>();
   final userName = ''.obs;
   final userPhotoUrl = ''.obs;
-  final now = DateFormatter.formatDayOfWeekWithDate();
   final totalBalance = 0.0.obs;
+
+  // Monthly Summary Data
+  final selectedMonth = DateTime.now().obs;
   final monthlyIncome = 0.0.obs;
   final monthlyExpenses = 0.0.obs;
-  final selectedMonth = DateTime.now().obs;
   final spendingByCategory = <String, double>{}.obs;
   final incomeByCategory = <String, double>{}.obs;
+
+  // Visibility and Loading Controls
   final isBalanceVisible = false.obs;
   final isAvatarLoading = false.obs;
+
+  // Formatted Reactive Variables
+  final formattedTotalBalance = 'R\$ 0,00'.obs;
+  final formattedMonthlyIncome = 'R\$ 0,00'.obs;
+  final formattedMonthlyExpenses = 'R\$ 0,00'.obs;
+  final formattedMonthlyNetResult = 'R\$ 0,00'.obs;
+  final formattedSelectedMonth = ''.obs;
 
   // Stream Subscriptions
   StreamSubscription<User?>? _authSubscription;
@@ -51,7 +74,9 @@ class DashboardController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _setupFormattedValueListeners();
     _setupDataListeners();
+    _updateFormattedValues();
   }
 
   @override
@@ -61,53 +86,49 @@ class DashboardController extends GetxController {
     super.onClose();
   }
 
-  String get formattedTotalBalance => currencyFormatter.format(totalBalance.value);
-  String get formattedMonthlyIncome => currencyFormatter.format(monthlyIncome.value);
-  String get formattedMonthlyExpenses => currencyFormatter.format(monthlyExpenses.value);
-  String get formattedMonthlyNetResult => currencyFormatter.format(monthlyIncome.value - monthlyExpenses.value);
-  String get formattedSelectedMonth {
-    String formatted = DateFormat('MMMM yyyy', 'pt_BR').format(selectedMonth.value);
-    return formatted[0].toUpperCase() + formatted.substring(1);
-  }
-
+  // UI Actions
   Future<void> pickAndSaveImage(ImageSource source) async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: source, imageQuality: 50);
-    if (pickedFile == null) return;
+    final localFile = await _pickImageUseCase.call(source);
+    if (localFile == null) return;
 
-    isAvatarLoading.value = true;
-    try {
-      final appDir = await getApplicationDocumentsDirectory();
-      final localFile = File(pickedFile.path);
-      final fileName = p.basename(pickedFile.path);
-      final savedImage = await localFile.copy('${appDir.path}/$fileName');
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('user_avatar_path', savedImage.path);
-
-      userPhotoUrl.value = savedImage.path;
-
-      _snackBarService.showSuccess(title: 'Sucesso!', message: 'Avatar atualizado!');
-    } catch (e) {
-      _snackBarService.showError(title: 'Erro', message: 'Não foi possível salvar o avatar.');
-    } finally {
-      isAvatarLoading.value = false;
+    final userId = _authRepository.currentUser?.uid;
+    if (userId == null) {
+      _snackBarService.showError(
+        title: 'Erro',
+        message: 'Usuário não autenticado.',
+      );
+      return;
     }
+
+    await _saveAvatarAndUpdateUI(localFile, userId);
   }
 
   Future<void> selectMonth(BuildContext context) async {
-    final pickedMonth = await showMonthPicker(context: context, initialDate: selectedMonth.value);
+    final pickedMonth = await showMonthPicker(
+      context: context,
+      initialDate: selectedMonth.value,
+    );
     if (pickedMonth != null && pickedMonth != selectedMonth.value) {
       selectedMonth.value = pickedMonth;
     }
   }
 
   void goToPreviousMonth() {
-    selectedMonth.value = DateTime(selectedMonth.value.year, selectedMonth.value.month - 1);
+    selectedMonth.value = DateTime(
+      selectedMonth.value.year,
+      selectedMonth.value.month - 1,
+    );
   }
 
   void goToNextMonth() {
-    selectedMonth.value = DateTime(selectedMonth.value.year, selectedMonth.value.month + 1);
+    selectedMonth.value = DateTime(
+      selectedMonth.value.year,
+      selectedMonth.value.month + 1,
+    );
+  }
+
+  void toggleBalanceVisibility() {
+    isBalanceVisible.toggle();
   }
 
   double calculatePercentage(double value, double otherValue) {
@@ -116,8 +137,43 @@ class DashboardController extends GetxController {
     return value / maxVal;
   }
 
-  void toggleBalanceVisibility() {
-    isBalanceVisible.toggle();
+  // Internal Logic & Private Methods
+  void _setupFormattedValueListeners() {
+    ever(totalBalance, (_) => _updateFormattedBalance());
+    ever(monthlyIncome, (_) => _updateFormattedMonthlyValues());
+    ever(monthlyExpenses, (_) => _updateFormattedMonthlyValues());
+    ever(selectedMonth, (_) => _updateFormattedMonth());
+  }
+
+  void _updateFormattedValues() {
+    _updateFormattedBalance();
+    _updateFormattedMonthlyValues();
+    _updateFormattedMonth();
+  }
+
+  void _updateFormattedBalance() {
+    formattedTotalBalance.value = currencyFormatter.format(totalBalance.value);
+  }
+
+  void _updateFormattedMonthlyValues() {
+    formattedMonthlyIncome.value = currencyFormatter.format(
+      monthlyIncome.value,
+    );
+    formattedMonthlyExpenses.value = currencyFormatter.format(
+      monthlyExpenses.value,
+    );
+    formattedMonthlyNetResult.value = currencyFormatter.format(
+      monthlyIncome.value - monthlyExpenses.value,
+    );
+  }
+
+  void _updateFormattedMonth() {
+    String formatted = DateFormat(
+      'MMMM yyyy',
+      'pt_BR',
+    ).format(selectedMonth.value);
+    formattedSelectedMonth.value =
+        formatted[0].toUpperCase() + formatted.substring(1);
   }
 
   void _setupDataListeners() {
@@ -127,23 +183,47 @@ class DashboardController extends GetxController {
     ever(selectedMonth, (_) => _calculateSummaries());
   }
 
+  void _calculateSummaries() {
+    final summary = _calculateSummariesUseCase.call(
+      transactions: _transactionController.transactions,
+      selectedMonth: selectedMonth.value,
+    );
+
+    monthlyIncome.value = summary.monthlyIncome;
+    monthlyExpenses.value = summary.monthlyExpenses;
+    spendingByCategory.value = summary.spendingByCategory;
+    incomeByCategory.value = summary.incomeByCategory;
+  }
+
   void _onAuthChanged(User? firebaseUser) {
     _userAccountSubscription?.cancel();
 
     if (firebaseUser != null) {
-      userName.value = firebaseUser.displayName ?? 'Usuário';
-      _loadCachedAvatar().then((localPath) {
-        userPhotoUrl.value = localPath ?? firebaseUser.photoURL ?? '';
-      });
-
-      _userAccountSubscription = _getUserStreamUseCase.call(firebaseUser.uid).listen(_onAccountChanged);
+      _handleUserLogin(firebaseUser);
     } else {
-      // Limpar dados do usuário ao fazer logout
-      userName.value = '';
-      userPhotoUrl.value = '';
-      totalBalance.value = 0.0;
-      account.value = null;
+      _handleUserLogout();
     }
+  }
+
+  void _handleUserLogin(User firebaseUser) {
+    _loadUserAvatar(firebaseUser);
+    _userAccountSubscription = _getUserStreamUseCase
+        .call(firebaseUser.uid)
+        .listen(_onAccountChanged);
+  }
+
+  void _handleUserLogout() {
+    userName.value = '';
+    userPhotoUrl.value = '';
+    totalBalance.value = 0.0;
+    account.value = null;
+  }
+
+  Future<void> _loadUserAvatar(User firebaseUser) async {
+    final localPath = await _getCachedAvatarPathUseCase.call(
+      userId: firebaseUser.uid,
+    );
+    userPhotoUrl.value = localPath ?? firebaseUser.photoURL ?? '';
   }
 
   void _onAccountChanged(AccountEntity userAccount) {
@@ -152,35 +232,25 @@ class DashboardController extends GetxController {
     userName.value = userAccount.name;
   }
 
-  Future<String?> _loadCachedAvatar() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('user_avatar_path');
-  }
-
-  void _calculateSummaries() {
-    double income = 0.0;
-    double expenses = 0.0;
-    Map<String, double> spendingTotals = {};
-    Map<String, double> incomeTotals = {};
-
-    final monthlyTransactions = _transactionController.transactions.where((t) {
-      return t.date.year == selectedMonth.value.year && t.date.month == selectedMonth.value.month;
-    });
-
-    for (var t in monthlyTransactions) {
-      final category = t.paymentMethod;
-      if (t.type == TransactionType.income) {
-        income += t.amount;
-        incomeTotals[category] = (incomeTotals[category] ?? 0) + t.amount;
-      } else {
-        expenses += t.amount;
-        spendingTotals[category] = (spendingTotals[category] ?? 0) + t.amount;
-      }
+  Future<void> _saveAvatarAndUpdateUI(File localFile, String userId) async {
+    isAvatarLoading.value = true;
+    try {
+      final savedPath = await _saveAvatarUseCase.call(
+        userId: userId,
+        imageFile: localFile,
+      );
+      userPhotoUrl.value = savedPath;
+      _snackBarService.showSuccess(
+        title: 'Sucesso!',
+        message: 'Avatar atualizado!',
+      );
+    } catch (e) {
+      _snackBarService.showError(
+        title: 'Erro',
+        message: 'Não foi possível salvar o avatar.',
+      );
+    } finally {
+      isAvatarLoading.value = false;
     }
-
-    monthlyIncome.value = income;
-    monthlyExpenses.value = expenses;
-    spendingByCategory.value = spendingTotals;
-    incomeByCategory.value = incomeTotals;
   }
 }

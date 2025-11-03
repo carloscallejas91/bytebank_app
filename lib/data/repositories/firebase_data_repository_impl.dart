@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mobile_app/data/datasources/firebase_data_source.dart';
 import 'package:mobile_app/data/models/account_data_model.dart';
 import 'package:mobile_app/data/models/paginated_transactions.dart';
@@ -10,6 +13,9 @@ import 'package:mobile_app/domain/entities/transaction_filter_model.dart';
 import 'package:mobile_app/domain/enums/sort_order.dart';
 import 'package:mobile_app/domain/repositories/i_transaction_repository.dart';
 import 'package:mobile_app/domain/repositories/i_user_repository.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path/path.dart' as p;
 
 class FirebaseDataRepositoryImpl
     implements IUserRepository, ITransactionRepository {
@@ -33,6 +39,33 @@ class FirebaseDataRepositoryImpl
   @override
   Future<void> updateUserBalance(String uid, double change) {
     return _dataSource.updateUserBalance(uid, change);
+  }
+
+  @override
+  Future<String> saveAvatar({
+    required String userId,
+    required File imageFile,
+  }) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final fileName = p.basename(imageFile.path);
+      final savedImage = await imageFile.copy('${appDir.path}/$fileName');
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_avatar_path_$userId', savedImage.path);
+
+      return savedImage.path;
+    } catch (e) {
+      debugPrint('Falha ao salvar avatar localmente: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String?> getCachedAvatarPath({required String userId}) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    return prefs.getString('user_avatar_path_$userId');
   }
 
   // Transaction Repository

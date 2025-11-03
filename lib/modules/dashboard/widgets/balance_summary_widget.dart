@@ -32,7 +32,7 @@ class BalanceSummaryWidget extends StatelessWidget {
             const SizedBox(height: 8),
             Obx(
               () => Text(
-                controller.formattedMonthlyNetResult,
+                controller.formattedMonthlyNetResult.value,
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -87,7 +87,7 @@ class BalanceSummaryWidget extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
             child: Obx(
               () => Text(
-                controller.formattedSelectedMonth,
+                controller.formattedSelectedMonth.value,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
