@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile_app/app/utils/math_utils.dart'; // Importe a nova classe de utilidades
 import 'package:mobile_app/modules/dashboard/controllers/dashboard_controller.dart';
 
 class BalanceSummaryWidget extends StatelessWidget {
@@ -45,7 +46,7 @@ class BalanceSummaryWidget extends StatelessWidget {
               () => _financialProgressBar(
                 label: 'Entrada',
                 value: controller.monthlyIncome.value,
-                percentage: controller.calculatePercentage(
+                percentage: MathUtils.calculatePercentage(
                   controller.monthlyIncome.value,
                   controller.monthlyExpenses.value,
                 ),
@@ -58,7 +59,7 @@ class BalanceSummaryWidget extends StatelessWidget {
               () => _financialProgressBar(
                 label: 'Saída',
                 value: controller.monthlyExpenses.value,
-                percentage: controller.calculatePercentage(
+                percentage: MathUtils.calculatePercentage(
                   controller.monthlyExpenses.value,
                   controller.monthlyIncome.value,
                 ),
@@ -112,7 +113,6 @@ class BalanceSummaryWidget extends StatelessWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: 8,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -127,15 +127,17 @@ class BalanceSummaryWidget extends StatelessWidget {
             ),
           ],
         ),
+        const SizedBox(height: 8),
         ClipRRect(
           borderRadius: BorderRadius.circular(10),
           child: LinearProgressIndicator(
             value: percentage,
             minHeight: 10,
             valueColor: AlwaysStoppedAnimation<Color>(color),
-            backgroundColor: color.withValues(alpha: 0.2),
+            backgroundColor: color.withAlpha(50),
           ),
         ),
+        const SizedBox(height: 4),
         Align(
           alignment: Alignment.centerRight,
           child: Text(

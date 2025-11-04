@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:mobile_app/app/ui/constants/app_assets.dart';
 import 'package:mobile_app/modules/dashboard/ui/dashboard_screen.dart';
 import 'package:mobile_app/modules/home/controllers/home_controller.dart';
-import 'package:mobile_app/modules/home/widgets/transaction_form_sheet.dart';
+import 'package:mobile_app/modules/transaction_form/ui/transaction_form_sheet.dart';
 import 'package:mobile_app/modules/transaction/ui/transaction_screen.dart';
 
 class HomeScreen extends GetView<HomeController> {
@@ -98,7 +98,7 @@ class HomeScreen extends GetView<HomeController> {
 
   Widget _buildFloatingActionButton(ThemeData theme) {
     return FloatingActionButton(
-      tooltip: 'Adicionar extrato',
+      tooltip: 'Adicionar transação',
       backgroundColor: theme.colorScheme.secondary,
       elevation: 2.0,
       onPressed: () {

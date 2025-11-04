@@ -131,12 +131,6 @@ class DashboardController extends GetxController {
     isBalanceVisible.toggle();
   }
 
-  double calculatePercentage(double value, double otherValue) {
-    final maxVal = (value + otherValue);
-    if (maxVal == 0) return 0.0;
-    return value / maxVal;
-  }
-
   // Internal Logic & Private Methods
   void _setupFormattedValueListeners() {
     ever(totalBalance, (_) => _updateFormattedBalance());
@@ -176,28 +170,36 @@ class DashboardController extends GetxController {
         formatted[0].toUpperCase() + formatted.substring(1);
   }
 
+  Future<void> _saveAvatarAndUpdateUI(File localFile, String userId) async {
+    isAvatarLoading.value = true;
+    try {
+      final savedPath = await _saveAvatarUseCase.call(
+        userId: userId,
+        imageFile: localFile,
+      );
+      userPhotoUrl.value = savedPath;
+      _snackBarService.showSuccess(
+        title: 'Sucesso!',
+        message: 'Avatar atualizado!',
+      );
+    } catch (e) {
+      _snackBarService.showError(
+        title: 'Erro',
+        message: 'Não foi possível salvar o avatar.',
+      );
+    } finally {
+      isAvatarLoading.value = false;
+    }
+  }
+
   void _setupDataListeners() {
     _authSubscription = _authRepository.userChanges.listen(_onAuthChanged);
-
     ever(_transactionController.transactions, (_) => _calculateSummaries());
     ever(selectedMonth, (_) => _calculateSummaries());
   }
 
-  void _calculateSummaries() {
-    final summary = _calculateSummariesUseCase.call(
-      transactions: _transactionController.transactions,
-      selectedMonth: selectedMonth.value,
-    );
-
-    monthlyIncome.value = summary.monthlyIncome;
-    monthlyExpenses.value = summary.monthlyExpenses;
-    spendingByCategory.value = summary.spendingByCategory;
-    incomeByCategory.value = summary.incomeByCategory;
-  }
-
   void _onAuthChanged(User? firebaseUser) {
     _userAccountSubscription?.cancel();
-
     if (firebaseUser != null) {
       _handleUserLogin(firebaseUser);
     } else {
@@ -232,25 +234,15 @@ class DashboardController extends GetxController {
     userName.value = userAccount.name;
   }
 
-  Future<void> _saveAvatarAndUpdateUI(File localFile, String userId) async {
-    isAvatarLoading.value = true;
-    try {
-      final savedPath = await _saveAvatarUseCase.call(
-        userId: userId,
-        imageFile: localFile,
-      );
-      userPhotoUrl.value = savedPath;
-      _snackBarService.showSuccess(
-        title: 'Sucesso!',
-        message: 'Avatar atualizado!',
-      );
-    } catch (e) {
-      _snackBarService.showError(
-        title: 'Erro',
-        message: 'Não foi possível salvar o avatar.',
-      );
-    } finally {
-      isAvatarLoading.value = false;
-    }
+  void _calculateSummaries() {
+    final summary = _calculateSummariesUseCase.call(
+      transactions: _transactionController.transactions,
+      selectedMonth: selectedMonth.value,
+    );
+
+    monthlyIncome.value = summary.monthlyIncome;
+    monthlyExpenses.value = summary.monthlyExpenses;
+    spendingByCategory.value = summary.spendingByCategory;
+    incomeByCategory.value = summary.incomeByCategory;
   }
 }

@@ -12,17 +12,15 @@ import 'package:mobile_app/domain/enums/transaction_type.dart';
 import 'package:mobile_app/domain/repositories/i_auth_repository.dart';
 import 'package:mobile_app/domain/usecases/delete_transaction_usecase.dart';
 import 'package:mobile_app/domain/usecases/get_transactions_usecase.dart';
-import 'package:mobile_app/modules/home/widgets/transaction_form_sheet.dart';
+import 'package:mobile_app/modules/transaction_form/ui/transaction_form_sheet.dart';
 import 'package:mobile_app/modules/transaction/widgets/transaction_options_sheet.dart';
 
 class TransactionController extends GetxController {
-  // Services
-  final _snackBarService = Get.find<SnackBarService>();
-
   // Repositories & UseCases
   final _authRepository = Get.find<IAuthRepository>();
   final _getTransactionsUseCase = Get.find<GetTransactionsUseCase>();
   final _deleteTransactionUseCase = Get.find<DeleteTransactionUseCase>();
+  final _snackBarService = Get.find<SnackBarService>();
 
   // UI Controllers
   final ScrollController scrollController = ScrollController();
@@ -78,10 +76,7 @@ class TransactionController extends GetxController {
       transactions.assignAll(pageResult.transactions);
       hasMore.value = pageResult.transactions.length == 10;
     } catch (e) {
-      _snackBarService.showError(
-        title: 'Erro',
-        message: 'Não foi possível buscar as transações.',
-      );
+      _snackBarService.showError(title: 'Erro', message: 'Não foi possível buscar as transações.');
     } finally {
       isLoadingMore.value = false;
     }
@@ -106,10 +101,7 @@ class TransactionController extends GetxController {
       }
       hasMore.value = pageResult.transactions.length == 10;
     } catch (e) {
-      _snackBarService.showError(
-        title: 'Erro',
-        message: 'Não foi possível buscar mais transações.',
-      );
+      _snackBarService.showError(title: 'Erro', message: 'Não foi possível buscar mais transações.');
     } finally {
       isLoadingMore.value = false;
     }
@@ -121,29 +113,19 @@ class TransactionController extends GetxController {
 
     AppDialogs.showConfirmationDialog(
       title: 'Confirmar exclusão',
-      message:
-          'Você tem certeza que deseja excluir esta transação? Esta ação não poderá ser desfeita.',
+      message: 'Você tem certeza que deseja excluir esta transação? Esta ação não poderá ser desfeita.',
       onConfirm: () async {
         try {
-          await _deleteTransactionUseCase.call(
-            userId: userId,
-            transaction: transaction,
-          );
+          await _deleteTransactionUseCase.call(userId: userId, transaction: transaction);
           transactions.removeWhere((t) => t.id == transaction.id);
-          _snackBarService.showSuccess(
-            title: 'Sucesso!',
-            message: 'Transação deletada.',
-          );
+          _snackBarService.showSuccess(title: 'Sucesso!', message: 'Transação deletada.');
         } catch (e) {
-          _snackBarService.showError(
-            title: 'Erro',
-            message: 'Não foi possível deletar a transação.',
-          );
+          _snackBarService.showError(title: 'Erro', message: 'Não foi possível deletar a transação.');
         }
       },
     );
   }
-
+  
   void toggleTypeFilter(TransactionType type) {
     if (filter.value.type == type) {
       filter.value.type = null;
@@ -155,9 +137,7 @@ class TransactionController extends GetxController {
   }
 
   void toggleSortOrder() {
-    sortOrder.value = (sortOrder.value == SortOrder.desc)
-        ? SortOrder.asc
-        : SortOrder.desc;
+    sortOrder.value = (sortOrder.value == SortOrder.desc) ? SortOrder.asc : SortOrder.desc;
     refreshTransactions();
   }
 
@@ -173,7 +153,15 @@ class TransactionController extends GetxController {
       const TransactionFormSheet(),
       backgroundColor: Get.theme.colorScheme.surface,
       isScrollControlled: true,
-      settings: RouteSettings(arguments: transactionToEdit),
+      settings: RouteSettings(
+        arguments: {
+          'transaction': transactionToEdit,
+          'onSaveSuccess': () {
+            // A ação de callback é simplesmente atualizar a lista
+            refreshTransactions();
+          },
+        },
+      ),
     );
   }
 
@@ -182,8 +170,7 @@ class TransactionController extends GetxController {
   }
 
   void _scrollListener() {
-    if (scrollController.position.pixels >=
-        scrollController.position.maxScrollExtent - 200) {
+    if (scrollController.position.pixels >= scrollController.position.maxScrollExtent - 200) {
       fetchNextPage();
     }
   }

@@ -4,15 +4,30 @@ import 'package:mobile_app/app/ui/widgets/custom_button.dart';
 import 'package:mobile_app/app/ui/widgets/custom_text_field.dart';
 import 'package:mobile_app/app/utils/app_validators.dart';
 import 'package:mobile_app/domain/enums/transaction_type.dart';
-import 'package:mobile_app/modules/home/controllers/transaction_form_controller.dart';
+import 'package:mobile_app/modules/transaction_form/controllers/transaction_form_controller.dart';
 import 'package:path/path.dart' as p;
 
-class TransactionFormSheet extends StatelessWidget {
+class TransactionFormSheet extends GetView<TransactionFormController> {
   const TransactionFormSheet({super.key});
+
+  static final List<String> _expenseMethods = [
+    'Boleto',
+    'Cartão de débito',
+    'Cartão de crédito',
+    'Pix',
+    'Outro',
+  ];
+
+  static final List<String> _incomeMethods = [
+    'Salário',
+    'Depósito bancário',
+    'Reembolso',
+    'Pix',
+    'Outro',
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(TransactionFormController());
     final theme = Theme.of(context);
 
     return SingleChildScrollView(
@@ -90,9 +105,14 @@ class TransactionFormSheet extends StatelessWidget {
     return Obx(() {
       final isExpense =
           controller.selectedType.value == TransactionType.expense;
+
+      final currentPaymentMethods = isExpense
+          ? _expenseMethods
+          : _incomeMethods;
+
       return DropdownButtonFormField<String>(
         key: ValueKey('payment_method_${controller.selectedType.value}'),
-        initialValue: controller.selectedPaymentMethod.value,
+        value: controller.selectedPaymentMethod.value,
         hint: Text(
           isExpense
               ? 'Boleto, Cartão de débito, etc...'
@@ -104,7 +124,7 @@ class TransactionFormSheet extends StatelessWidget {
             isExpense ? Icons.payment_outlined : Icons.source_outlined,
           ),
         ),
-        items: controller.currentPaymentMethods
+        items: currentPaymentMethods
             .map(
               (method) => DropdownMenuItem(value: method, child: Text(method)),
             )
@@ -153,8 +173,7 @@ class TransactionFormSheet extends StatelessWidget {
             ),
           ],
         );
-      }
-      else if (controller.existingReceiptUrl.value != null &&
+      } else if (controller.existingReceiptUrl.value != null &&
           controller.existingReceiptUrl.value!.isNotEmpty) {
         return Row(
           children: [
@@ -171,11 +190,13 @@ class TransactionFormSheet extends StatelessWidget {
             ),
           ],
         );
-      }
-      else {
+      } else {
         return OutlinedButton.icon(
-          icon: Icon(Icons.attach_file, color: theme.colorScheme.onSurface,),
-          label: Text('Anexar', style: TextStyle(color: theme.colorScheme.onSurface),),
+          icon: Icon(Icons.attach_file, color: theme.colorScheme.onSurface),
+          label: Text(
+            'Anexar',
+            style: TextStyle(color: theme.colorScheme.onSurface),
+          ),
           onPressed: controller.pickReceipt,
         );
       }

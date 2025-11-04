@@ -8,27 +8,31 @@ import 'package:mobile_app/app/services/snack_bar_service.dart';
 import 'package:mobile_app/domain/entities/transaction_entity.dart';
 import 'package:mobile_app/domain/enums/transaction_type.dart';
 import 'package:mobile_app/domain/repositories/i_auth_repository.dart';
-import 'package:mobile_app/domain/usecases/add_transaction_usecase.dart';
-import 'package:mobile_app/domain/usecases/update_transaction_usecase.dart';
+import 'package:mobile_app/domain/usecases/generate_id_usecase.dart';
+import 'package:mobile_app/domain/usecases/launch_url_usecase.dart';
+import 'package:mobile_app/domain/usecases/pick_image_usecase.dart';
+import 'package:mobile_app/domain/usecases/save_transaction_usecase.dart';
 import 'package:mobile_app/domain/usecases/upload_receipt_usecase.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:uuid/uuid.dart';
 
 class TransactionFormController extends GetxController {
   // Services
   final _snackBarService = Get.find<SnackBarService>();
 
-  // Repositories & UseCases
+  // Repositories
   final _authRepository = Get.find<IAuthRepository>();
-  final _addTransactionUseCase = Get.find<AddTransactionUseCase>();
-  final _updateTransactionUseCase = Get.find<UpdateTransactionUseCase>();
-  final _uploadReceiptUseCase = Get.find<UploadReceiptUseCase>();
 
-  // Form
+  // Use Cases
+  final _uploadReceiptUseCase = Get.find<UploadReceiptUseCase>();
+  final _pickImageUseCase = Get.find<PickImageUseCase>();
+  final _launchUrlUseCase = Get.find<LaunchUrlUseCase>();
+  final _generateIdUseCase = Get.find<GenerateIdUseCase>();
+  final _saveTransactionUseCase = Get.find<SaveTransactionUseCase>();
+
+  // Form Key
   final formKey = GlobalKey<FormState>();
 
-  // Controllers
+  // Text Editing Controllers
   final descriptionController = TextEditingController();
   final valueController = MoneyMaskedTextController(
     decimalSeparator: ',',
@@ -36,40 +40,23 @@ class TransactionFormController extends GetxController {
     leftSymbol: 'R\$ ',
   );
 
-  // Models
+  // Arguments
   final TransactionEntity? editingTransaction;
 
-  // Form parameters
+  // Form State
   final selectedType = TransactionType.expense.obs;
   final selectedPaymentMethod = RxnString();
-
-  final List<String> _expenseMethods = [
-    'Boleto',
-    'Cartão de débito',
-    'Cartão de crédito',
-    'Pix',
-    'Outro',
-  ];
-  final List<String> _incomeMethods = [
-    'Salário',
-    'Depósito bancário',
-    'Reembolso',
-    'Pix',
-    'Outro',
-  ];
-
-  // File
   final Rxn<File> selectedReceipt = Rxn<File>();
   final RxnString existingReceiptUrl = RxnString();
 
-  // Conditionals
+  // UI State
   final isLoading = false.obs;
 
-  // Others
-  final Uuid uuid = const Uuid();
-
   // Constructor
-  TransactionFormController() : editingTransaction = Get.arguments;
+  TransactionFormController()
+    : editingTransaction = (Get.arguments is Map
+          ? Get.arguments['transaction']
+          : null);
 
   @override
   void onInit() {
@@ -86,12 +73,7 @@ class TransactionFormController extends GetxController {
 
   bool get isEditMode => editingTransaction != null;
 
-  List<String> get currentPaymentMethods {
-    return selectedType.value == TransactionType.expense
-        ? _expenseMethods
-        : _incomeMethods;
-  }
-
+  // UI Actions
   void setTransactionType(TransactionType type) {
     if (selectedType.value == type) return;
     selectedType.value = type;
@@ -107,39 +89,15 @@ class TransactionFormController extends GetxController {
     isLoading.value = true;
 
     try {
-      String? finalReceiptUrl = existingReceiptUrl.value;
-      final transactionId = editingTransaction?.id ?? uuid.v4();
+      final transactionId = editingTransaction?.id ?? _generateIdUseCase.call();
+      final receiptUrl = await _uploadReceiptIfNeeded(userId, transactionId);
+      final transaction = _createTransactionEntity(transactionId, receiptUrl);
 
-      if (selectedReceipt.value != null) {
-        finalReceiptUrl = await _uploadReceiptUseCase.call(
-          userId: userId,
-          transactionId: transactionId,
-          file: selectedReceipt.value!,
-        );
-      }
-
-      final transaction = TransactionEntity(
-        id: transactionId,
-        type: selectedType.value,
-        amount: valueController.numberValue,
-        description: descriptionController.text,
-        paymentMethod: selectedPaymentMethod.value!,
-        receiptUrl: finalReceiptUrl,
-        date: editingTransaction?.date ?? DateTime.now(),
+      await _saveTransactionUseCase.call(
+        userId: userId,
+        transaction: transaction,
+        oldTransaction: editingTransaction,
       );
-
-      if (isEditMode) {
-        await _updateTransactionUseCase.call(
-          userId: userId,
-          oldTransaction: editingTransaction!,
-          newTransaction: transaction,
-        );
-      } else {
-        await _addTransactionUseCase.call(
-          userId: userId,
-          transaction: transaction,
-        );
-      }
 
       _handleSuccess(isUpdate: isEditMode);
     } catch (e) {
@@ -150,25 +108,20 @@ class TransactionFormController extends GetxController {
   }
 
   Future<void> pickReceipt() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 50,
-    );
+    final pickedFile = await _pickImageUseCase.call(ImageSource.gallery);
     if (pickedFile != null) {
-      selectedReceipt.value = File(pickedFile.path);
+      selectedReceipt.value = pickedFile;
     }
   }
 
   Future<void> viewReceipt() async {
     if (existingReceiptUrl.value != null) {
-      final uri = Uri.parse(existingReceiptUrl.value!);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
-      } else {
+      try {
+        await _launchUrlUseCase.call(existingReceiptUrl.value!);
+      } catch (e) {
         _snackBarService.showError(
           title: 'Erro',
-          message: 'Não foi possível abrir o link.',
+          message: 'Não foi possível abrir o comprovante.',
         );
       }
     }
@@ -179,6 +132,7 @@ class TransactionFormController extends GetxController {
     existingReceiptUrl.value = null;
   }
 
+  // Internal Logic & Private Methods
   void _prefillForm() {
     final transaction = editingTransaction!;
     valueController.updateValue(transaction.amount);
@@ -189,9 +143,38 @@ class TransactionFormController extends GetxController {
     selectedReceipt.value = null;
   }
 
+  Future<String?> _uploadReceiptIfNeeded(
+    String userId,
+    String transactionId,
+  ) async {
+    if (selectedReceipt.value != null) {
+      return await _uploadReceiptUseCase.call(
+        userId: userId,
+        transactionId: transactionId,
+        file: selectedReceipt.value!,
+      );
+    }
+    return existingReceiptUrl.value;
+  }
+
+  TransactionEntity _createTransactionEntity(String id, String? receiptUrl) {
+    return TransactionEntity(
+      id: id,
+      type: selectedType.value,
+      amount: valueController.numberValue,
+      description: descriptionController.text,
+      paymentMethod: selectedPaymentMethod.value!,
+      receiptUrl: receiptUrl,
+      date: editingTransaction?.date ?? DateTime.now(),
+    );
+  }
+
   void _handleSuccess({bool isUpdate = false}) {
-    Get.find<TransactionController>().refreshTransactions();
-    Get.back(); // Fecha o BottomSheet em ambos os casos (criação e edição)
+    if (Get.isRegistered<TransactionController>()) {
+      Get.find<TransactionController>().refreshTransactions();
+    }
+
+    Get.back();
 
     _snackBarService.showSuccess(
       title: 'Sucesso!',
