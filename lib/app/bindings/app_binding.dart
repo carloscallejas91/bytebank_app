@@ -35,7 +35,7 @@ import 'package:mobile_app/domain/usecases/toggle_sort_order_usecase.dart';
 import 'package:mobile_app/domain/usecases/toggle_transaction_type_filter_usecase.dart';
 import 'package:mobile_app/domain/usecases/update_transaction_usecase.dart';
 import 'package:mobile_app/domain/usecases/upload_receipt_usecase.dart';
-import 'package:mobile_app/modules/splash/controllers/redirect_controller.dart';
+import 'package:mobile_app/modules/redirect/controllers/redirect_controller.dart';
 
 class AppBinding extends Bindings {
   @override

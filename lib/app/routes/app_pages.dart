@@ -7,9 +7,8 @@ import 'package:mobile_app/modules/forget/forget_binding.dart';
 import 'package:mobile_app/modules/forget/ui/forget_screen.dart';
 import 'package:mobile_app/modules/home/home_binding.dart';
 import 'package:mobile_app/modules/home/ui/home_screen.dart';
-import 'package:mobile_app/modules/splash/bindings/redirect_binding.dart';
-import 'package:mobile_app/modules/splash/ui/redirect_screen.dart';
-
+import 'package:mobile_app/modules/redirect/bindings/redirect_binding.dart';
+import 'package:mobile_app/modules/redirect/ui/redirect_screen.dart';
 part 'app_routes.dart';
 
 class AppPages {
