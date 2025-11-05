@@ -12,9 +12,9 @@ import 'package:mobile_app/domain/repositories/i_auth_repository.dart';
 import 'package:mobile_app/domain/repositories/i_id_generator_repository.dart';
 import 'package:mobile_app/domain/repositories/i_image_picker_repository.dart';
 import 'package:mobile_app/domain/repositories/i_storage_repository.dart';
-import 'package:mobile_app/domain/repositories/i_transaction_repository.dart';
 import 'package:mobile_app/domain/repositories/i_url_launcher_repository.dart';
 import 'package:mobile_app/domain/repositories/i_user_repository.dart';
+import 'package:mobile_app/domain/repositories/i_transaction_repository.dart';
 import 'package:mobile_app/domain/usecases/add_transaction_usecase.dart';
 import 'package:mobile_app/domain/usecases/calculate_dashboard_summaries_usecase.dart';
 import 'package:mobile_app/domain/usecases/create_user_usecase.dart';
@@ -30,6 +30,8 @@ import 'package:mobile_app/domain/usecases/save_transaction_usecase.dart';
 import 'package:mobile_app/domain/usecases/send_password_reset_email_usecase.dart';
 import 'package:mobile_app/domain/usecases/sign_in_usecase.dart';
 import 'package:mobile_app/domain/usecases/sign_out_usecase.dart';
+import 'package:mobile_app/domain/usecases/toggle_sort_order_usecase.dart';
+import 'package:mobile_app/domain/usecases/toggle_transaction_type_filter_usecase.dart';
 import 'package:mobile_app/domain/usecases/update_transaction_usecase.dart';
 import 'package:mobile_app/domain/usecases/upload_receipt_usecase.dart';
 import 'package:mobile_app/modules/splash/controllers/redirect_controller.dart';
@@ -95,6 +97,8 @@ class AppBinding extends Bindings {
       fenix: true,
     );
     Get.lazyPut(() => UploadReceiptUseCase(Get.find()), fenix: true);
+    Get.lazyPut(() => ToggleTransactionTypeFilterUseCase(), fenix: true);
+    Get.lazyPut(() => ToggleSortOrderUseCase(), fenix: true);
 
     // Use Cases - Dashboard
     Get.lazyPut(() => CalculateDashboardSummariesUseCase(), fenix: true);
