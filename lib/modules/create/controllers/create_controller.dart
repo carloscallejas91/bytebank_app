@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 import 'package:mobile_app/domain/usecases/create_user_usecase.dart';
+import 'package:mobile_app/domain/usecases/map_auth_exception_to_message_usecase.dart';
 
 class CreateController extends GetxController {
   // Services
@@ -10,11 +12,13 @@ class CreateController extends GetxController {
 
   // Use Cases
   final _createUserUseCase = Get.find<CreateUserUseCase>();
+  final _mapAuthExceptionToMessageUseCase =
+      Get.find<MapAuthExceptionToMessageUseCase>();
 
-  // Form
+  // Form Key
   final formKey = GlobalKey<FormState>();
 
-  // Text Controllers
+  // Text Editing Controllers
   final nameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -34,6 +38,15 @@ class CreateController extends GetxController {
     super.onClose();
   }
 
+  // UI Actions
+  void togglePasswordVisibility() {
+    isPasswordHidden.toggle();
+  }
+
+  void toggleConfirmPasswordVisibility() {
+    isConfirmPasswordHidden.toggle();
+  }
+
   Future<void> createAccount() async {
     if (formKey.currentState?.validate() != true) {
       return;
@@ -41,6 +54,13 @@ class CreateController extends GetxController {
 
     isLoading.value = true;
 
+    await _executeCreateUserLogic();
+
+    isLoading.value = false;
+  }
+
+  // Internal Logic & Private Methods
+  Future<void> _executeCreateUserLogic() async {
     try {
       final user = await _createUserUseCase.call(
         name: nameController.text,
@@ -49,34 +69,38 @@ class CreateController extends GetxController {
       );
 
       if (user != null) {
-        Get.back(); // Volta para a tela de login
-        _snackBarService.showSuccess(
-          title: 'Sucesso!',
-          message: 'Sua conta foi criada. Realize o login para continuar.',
-        );
+        _handleAccountCreationSuccess(user);
       }
     } on FirebaseAuthException catch (e) {
-      debugPrint(e.message);
+      _handleAccountCreationError(e);
+    } catch (e) {
+      _handleAccountCreationError(e);
+    }
+  }
+
+  void _handleAccountCreationSuccess(User user) {
+    Get.back();
+
+    _snackBarService.showSuccess(
+      title: 'Sucesso!',
+      message: 'Sua conta foi criada. Realize o login para continuar.',
+    );
+  }
+
+  void _handleAccountCreationError(dynamic e) {
+    if (e is FirebaseAuthException) {
+      debugPrint('FirebaseAuthException: ${e.code} - ${e.message}');
+      final errorMessage = _mapAuthExceptionToMessageUseCase.call(e);
       _snackBarService.showError(
         title: 'Erro ao Criar Conta',
-        message: 'Ocorreu um erro, verifique os dados e tente novamente!',
+        message: errorMessage,
       );
-    } catch (e) {
-      debugPrint('Falha inesperada ao criar conta: $e');
+    } else {
+      debugPrint('Erro inesperado: $e');
       _snackBarService.showError(
         title: 'Erro Inesperado',
         message: 'Não foi possível criar sua conta. Tente mais tarde.',
       );
-    } finally {
-      isLoading.value = false;
     }
-  }
-
-  void togglePasswordVisibility() {
-    isPasswordHidden.toggle();
-  }
-
-  void toggleConfirmPasswordVisibility() {
-    isConfirmPasswordHidden.toggle();
   }
 }
