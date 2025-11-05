@@ -12,6 +12,7 @@ class HomeController extends GetxController {
   // State
   final RxInt selectedIndex = 0.obs;
 
+  // UI Actions
   void changePage(int index) {
     selectedIndex.value = index;
   }

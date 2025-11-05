@@ -1,30 +1,56 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
+import 'package:mobile_app/domain/repositories/i_auth_repository.dart';
+import 'package:mobile_app/domain/usecases/map_auth_exception_to_message_usecase.dart';
 import 'package:mobile_app/domain/usecases/sign_in_usecase.dart';
 
 class AuthController extends GetxController {
-  // Services & UseCases
+  // Services
   final _snackBarService = Get.find<SnackBarService>();
+
+  // Repositories
+  final _authRepository = Get.find<IAuthRepository>();
+
+  // Use Cases
   final _signInUseCase = Get.find<SignInUseCase>();
+  final _mapAuthExceptionToMessageUseCase =
+      Get.find<MapAuthExceptionToMessageUseCase>();
+
+  // UI State
+  final isLoading = false.obs;
+  final isPasswordHidden = true.obs;
 
   // Form
   final formKey = GlobalKey<FormState>();
 
-  // Controllers
+  // Text Editing Controllers
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
 
-  // Conditionals
-  final isLoading = false.obs;
-  final isPasswordHidden = true.obs;
+  // Stream Subscriptions
+  StreamSubscription<User?>? _userSubscription;
+
+  @override
+  void onReady() {
+    super.onReady();
+    _userSubscription = _authRepository.userChanges.listen(_handleAuthChanged);
+  }
 
   @override
   void onClose() {
+    _userSubscription?.cancel();
     emailController.dispose();
     passwordController.dispose();
     super.onClose();
+  }
+
+  // UI Actions
+  void togglePasswordVisibility() {
+    isPasswordHidden.toggle();
   }
 
   Future<void> signInWithEmail() async {
@@ -39,18 +65,19 @@ class AuthController extends GetxController {
         email: emailController.text,
         password: passwordController.text,
       );
-      // Se o login for bem-sucedido, o RedirectController (que ainda está ouvindo)
-      // detectará a mudança de estado e redirecionará para a home.
+
       if (user != null) {
         _clearForm();
       }
     } on FirebaseAuthException catch (e) {
-      debugPrint(e.message);
+      debugPrint('FirebaseAuthException: ${e.code} - ${e.message}');
+      final errorMessage = _mapAuthExceptionToMessageUseCase.call(e);
       _snackBarService.showError(
         title: 'Erro de Autenticação',
-        message: 'Ocorreu um erro, tente novamente!',
+        message: errorMessage,
       );
     } catch (e) {
+      debugPrint('Erro inesperado: $e');
       _snackBarService.showError(
         title: 'Erro Inesperado',
         message: 'Ocorreu um erro ao tentar fazer login.',
@@ -60,8 +87,11 @@ class AuthController extends GetxController {
     }
   }
 
-  void togglePasswordVisibility() {
-    isPasswordHidden.value = !isPasswordHidden.value;
+  // Internal Logic & Private Methods
+  void _handleAuthChanged(User? firebaseUser) {
+    if (firebaseUser != null) {
+      _clearForm();
+    }
   }
 
   void _clearForm() {

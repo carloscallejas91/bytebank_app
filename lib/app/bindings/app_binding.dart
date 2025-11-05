@@ -24,6 +24,7 @@ import 'package:mobile_app/domain/usecases/get_cached_avatar_path_usecase.dart';
 import 'package:mobile_app/domain/usecases/get_transactions_usecase.dart';
 import 'package:mobile_app/domain/usecases/get_user_stream_usecase.dart';
 import 'package:mobile_app/domain/usecases/launch_url_usecase.dart';
+import 'package:mobile_app/domain/usecases/map_auth_exception_to_message_usecase.dart';
 import 'package:mobile_app/domain/usecases/pick_image_usecase.dart';
 import 'package:mobile_app/domain/usecases/save_avatar_usecase.dart';
 import 'package:mobile_app/domain/usecases/save_transaction_usecase.dart';
@@ -81,6 +82,7 @@ class AppBinding extends Bindings {
     Get.lazyPut(() => CreateUserUseCase(Get.find()), fenix: true);
     Get.lazyPut(() => SignOutUseCase(Get.find()), fenix: true);
     Get.lazyPut(() => SendPasswordResetEmailUseCase(Get.find()), fenix: true);
+    Get.lazyPut(() => MapAuthExceptionToMessageUseCase(), fenix: true);
 
     // Use Cases - User & Avatar
     Get.lazyPut(() => GetUserStreamUseCase(Get.find()), fenix: true);
