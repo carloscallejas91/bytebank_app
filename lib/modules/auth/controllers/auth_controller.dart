@@ -64,7 +64,6 @@ class AuthController extends GetxController {
     isLoading.value = false;
   }
 
-  // Navigation Actions
   void navigateToCreateAccount() {
     Get.toNamed(Routes.CREATE_ACCOUNT);
   }
@@ -91,7 +90,6 @@ class AuthController extends GetxController {
   }
 
   void _handleSignInSuccess() {
-    // A navegação é gerenciada pelo RedirectController, então aqui só limpamos o formulário.
     _clearForm();
   }
 
