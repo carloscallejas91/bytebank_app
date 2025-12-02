@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mobile_app/modules/dashboard/controllers/dashboard_controller.dart';
 
-class ChangeAvatarSheet extends GetView<DashboardController> {
-  const ChangeAvatarSheet({super.key});
+class ChangeAvatarSheet extends StatelessWidget {
+  final ValueChanged<ImageSource> onPickImage; // Callback para a ação
+
+  const ChangeAvatarSheet({super.key, required this.onPickImage});
 
   @override
   Widget build(BuildContext context) {
@@ -16,16 +16,16 @@ class ChangeAvatarSheet extends GetView<DashboardController> {
             leading: const Icon(Icons.photo_camera),
             title: const Text('Tirar Foto'),
             onTap: () {
-              Get.back();
-              controller.pickAndSaveImage(ImageSource.camera);
+              Navigator.pop(context); // Fecha o sheet
+              onPickImage(ImageSource.camera);
             },
           ),
           ListTile(
             leading: const Icon(Icons.photo_library),
             title: const Text('Escolher da Galeria'),
             onTap: () {
-              Get.back();
-              controller.pickAndSaveImage(ImageSource.gallery);
+              Navigator.pop(context); // Fecha o sheet
+              onPickImage(ImageSource.gallery);
             },
           ),
         ],

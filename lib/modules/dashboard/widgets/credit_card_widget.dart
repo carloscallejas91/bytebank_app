@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:mobile_app/app/ui/constants/app_assets.dart';
-import 'package:mobile_app/modules/dashboard/controllers/dashboard_controller.dart';
 
 class CreditCardWidget extends StatelessWidget {
-  final DashboardController controller;
   final String number;
   final String validity;
   final String balance;
   final String accountType;
+  final bool isBalanceVisible; // Novo parâmetro
+  final VoidCallback onToggleBalanceVisibility; // Novo callback
 
   const CreditCardWidget({
     super.key,
-    required this.controller,
     required this.number,
     required this.validity,
     required this.balance,
     required this.accountType,
+    required this.isBalanceVisible,
+    required this.onToggleBalanceVisibility,
   });
 
   @override
@@ -79,30 +80,25 @@ class CreditCardWidget extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Obx(
-              () => Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  IconButton(
-                    onPressed: controller.toggleBalanceVisibility,
-                    icon: Icon(
-                      controller.isBalanceVisible.value
-                          ? Icons.visibility_off
-                          : Icons.visibility,
-                      color: foreground,
-                    ),
+            // O Obx foi removido, agora é apenas um Row
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                IconButton(
+                  onPressed: onToggleBalanceVisibility,
+                  icon: Icon(
+                    isBalanceVisible ? Icons.visibility_off : Icons.visibility,
+                    color: foreground,
                   ),
-                  Text(
-                    controller.isBalanceVisible.value
-                        ? balance
-                        : 'R\$ ******',
-                    style: theme.textTheme.bodyLarge!.copyWith(
-                      color: foreground,
-                      fontWeight: FontWeight.bold,
-                    ),
+                ),
+                Text(
+                  isBalanceVisible ? balance : 'R\$ ******',
+                  style: theme.textTheme.bodyLarge!.copyWith(
+                    color: foreground,
+                    fontWeight: FontWeight.bold,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
             Text(
               accountType,

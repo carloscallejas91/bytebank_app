@@ -1,15 +1,13 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 
 class AvatarWidget extends StatelessWidget {
-  final String url;
+  final ImageProvider? backgroundImage;
   final VoidCallback? onTap;
   final bool isLoading;
 
   const AvatarWidget({
     super.key,
-    required this.url,
+    this.backgroundImage,
     this.onTap,
     this.isLoading = false,
   });
@@ -31,16 +29,8 @@ class AvatarWidget extends StatelessWidget {
   }
 
   Widget _buildAvatarContent(ThemeData theme) {
-    final hasUrl = url.isNotEmpty;
-    final isNetworkImage = hasUrl && url.startsWith('http');
-
-    if (hasUrl) {
-      return CircleAvatar(
-        radius: 35,
-        backgroundImage: isNetworkImage
-            ? NetworkImage(url)
-            : FileImage(File(url)) as ImageProvider,
-      );
+    if (backgroundImage != null) {
+      return CircleAvatar(radius: 35, backgroundImage: backgroundImage);
     } else {
       return Icon(
         Icons.person,

@@ -1,22 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile_app/app/utils/math_utils.dart'; // Importe a nova classe de utilidades
-import 'package:mobile_app/modules/dashboard/controllers/dashboard_controller.dart';
+import 'package:mobile_app/app/utils/math_utils.dart';
 
 class BalanceSummaryWidget extends StatelessWidget {
-  final DashboardController controller;
+  final String formattedSelectedMonth;
+  final VoidCallback onPreviousMonth;
+  final VoidCallback onNextMonth;
+  final VoidCallback onSelectMonth;
+  final String formattedMonthlyNetResult;
+  final double monthlyIncomeValue;
+  final double monthlyExpensesValue;
+  final NumberFormat currencyFormatter;
 
-  const BalanceSummaryWidget({super.key, required this.controller});
+  const BalanceSummaryWidget({
+    super.key,
+    required this.formattedSelectedMonth,
+    required this.onPreviousMonth,
+    required this.onNextMonth,
+    required this.onSelectMonth,
+    required this.formattedMonthlyNetResult,
+    required this.monthlyIncomeValue,
+    required this.monthlyExpensesValue,
+    required this.currencyFormatter,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    final currencyFormatter = NumberFormat.currency(
-      locale: 'pt_BR',
-      symbol: 'R\$',
-    );
 
     return Card(
       margin: EdgeInsets.zero,
@@ -31,41 +41,39 @@ class BalanceSummaryWidget extends StatelessWidget {
             const SizedBox(height: 16),
             Text('Resultado do Mês', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
-            Obx(
-              () => Text(
-                controller.formattedMonthlyNetResult.value,
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            Text(
+              formattedMonthlyNetResult,
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 16),
-            Obx(
-              () => _financialProgressBar(
-                label: 'Entrada',
-                value: controller.monthlyIncome.value,
-                percentage: MathUtils.calculatePercentage(
-                  controller.monthlyIncome.value,
-                  controller.monthlyExpenses.value,
-                ),
-                color: Colors.green,
-                currencyFormatter: currencyFormatter,
+            _financialProgressBar(
+              theme: theme,
+              // Passando o tema como parâmetro
+              label: 'Entrada',
+              value: monthlyIncomeValue,
+              percentage: MathUtils.calculatePercentage(
+                monthlyIncomeValue,
+                monthlyExpensesValue,
               ),
+              color: Colors.green,
+              currencyFormatter: currencyFormatter,
             ),
             const SizedBox(height: 24),
-            Obx(
-              () => _financialProgressBar(
-                label: 'Saída',
-                value: controller.monthlyExpenses.value,
-                percentage: MathUtils.calculatePercentage(
-                  controller.monthlyExpenses.value,
-                  controller.monthlyIncome.value,
-                ),
-                color: theme.colorScheme.error,
-                currencyFormatter: currencyFormatter,
+            _financialProgressBar(
+              theme: theme,
+              // Passando o tema como parâmetro
+              label: 'Saída',
+              value: monthlyExpensesValue,
+              percentage: MathUtils.calculatePercentage(
+                monthlyExpensesValue,
+                monthlyIncomeValue,
               ),
+              color: theme.colorScheme.error,
+              currencyFormatter: currencyFormatter,
             ),
           ],
         ),
@@ -74,43 +82,41 @@ class BalanceSummaryWidget extends StatelessWidget {
   }
 
   Widget _buildMonthSelector(BuildContext context) {
+    final theme = Theme.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
           icon: const Icon(Icons.chevron_left),
-          onPressed: controller.goToPreviousMonth,
+          onPressed: onPreviousMonth,
         ),
         InkWell(
-          onTap: () => controller.selectMonth(context),
+          onTap: onSelectMonth,
           borderRadius: BorderRadius.circular(8),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            child: Obx(
-              () => Text(
-                controller.formattedSelectedMonth.value,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+            child: Text(
+              formattedSelectedMonth,
+              style: theme.textTheme.titleMedium,
             ),
           ),
         ),
         IconButton(
           icon: const Icon(Icons.chevron_right),
-          onPressed: controller.goToNextMonth,
+          onPressed: onNextMonth,
         ),
       ],
     );
   }
 
   Widget _financialProgressBar({
+    required ThemeData theme, // Recebendo o tema
     required String label,
     required double value,
     required double percentage,
     required Color color,
     required NumberFormat currencyFormatter,
   }) {
-    final theme = Theme.of(Get.context!);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

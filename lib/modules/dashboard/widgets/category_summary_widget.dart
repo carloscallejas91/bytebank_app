@@ -1,42 +1,24 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile_app/modules/dashboard/models/category_spending_view_model.dart';
 
 class CategorySummaryWidget extends StatelessWidget {
   final String title;
-  final Map<String, double> spendingData;
+  final List<CategorySpendingViewModel> categories;
 
   const CategorySummaryWidget({
     super.key,
     required this.title,
-    required this.spendingData,
+    required this.categories,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    final progressBarColors = [
-      Colors.blueAccent,
-      Colors.purpleAccent,
-      Colors.orangeAccent,
-      Colors.teal,
-      Colors.redAccent,
-      Colors.indigoAccent,
-    ];
-
     final currencyFormatter = NumberFormat.currency(
       locale: 'pt_BR',
       symbol: 'R\$',
     );
-
-    final processedCategories = _processSpendingData(spendingData);
-
-    final totalSpending = spendingData.values.reduce((sum, item) => sum + item);
-
-    final random = Random();
 
     return Card(
       margin: EdgeInsets.zero,
@@ -50,22 +32,15 @@ class CategorySummaryWidget extends StatelessWidget {
           children: [
             Text(title, style: theme.textTheme.titleMedium),
             const Divider(),
-            ...processedCategories.entries.map((entry) {
-              final String category = entry.key;
-              final double value = entry.value;
-              final double percentage = totalSpending > 0
-                  ? value / totalSpending
-                  : 0;
-
-              final Color barColor =
-                  progressBarColors[random.nextInt(progressBarColors.length)];
-
+            // Mapeia diretamente a lista de ViewModels já processados
+            ...categories.map((viewModel) {
               return _spendingCategoryRow(
-                categoryName: category,
-                value: value,
-                percentage: percentage,
+                theme: theme,
+                categoryName: viewModel.category,
+                value: viewModel.value,
+                percentage: viewModel.percentage,
                 currencyFormatter: currencyFormatter,
-                barColor: barColor,
+                barColor: viewModel.color,
               );
             }),
           ],
@@ -75,14 +50,13 @@ class CategorySummaryWidget extends StatelessWidget {
   }
 
   Widget _spendingCategoryRow({
+    required ThemeData theme,
     required String categoryName,
     required double value,
     required double percentage,
     required NumberFormat currencyFormatter,
     required Color barColor,
   }) {
-    final theme = Theme.of(Get.context!);
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Column(
@@ -108,42 +82,16 @@ class CategorySummaryWidget extends StatelessWidget {
               value: percentage,
               minHeight: 10,
               valueColor: AlwaysStoppedAnimation<Color>(barColor),
-              backgroundColor: barColor.withValues(alpha: 0.2),
+              backgroundColor: barColor.withAlpha(50),
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            '${(percentage * 100).toStringAsFixed(1)}% do total de gastos',
+            '${(percentage * 100).toStringAsFixed(1)}% do total',
             style: theme.textTheme.bodySmall,
           ),
         ],
       ),
     );
   }
-}
-
-Map<String, double> _processSpendingData(Map<String, double> spendingData) {
-  if (spendingData.isEmpty) return {};
-
-  final double totalSpending = spendingData.values.reduce(
-    (sum, item) => sum + item,
-  );
-  double threshold = 0.03;
-  double othersValue = 0.0;
-
-  final Map<String, double> mainCategories = {};
-
-  spendingData.forEach((category, value) {
-    if (totalSpending <= 0 || value <= 0) return;
-
-    if (value / totalSpending < threshold) {
-      othersValue += value;
-    } else {
-      mainCategories[category] = value;
-    }
-  });
-
-  if (othersValue > 0) mainCategories['Outros'] = othersValue;
-
-  return mainCategories;
 }

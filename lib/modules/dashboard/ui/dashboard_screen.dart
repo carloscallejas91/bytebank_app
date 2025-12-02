@@ -13,8 +13,6 @@ class DashboardScreen extends GetView<DashboardController> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
@@ -31,57 +29,11 @@ class DashboardScreen extends GetView<DashboardController> {
                 spacing: 8,
                 children:
                     [
-                          Obx(
-                            () => HeaderWidget(
-                              name: controller.userName.value,
-                              message: 'Bem vindo de volta!',
-                              date: controller.now,
-                              url: controller.userPhotoUrl.value,
-                              onAvatarTap: () {
-                                Get.bottomSheet(
-                                  const ChangeAvatarSheet(),
-                                  backgroundColor: theme.colorScheme.surface,
-                                  isScrollControlled: true,
-                                );
-                              },
-                              isAvatarLoading: controller.isAvatarLoading.value,
-                            ),
-                          ),
-                          Obx(() {
-                            if (controller.account.value != null) {
-                              return CreditCardWidget(
-                                controller: controller,
-                                number: controller.account.value!.last4Digits,
-                                validity: controller.account.value!.validity,
-                                accountType:
-                                    controller.account.value!.accountType,
-                                balance: controller.formattedTotalBalance.value,
-                              );
-                            } else {
-                              return const SizedBox.shrink();
-                            }
-                          }),
-                          BalanceSummaryWidget(controller: controller),
-                          Obx(() {
-                            if (controller.spendingByCategory.isNotEmpty) {
-                              return CategorySummaryWidget(
-                                title: 'Gastos por Categoria',
-                                spendingData: controller.spendingByCategory,
-                              );
-                            } else {
-                              return const SizedBox.shrink();
-                            }
-                          }),
-                          Obx(() {
-                            if (controller.incomeByCategory.isNotEmpty) {
-                              return CategorySummaryWidget(
-                                title: 'Receitas por Categoria',
-                                spendingData: controller.incomeByCategory,
-                              );
-                            } else {
-                              return const SizedBox.shrink();
-                            }
-                          }),
+                          Obx(() => _buildHeader(context)),
+                          Obx(() => _buildCreditCard(context)),
+                          Obx(() => _buildBalanceSummary(context)),
+                          Obx(() => _buildSpendingSummary()),
+                          Obx(() => _buildIncomeSummary()),
                         ]
                         .animate(interval: 200.ms)
                         .fadeIn(duration: 500.ms, delay: 100.ms)
@@ -91,6 +43,76 @@ class DashboardScreen extends GetView<DashboardController> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return HeaderWidget(
+      name: controller.userName.value,
+      message: 'Bem vindo de volta!',
+      date: controller.now,
+      backgroundImage: controller.avatarController.avatarImageProvider.value,
+      isAvatarLoading: controller.avatarController.isAvatarLoading.value,
+      onAvatarTap: () {
+        Get.bottomSheet(
+          ChangeAvatarSheet(
+            onPickImage: controller.avatarController.pickAndSaveImage,
+          ),
+          backgroundColor: theme.colorScheme.surface,
+          isScrollControlled: true,
+        );
+      },
+    );
+  }
+
+  Widget _buildCreditCard(BuildContext context) {
+    if (controller.account.value == null) {
+      return const SizedBox.shrink();
+    }
+    return CreditCardWidget(
+      number: controller.account.value!.last4Digits,
+      validity: controller.account.value!.validity,
+      accountType: controller.account.value!.accountType,
+      balance: controller.formattedTotalBalance.value,
+      isBalanceVisible: controller.isBalanceVisible.value,
+      onToggleBalanceVisibility: controller.toggleBalanceVisibility,
+    );
+  }
+
+  Widget _buildBalanceSummary(BuildContext context) {
+    return BalanceSummaryWidget(
+      formattedSelectedMonth:
+          controller.summaryService.formattedSelectedMonth.value,
+      onPreviousMonth: controller.goToPreviousMonth,
+      onNextMonth: controller.goToNextMonth,
+      onSelectMonth: () => controller.selectMonth(context),
+      formattedMonthlyNetResult:
+          controller.summaryService.formattedMonthlyNetResult.value,
+      monthlyIncomeValue: controller.summaryService.monthlyIncome.value,
+      monthlyExpensesValue: controller.summaryService.monthlyExpenses.value,
+      currencyFormatter: controller.summaryService.currencyFormatter,
+    );
+  }
+
+  Widget _buildSpendingSummary() {
+    if (controller.summaryService.spendingCategories.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return CategorySummaryWidget(
+      title: 'Gastos por Categoria',
+      categories: controller.summaryService.spendingCategories.toList(),
+    );
+  }
+
+  Widget _buildIncomeSummary() {
+    if (controller.summaryService.incomeCategories.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return CategorySummaryWidget(
+      title: 'Receitas por Categoria',
+      categories: controller.summaryService.incomeCategories.toList(),
     );
   }
 }
