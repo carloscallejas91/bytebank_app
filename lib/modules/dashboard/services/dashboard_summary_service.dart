@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile_app/domain/entities/transaction_entity.dart'; // Você precisará deste import
+import 'package:mobile_app/domain/entities/transaction_entity.dart';
 import 'package:mobile_app/domain/usecases/calculate_dashboard_summaries_usecase.dart';
-import 'package:mobile_app/modules/dashboard/models/category_spending_view_model.dart'; // Corrija o import se você moveu o arquivo
+import 'package:mobile_app/modules/dashboard/models/category_spending_view_model.dart';
 
 class DashboardSummaryService extends GetxService {
   // Use Cases

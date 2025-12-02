@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:mobile_app/app/ui/constants/app_assets.dart';
 
 class CreditCardWidget extends StatelessWidget {
@@ -7,8 +6,8 @@ class CreditCardWidget extends StatelessWidget {
   final String validity;
   final String balance;
   final String accountType;
-  final bool isBalanceVisible; // Novo parâmetro
-  final VoidCallback onToggleBalanceVisibility; // Novo callback
+  final bool isBalanceVisible;
+  final VoidCallback onToggleBalanceVisibility;
 
   const CreditCardWidget({
     super.key,
@@ -80,7 +79,6 @@ class CreditCardWidget extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            // O Obx foi removido, agora é apenas um Row
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [

@@ -32,7 +32,6 @@ class CategorySummaryWidget extends StatelessWidget {
           children: [
             Text(title, style: theme.textTheme.titleMedium),
             const Divider(),
-            // Mapeia diretamente a lista de ViewModels já processados
             ...categories.map((viewModel) {
               return _spendingCategoryRow(
                 theme: theme,

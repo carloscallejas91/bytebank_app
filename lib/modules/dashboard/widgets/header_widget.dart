@@ -6,7 +6,7 @@ class HeaderWidget extends StatelessWidget {
   final String name;
   final String message;
   final String date;
-  final ImageProvider? backgroundImage; // Mudança aqui: de String url para ImageProvider
+  final ImageProvider? backgroundImage;
   final VoidCallback? onAvatarTap;
   final bool isAvatarLoading;
 
@@ -15,7 +15,7 @@ class HeaderWidget extends StatelessWidget {
     required this.name,
     required this.message,
     required this.date,
-    this.backgroundImage, // Mudança aqui: de required para opcional (pode ser null se não houver foto)
+    this.backgroundImage,
     this.onAvatarTap,
     this.isAvatarLoading = false,
   });
@@ -36,7 +36,7 @@ class HeaderWidget extends StatelessWidget {
           spacing: 16,
           children: [
             AvatarWidget(
-              backgroundImage: backgroundImage, // Passando o ImageProvider
+              backgroundImage: backgroundImage,
               onTap: onAvatarTap,
               isLoading: isAvatarLoading,
             ),

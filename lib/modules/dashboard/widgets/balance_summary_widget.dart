@@ -52,7 +52,6 @@ class BalanceSummaryWidget extends StatelessWidget {
             const SizedBox(height: 16),
             _financialProgressBar(
               theme: theme,
-              // Passando o tema como parâmetro
               label: 'Entrada',
               value: monthlyIncomeValue,
               percentage: MathUtils.calculatePercentage(
@@ -65,7 +64,6 @@ class BalanceSummaryWidget extends StatelessWidget {
             const SizedBox(height: 24),
             _financialProgressBar(
               theme: theme,
-              // Passando o tema como parâmetro
               label: 'Saída',
               value: monthlyExpensesValue,
               percentage: MathUtils.calculatePercentage(
@@ -110,7 +108,7 @@ class BalanceSummaryWidget extends StatelessWidget {
   }
 
   Widget _financialProgressBar({
-    required ThemeData theme, // Recebendo o tema
+    required ThemeData theme,
     required String label,
     required double value,
     required double percentage,

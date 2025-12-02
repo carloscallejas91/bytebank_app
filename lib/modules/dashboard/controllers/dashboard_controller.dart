@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:mobile_app/app/utils/date_formatter.dart';
 import 'package:mobile_app/domain/entities/account_entity.dart';
 import 'package:mobile_app/domain/repositories/i_auth_repository.dart';

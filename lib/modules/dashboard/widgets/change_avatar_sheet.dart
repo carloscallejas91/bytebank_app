@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ChangeAvatarSheet extends StatelessWidget {
-  final ValueChanged<ImageSource> onPickImage; // Callback para a ação
+  final ValueChanged<ImageSource> onPickImage;
 
   const ChangeAvatarSheet({super.key, required this.onPickImage});
 
@@ -16,7 +17,7 @@ class ChangeAvatarSheet extends StatelessWidget {
             leading: const Icon(Icons.photo_camera),
             title: const Text('Tirar Foto'),
             onTap: () {
-              Navigator.pop(context); // Fecha o sheet
+              Get.back();
               onPickImage(ImageSource.camera);
             },
           ),
@@ -24,7 +25,7 @@ class ChangeAvatarSheet extends StatelessWidget {
             leading: const Icon(Icons.photo_library),
             title: const Text('Escolher da Galeria'),
             onTap: () {
-              Navigator.pop(context); // Fecha o sheet
+              Get.back();
               onPickImage(ImageSource.gallery);
             },
           ),
