@@ -26,6 +26,7 @@ import 'package:mobile_app/domain/usecases/get_user_stream_usecase.dart';
 import 'package:mobile_app/domain/usecases/launch_url_usecase.dart';
 import 'package:mobile_app/domain/usecases/map_auth_exception_to_message_usecase.dart';
 import 'package:mobile_app/domain/usecases/pick_image_usecase.dart';
+import 'package:mobile_app/domain/usecases/resolve_receipt_url_usecase.dart';
 import 'package:mobile_app/domain/usecases/save_avatar_usecase.dart';
 import 'package:mobile_app/domain/usecases/save_transaction_usecase.dart';
 import 'package:mobile_app/domain/usecases/send_password_reset_email_usecase.dart';
@@ -101,6 +102,7 @@ class AppBinding extends Bindings {
     Get.lazyPut(() => UploadReceiptUseCase(Get.find()), fenix: true);
     Get.lazyPut(() => ToggleTransactionTypeFilterUseCase(), fenix: true);
     Get.lazyPut(() => ToggleSortOrderUseCase(), fenix: true);
+    Get.lazyPut(() => ResolveReceiptUrlUseCase(Get.find()), fenix: true);
 
     // Use Cases - Dashboard
     Get.lazyPut(() => CalculateDashboardSummariesUseCase(), fenix: true);

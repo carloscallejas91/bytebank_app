@@ -11,8 +11,8 @@ import 'package:mobile_app/domain/repositories/i_auth_repository.dart';
 import 'package:mobile_app/domain/usecases/generate_id_usecase.dart';
 import 'package:mobile_app/domain/usecases/launch_url_usecase.dart';
 import 'package:mobile_app/domain/usecases/pick_image_usecase.dart';
+import 'package:mobile_app/domain/usecases/resolve_receipt_url_usecase.dart';
 import 'package:mobile_app/domain/usecases/save_transaction_usecase.dart';
-import 'package:mobile_app/domain/usecases/upload_receipt_usecase.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
 
 class TransactionFormController extends GetxController {
@@ -23,11 +23,12 @@ class TransactionFormController extends GetxController {
   final _authRepository = Get.find<IAuthRepository>();
 
   // Use Cases
-  final _uploadReceiptUseCase = Get.find<UploadReceiptUseCase>();
   final _pickImageUseCase = Get.find<PickImageUseCase>();
   final _launchUrlUseCase = Get.find<LaunchUrlUseCase>();
   final _generateIdUseCase = Get.find<GenerateIdUseCase>();
   final _saveTransactionUseCase = Get.find<SaveTransactionUseCase>();
+  final _resolveReceiptUrlUseCase =
+      Get.find<ResolveReceiptUrlUseCase>();
 
   // Form Key
   final formKey = GlobalKey<FormState>();
@@ -46,8 +47,8 @@ class TransactionFormController extends GetxController {
   // Form State
   final selectedType = TransactionType.expense.obs;
   final selectedPaymentMethod = RxnString();
-  final Rxn<File> selectedReceipt = Rxn<File>();
-  final RxnString existingReceiptUrl = RxnString();
+  final selectedReceipt = Rxn<File>();
+  final existingReceiptUrl = RxnString();
 
   // UI State
   final isLoading = false.obs;
@@ -87,18 +88,8 @@ class TransactionFormController extends GetxController {
     if (userId == null) return;
 
     isLoading.value = true;
-
     try {
-      final transactionId = editingTransaction?.id ?? _generateIdUseCase.call();
-      final receiptUrl = await _uploadReceiptIfNeeded(userId, transactionId);
-      final transaction = _createTransactionEntity(transactionId, receiptUrl);
-
-      await _saveTransactionUseCase.call(
-        userId: userId,
-        transaction: transaction,
-        oldTransaction: editingTransaction,
-      );
-
+      await _performSave(userId);
       _handleSuccess(isUpdate: isEditMode);
     } catch (e) {
       _handleError(e);
@@ -133,6 +124,25 @@ class TransactionFormController extends GetxController {
   }
 
   // Internal Logic & Private Methods
+  Future<void> _performSave(String userId) async {
+    final transactionId = editingTransaction?.id ?? _generateIdUseCase.call();
+    
+    final receiptUrl = await _resolveReceiptUrlUseCase.call(
+      userId: userId,
+      transactionId: transactionId,
+      newReceiptFile: selectedReceipt.value,
+      existingReceiptUrl: existingReceiptUrl.value,
+    );
+
+    final transaction = _createTransactionEntity(transactionId, receiptUrl);
+
+    await _saveTransactionUseCase.call(
+      userId: userId,
+      transaction: transaction,
+      oldTransaction: editingTransaction,
+    );
+  }
+
   void _prefillForm() {
     final transaction = editingTransaction!;
     valueController.updateValue(transaction.amount);
@@ -141,20 +151,6 @@ class TransactionFormController extends GetxController {
     selectedPaymentMethod.value = transaction.paymentMethod;
     existingReceiptUrl.value = transaction.receiptUrl;
     selectedReceipt.value = null;
-  }
-
-  Future<String?> _uploadReceiptIfNeeded(
-    String userId,
-    String transactionId,
-  ) async {
-    if (selectedReceipt.value != null) {
-      return await _uploadReceiptUseCase.call(
-        userId: userId,
-        transactionId: transactionId,
-        file: selectedReceipt.value!,
-      );
-    }
-    return existingReceiptUrl.value;
   }
 
   TransactionEntity _createTransactionEntity(String id, String? receiptUrl) {

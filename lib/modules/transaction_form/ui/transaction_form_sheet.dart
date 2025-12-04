@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/ui/widgets/custom_button.dart';
 import 'package:mobile_app/app/ui/widgets/custom_text_field.dart';
@@ -44,17 +47,37 @@ class TransactionFormSheet extends GetView<TransactionFormController> {
                 style: theme.textTheme.headlineSmall,
               ),
               const SizedBox(height: 24),
-              _buildTypeSelector(controller),
+              _buildTypeSelector(
+                selectedType: controller.selectedType,
+                onTypeChanged: controller.setTransactionType,
+              ),
               const SizedBox(height: 16),
-              _buildValueField(controller),
+              _buildValueField(valueController: controller.valueController),
               const SizedBox(height: 16),
-              _buildPaymentMethodDropdown(controller),
+              _buildPaymentMethodDropdown(
+                selectedType: controller.selectedType,
+                selectedPaymentMethod: controller.selectedPaymentMethod,
+                onPaymentMethodChanged: (newValue) =>
+                    controller.selectedPaymentMethod.value = newValue,
+              ),
               const SizedBox(height: 16),
-              _buildDescriptionField(controller),
+              _buildDescriptionField(
+                descriptionController: controller.descriptionController,
+              ),
               const SizedBox(height: 16),
-              _buildReceiptPicker(controller, theme),
+              _buildReceiptPicker(
+                selectedReceipt: controller.selectedReceipt,
+                existingReceiptUrl: controller.existingReceiptUrl,
+                onPickReceipt: controller.pickReceipt,
+                onViewReceipt: controller.viewReceipt,
+                onRemoveReceipt: controller.removeReceipt,
+                theme: theme,
+              ),
               const SizedBox(height: 32),
-              _buildSaveButton(controller),
+              _buildSaveButton(
+                isLoading: controller.isLoading,
+                onSave: controller.saveTransaction,
+              ),
             ],
           ),
         ),
@@ -62,7 +85,10 @@ class TransactionFormSheet extends GetView<TransactionFormController> {
     );
   }
 
-  Widget _buildTypeSelector(TransactionFormController controller) {
+  Widget _buildTypeSelector({
+    required Rx<TransactionType> selectedType,
+    required ValueChanged<TransactionType> onTypeChanged,
+  }) {
     return Obx(
       () => SegmentedButton<TransactionType>(
         showSelectedIcon: false,
@@ -78,22 +104,23 @@ class TransactionFormSheet extends GetView<TransactionFormController> {
             icon: Icon(Icons.arrow_downward),
           ),
         ],
-        selected: {controller.selectedType.value},
-        onSelectionChanged: (newSelection) =>
-            controller.setTransactionType(newSelection.first),
+        selected: {selectedType.value},
+        onSelectionChanged: (newSelection) => onTypeChanged(newSelection.first),
       ),
     );
   }
 
-  Widget _buildValueField(TransactionFormController controller) {
+  Widget _buildValueField({
+    required MoneyMaskedTextController valueController,
+  }) {
     return CustomTextField(
-      controller: controller.valueController,
+      controller: valueController,
       labelText: 'Valor',
       hintText: 'R\$0,00',
       prefixIcon: Icons.attach_money,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       validator: (value) {
-        if (controller.valueController.numberValue <= 0) {
+        if (valueController.numberValue <= 0) {
           return 'Por favor, insira um valor maior que zero.';
         }
         return null;
@@ -101,18 +128,20 @@ class TransactionFormSheet extends GetView<TransactionFormController> {
     );
   }
 
-  Widget _buildPaymentMethodDropdown(TransactionFormController controller) {
+  Widget _buildPaymentMethodDropdown({
+    required Rx<TransactionType> selectedType,
+    required RxnString selectedPaymentMethod,
+    required ValueChanged<String?> onPaymentMethodChanged,
+  }) {
     return Obx(() {
-      final isExpense =
-          controller.selectedType.value == TransactionType.expense;
-
+      final isExpense = selectedType.value == TransactionType.expense;
       final currentPaymentMethods = isExpense
           ? _expenseMethods
           : _incomeMethods;
 
       return DropdownButtonFormField<String>(
-        key: ValueKey('payment_method_${controller.selectedType.value}'),
-        value: controller.selectedPaymentMethod.value,
+        key: ValueKey('payment_method_${selectedType.value}'),
+        initialValue: selectedPaymentMethod.value,
         hint: Text(
           isExpense
               ? 'Boleto, Cartão de débito, etc...'
@@ -129,8 +158,7 @@ class TransactionFormSheet extends GetView<TransactionFormController> {
               (method) => DropdownMenuItem(value: method, child: Text(method)),
             )
             .toList(),
-        onChanged: (newValue) =>
-            controller.selectedPaymentMethod.value = newValue,
+        onChanged: onPaymentMethodChanged,
         validator: (value) => AppValidators.notEmpty(
           value,
           message: 'Por favor, selecione um método.',
@@ -139,9 +167,11 @@ class TransactionFormSheet extends GetView<TransactionFormController> {
     });
   }
 
-  Widget _buildDescriptionField(TransactionFormController controller) {
+  Widget _buildDescriptionField({
+    required TextEditingController descriptionController,
+  }) {
     return CustomTextField(
-      controller: controller.descriptionController,
+      controller: descriptionController,
       labelText: 'Descrição',
       hintText: 'Descrição',
       prefixIcon: Icons.description_outlined,
@@ -151,12 +181,16 @@ class TransactionFormSheet extends GetView<TransactionFormController> {
     );
   }
 
-  Widget _buildReceiptPicker(
-    TransactionFormController controller,
-    ThemeData theme,
-  ) {
+  Widget _buildReceiptPicker({
+    required Rxn<File> selectedReceipt,
+    required RxnString existingReceiptUrl,
+    required VoidCallback onPickReceipt,
+    required VoidCallback onViewReceipt,
+    required VoidCallback onRemoveReceipt,
+    required ThemeData theme,
+  }) {
     return Obx(() {
-      if (controller.selectedReceipt.value != null) {
+      if (selectedReceipt.value != null) {
         return Row(
           children: [
             const Icon(Icons.check_circle, color: Colors.green),
@@ -169,24 +203,21 @@ class TransactionFormSheet extends GetView<TransactionFormController> {
             ),
             IconButton(
               icon: const Icon(Icons.close),
-              onPressed: controller.removeReceipt,
+              onPressed: onRemoveReceipt,
             ),
           ],
         );
-      } else if (controller.existingReceiptUrl.value != null &&
-          controller.existingReceiptUrl.value!.isNotEmpty) {
+      } else if (existingReceiptUrl.value != null &&
+          existingReceiptUrl.value!.isNotEmpty) {
         return Row(
           children: [
             const Icon(Icons.cloud_done, color: Colors.blue),
             const SizedBox(width: 8),
             Expanded(child: Text('Comprovante salvo')),
-            TextButton(
-              onPressed: controller.viewReceipt,
-              child: const Text('Ver'),
-            ),
+            TextButton(onPressed: onViewReceipt, child: const Text('Ver')),
             IconButton(
               icon: Icon(Icons.close, color: theme.colorScheme.error),
-              onPressed: controller.removeReceipt,
+              onPressed: onRemoveReceipt,
             ),
           ],
         );
@@ -197,20 +228,23 @@ class TransactionFormSheet extends GetView<TransactionFormController> {
             'Anexar',
             style: TextStyle(color: theme.colorScheme.onSurface),
           ),
-          onPressed: controller.pickReceipt,
+          onPressed: onPickReceipt,
         );
       }
     });
   }
 
-  Widget _buildSaveButton(TransactionFormController controller) {
+  Widget _buildSaveButton({
+    required RxBool isLoading,
+    required VoidCallback onSave,
+  }) {
     return Obx(
       () => SizedBox(
         width: double.infinity,
         child: CustomButton(
           text: 'Salvar',
-          isLoading: controller.isLoading.value,
-          onPressed: controller.saveTransaction,
+          isLoading: isLoading.value,
+          onPressed: onSave,
         ),
       ),
     );
