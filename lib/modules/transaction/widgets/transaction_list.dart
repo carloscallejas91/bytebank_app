@@ -18,24 +18,22 @@ class TransactionList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: ListView.builder(
-        controller: scrollController,
-        itemCount: transactions.length + 1,
-        itemBuilder: (context, index) {
-          if (index < transactions.length) {
-            final transaction = transactions[index];
-            return TransactionListItem(
-              transaction: transaction,
-              onTap: () => onTransactionTap(transaction),
-            );
-          } else {
-            return isLoadingMore
-                ? const Center(child: CircularProgressIndicator())
-                : const SizedBox.shrink();
-          }
-        },
-      ),
+    return ListView.builder(
+      controller: scrollController,
+      itemCount: transactions.length + 1,
+      itemBuilder: (context, index) {
+        if (index < transactions.length) {
+          final transaction = transactions[index];
+          return TransactionListItem(
+            transaction: transaction,
+            onTap: () => onTransactionTap(transaction),
+          );
+        } else {
+          return isLoadingMore
+              ? const Center(child: CircularProgressIndicator())
+              : const SizedBox.shrink();
+        }
+      },
     );
   }
 }

@@ -155,19 +155,32 @@ class FirebaseDataSource {
         .collection('transactions')
         .where('userId', isEqualTo: userId);
 
-    if (filter != null) {
-      if (filter.type != null) {
-        query = query.where('type', isEqualTo: filter.type!.name);
-      }
+    if (filter?.type != null) {
+      query = query.where('type', isEqualTo: filter!.type!.name);
     }
 
-    query = query
-        .orderBy('date', descending: sortOrder == SortOrder.desc)
-        .limit(limit);
+    final bool isSearching =
+        filter?.descriptionSearch != null &&
+        filter!.descriptionSearch.isNotEmpty;
+
+    if (isSearching) {
+      final searchTerm = filter.descriptionSearch.toLowerCase();
+      query = query
+          .where('description_lowercase', isGreaterThanOrEqualTo: searchTerm)
+          .where('description_lowercase', isLessThan: '$searchTerm\uf8ff');
+      query = query.orderBy(
+        'description_lowercase',
+        descending: sortOrder == SortOrder.desc,
+      );
+    } else {
+      query = query.orderBy('date', descending: sortOrder == SortOrder.desc);
+    }
 
     if (startAfter != null) {
       query = query.startAfterDocument(startAfter);
     }
+
+    query = query.limit(limit);
 
     final snapshot = await query.get();
     final transactions = snapshot.docs

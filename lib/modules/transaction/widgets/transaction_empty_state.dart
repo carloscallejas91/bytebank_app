@@ -5,8 +5,6 @@ class TransactionEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Expanded(
-      child: Center(child: Text('Nenhuma transação encontrada.')),
-    );
+    return Center(child: Text('Nenhuma transação encontrada.'));
   }
 }
