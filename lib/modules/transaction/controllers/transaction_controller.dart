@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 import 'package:mobile_app/app/ui/widgets/app_dialogs.dart';
+import 'package:mobile_app/app/utils/date_formatter.dart';
 import 'package:mobile_app/domain/entities/transaction_entity.dart';
 import 'package:mobile_app/domain/entities/transaction_filter_model.dart';
 import 'package:mobile_app/domain/enums/sort_order.dart';
@@ -14,7 +16,8 @@ import 'package:mobile_app/domain/usecases/delete_transaction_usecase.dart';
 import 'package:mobile_app/domain/usecases/get_transactions_usecase.dart';
 import 'package:mobile_app/domain/usecases/toggle_sort_order_usecase.dart';
 import 'package:mobile_app/domain/usecases/toggle_transaction_type_filter_usecase.dart';
-import 'package:mobile_app/modules/transaction/widgets/transaction_options_sheet.dart';
+import 'package:mobile_app/modules/transaction/models/transaction_list_item_view_model.dart';
+import 'package:mobile_app/modules/transaction/widgets/update_transaction_sheet.dart';
 import 'package:mobile_app/modules/transaction_form/ui/transaction_form_sheet.dart';
 
 class TransactionController extends GetxController {
@@ -36,9 +39,16 @@ class TransactionController extends GetxController {
   final searchController = TextEditingController();
 
   // Transaction State
-  final RxList<TransactionEntity> transactions = <TransactionEntity>[].obs;
-  final Rx<TransactionFilter> filter = TransactionFilter().obs;
-  final Rx<SortOrder> sortOrder = SortOrder.desc.obs;
+  final transactionViewModels = <TransactionListItemViewModel>[].obs;
+  final transactions = <TransactionEntity>[].obs;
+  final filter = TransactionFilter().obs;
+  final sortOrder = SortOrder.desc.obs;
+
+  // Formatters
+  final _currencyFormatter = NumberFormat.currency(
+    locale: 'pt_BR',
+    symbol: 'R\$',
+  );
 
   // Pagination State
   final isLoadingMore = false.obs;
@@ -53,6 +63,8 @@ class TransactionController extends GetxController {
     super.onInit();
     scrollController.addListener(_scrollListener);
 
+    ever(transactions, _mapEntitiesToViewModels);
+
     fetchFirstPage();
     _setupSearchListener();
   }
@@ -64,6 +76,10 @@ class TransactionController extends GetxController {
     _debounce?.cancel();
     super.onClose();
   }
+
+  // Getters
+  bool get showEmptyState =>
+      transactionViewModels.isEmpty && !isLoadingMore.value;
 
   // UI Actions
   Future<void> refreshTransactions() async {
@@ -131,7 +147,7 @@ class TransactionController extends GetxController {
   }
 
   void showOptionsSheet(TransactionEntity transaction) {
-    _showAppBottomSheet(TransactionOptionsSheet(transaction: transaction));
+    _showAppBottomSheet(UpdateTransactionsSheet(transaction: transaction));
   }
 
   void editTransaction(TransactionEntity transactionToEdit) {
@@ -201,6 +217,23 @@ class TransactionController extends GetxController {
     } finally {
       isLoadingMore.value = false;
     }
+  }
+
+  void _mapEntitiesToViewModels(List<TransactionEntity> entities) {
+    final viewModels = entities.map((entity) {
+      final isIncome = entity.type == TransactionType.income;
+      return TransactionListItemViewModel(
+        iconData: isIncome ? Icons.arrow_upward : Icons.arrow_downward,
+        color: isIncome ? Colors.green : Get.theme.colorScheme.error,
+        formattedDate: DateFormatter.formatFriendlyDate(entity.date),
+        paymentMethod: entity.paymentMethod,
+        description: entity.description,
+        formattedAmount: _currencyFormatter.format(entity.amount),
+        originalTransaction: entity,
+      );
+    }).toList();
+
+    transactionViewModels.assignAll(viewModels);
   }
 
   void _scrollListener() {

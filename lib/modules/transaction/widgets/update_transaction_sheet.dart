@@ -3,13 +3,10 @@ import 'package:get/get.dart';
 import 'package:mobile_app/domain/entities/transaction_entity.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
 
-class TransactionOptionsSheet extends GetView<TransactionController> {
+class UpdateTransactionsSheet extends GetView<TransactionController> {
   final TransactionEntity transaction;
 
-  const TransactionOptionsSheet({
-    super.key,
-    required this.transaction,
-  });
+  const UpdateTransactionsSheet({super.key, required this.transaction});
 
   @override
   Widget build(BuildContext context) {

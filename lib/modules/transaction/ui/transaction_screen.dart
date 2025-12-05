@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
-import 'package:mobile_app/modules/transaction/widgets/transaction_empty_state.dart';
-import 'package:mobile_app/modules/transaction/widgets/transaction_filter_chips.dart';
+import 'package:mobile_app/modules/transaction/widgets/empty_state.dart';
+import 'package:mobile_app/modules/transaction/widgets/filter_chips.dart';
 import 'package:mobile_app/modules/transaction/widgets/transaction_list.dart';
 import 'package:mobile_app/modules/transaction/widgets/transaction_list_header.dart';
-import 'package:mobile_app/modules/transaction/widgets/transaction_search_field.dart';
+import 'package:mobile_app/modules/transaction/widgets/search_field.dart';
 
 class TransactionScreen extends GetView<TransactionController> {
   const TransactionScreen({super.key});
@@ -24,7 +24,7 @@ class TransactionScreen extends GetView<TransactionController> {
           ),
           const SizedBox(height: 16),
           Obx(
-            () => TransactionFilterChips(
+            () => FilterChips(
               activeFilter: controller.filter.value.type,
               onFilterSelected: controller.toggleTypeFilter,
             ),
@@ -39,12 +39,13 @@ class TransactionScreen extends GetView<TransactionController> {
           const SizedBox(height: 8),
           Expanded(
             child: Obx(() {
-              if (controller.transactions.isEmpty &&
-                  !controller.isLoadingMore.value) {
-                return const TransactionEmptyState();
+              if (controller.showEmptyState) {
+                return const EmptyState(
+                  textMessage: 'Nenhuma transação encontrada.',
+                );
               } else {
                 return TransactionList(
-                  transactions: controller.transactions,
+                  transactions: controller.transactionViewModels,
                   scrollController: controller.scrollController,
                   isLoadingMore: controller.isLoadingMore.value,
                   onTransactionTap: controller.showOptionsSheet,

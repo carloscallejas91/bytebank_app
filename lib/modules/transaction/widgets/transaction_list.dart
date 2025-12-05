@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app/domain/entities/transaction_entity.dart';
+import 'package:mobile_app/modules/transaction/models/transaction_list_item_view_model.dart';
 import 'package:mobile_app/modules/transaction/widgets/transaction_list_item.dart';
 
 class TransactionList extends StatelessWidget {
-  final List<TransactionEntity> transactions;
+  final List<TransactionListItemViewModel> transactions;
   final ScrollController scrollController;
   final bool isLoadingMore;
   final Function(TransactionEntity) onTransactionTap;
@@ -20,18 +21,22 @@ class TransactionList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.builder(
       controller: scrollController,
-      itemCount: transactions.length + 1,
+      itemCount: transactions.length + (isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
         if (index < transactions.length) {
-          final transaction = transactions[index];
-          return TransactionListItem(
-            transaction: transaction,
-            onTap: () => onTransactionTap(transaction),
+          final viewModel = transactions[index];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: TransactionListItem(
+              viewModel: viewModel,
+              onTap: () => onTransactionTap(viewModel.originalTransaction),
+            ),
           );
         } else {
-          return isLoadingMore
-              ? const Center(child: CircularProgressIndicator())
-              : const SizedBox.shrink();
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 32.0),
+            child: Center(child: CircularProgressIndicator()),
+          );
         }
       },
     );

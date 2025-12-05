@@ -27,19 +27,17 @@ class TransactionSearchField extends StatelessWidget {
             : const SizedBox.shrink(),
         filled: true,
         fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0),
-          borderSide: const BorderSide(width: 1.0),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0),
-          borderSide: const BorderSide(width: 1.0),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12.0),
-          borderSide: const BorderSide(width: 1.0),
-        ),
+        border: defaultBorder(),
+        enabledBorder: defaultBorder(),
+        focusedBorder: defaultBorder(),
       ),
+    );
+  }
+
+  OutlineInputBorder defaultBorder() {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12.0),
+      borderSide: const BorderSide(width: 1.0),
     );
   }
 }

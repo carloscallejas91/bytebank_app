@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app/domain/enums/transaction_type.dart';
 
-class TransactionFilterChips extends StatelessWidget {
+class FilterChips extends StatelessWidget {
   final TransactionType? activeFilter;
   final Function(TransactionType) onFilterSelected;
 
-  const TransactionFilterChips({
+  const FilterChips({
     super.key,
     this.activeFilter,
     required this.onFilterSelected,
