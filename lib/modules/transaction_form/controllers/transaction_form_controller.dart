@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mobile_app/app/constants/constants.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 import 'package:mobile_app/domain/entities/transaction_entity.dart';
+import 'package:mobile_app/domain/enums/receipt_picker_state.dart';
 import 'package:mobile_app/domain/enums/transaction_type.dart';
 import 'package:mobile_app/domain/repositories/i_auth_repository.dart';
 import 'package:mobile_app/domain/usecases/generate_id_usecase.dart';
@@ -27,8 +29,7 @@ class TransactionFormController extends GetxController {
   final _launchUrlUseCase = Get.find<LaunchUrlUseCase>();
   final _generateIdUseCase = Get.find<GenerateIdUseCase>();
   final _saveTransactionUseCase = Get.find<SaveTransactionUseCase>();
-  final _resolveReceiptUrlUseCase =
-      Get.find<ResolveReceiptUrlUseCase>();
+  final _resolveReceiptUrlUseCase = Get.find<ResolveReceiptUrlUseCase>();
 
   // Form Key
   final formKey = GlobalKey<FormState>();
@@ -72,7 +73,39 @@ class TransactionFormController extends GetxController {
     super.onClose();
   }
 
+  // Getters
   bool get isEditMode => editingTransaction != null;
+
+  List<String> get currentPaymentMethods {
+    if (selectedType.value == TransactionType.expense) {
+      return AppConstants.expenseMethods;
+    } else {
+      return AppConstants.incomeMethods;
+    }
+  }
+
+  IconData get paymentMethodPrefixIcon {
+    return selectedType.value == TransactionType.expense
+        ? Icons.payment_outlined
+        : Icons.source_outlined;
+  }
+
+  String get paymentMethodHintText {
+    return selectedType.value == TransactionType.expense
+        ? 'Boleto, Cartão de débito, etc...'
+        : 'Salário, Pix, etc...';
+  }
+
+  ReceiptPickerState get receiptPickerState {
+    if (selectedReceipt.value != null) {
+      return ReceiptPickerState.localFile;
+    }
+    if (existingReceiptUrl.value != null &&
+        existingReceiptUrl.value!.isNotEmpty) {
+      return ReceiptPickerState.existingReceipt;
+    }
+    return ReceiptPickerState.attach;
+  }
 
   // UI Actions
   void setTransactionType(TransactionType type) {
@@ -126,7 +159,7 @@ class TransactionFormController extends GetxController {
   // Internal Logic & Private Methods
   Future<void> _performSave(String userId) async {
     final transactionId = editingTransaction?.id ?? _generateIdUseCase.call();
-    
+
     final receiptUrl = await _resolveReceiptUrlUseCase.call(
       userId: userId,
       transactionId: transactionId,

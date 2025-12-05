@@ -1,3 +1,4 @@
+import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:get/get.dart';
 
 class AppValidators {
@@ -65,6 +66,16 @@ class AppValidators {
   static String? notEmpty(String? value, {String? message}) {
     if (value == null || value.trim().isEmpty) {
       return message ?? 'Este campo é obrigatório.';
+    }
+    return null;
+  }
+
+  static String? currencyGreaterThanZero(
+    MoneyMaskedTextController controller, {
+    String? message,
+  }) {
+    if (controller.numberValue <= 0) {
+      return message ?? 'Por favor, insira um valor maior que zero.';
     }
     return null;
   }
