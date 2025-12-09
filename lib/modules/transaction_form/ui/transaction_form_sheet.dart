@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile_app/app/ui/widgets/custom_button.dart';
 import 'package:mobile_app/app/utils/app_validators.dart';
 import 'package:mobile_app/domain/enums/receipt_picker_state.dart';
 import 'package:mobile_app/modules/transaction_form/controllers/transaction_form_controller.dart';
