@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
-class AvatarWidget extends StatelessWidget {
+class Avatar extends StatelessWidget {
   final ImageProvider? backgroundImage;
   final VoidCallback? onTap;
   final bool isLoading;
 
-  const AvatarWidget({
+  const Avatar({
     super.key,
     this.backgroundImage,
     this.onTap,
@@ -14,28 +15,26 @@ class AvatarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return GestureDetector(
       onTap: onTap,
       child: CircleAvatar(
         radius: 35,
-        backgroundColor: theme.colorScheme.surfaceContainerHigh,
+        backgroundColor: Get.theme.colorScheme.surfaceContainerHigh,
         child: isLoading
             ? const CircularProgressIndicator(strokeWidth: 2)
-            : _buildAvatarContent(theme),
+            : _buildAvatarContent(),
       ),
     );
   }
 
-  Widget _buildAvatarContent(ThemeData theme) {
+  Widget _buildAvatarContent() {
     if (backgroundImage != null) {
       return CircleAvatar(radius: 35, backgroundImage: backgroundImage);
     } else {
       return Icon(
         Icons.person,
         size: 35,
-        color: theme.colorScheme.onSurfaceVariant,
+        color: Get.theme.colorScheme.onSurfaceVariant,
       );
     }
   }

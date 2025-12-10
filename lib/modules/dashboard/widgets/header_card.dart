@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app/modules/dashboard/widgets/avatar_widget.dart';
-import 'package:mobile_app/modules/dashboard/widgets/user_info_widget.dart';
+import 'package:mobile_app/modules/dashboard/widgets/avatar.dart';
+import 'package:mobile_app/modules/dashboard/widgets/user_info.dart';
 
-class HeaderWidget extends StatelessWidget {
+class HeaderCard extends StatelessWidget {
   final String name;
   final String message;
   final String date;
@@ -10,7 +10,7 @@ class HeaderWidget extends StatelessWidget {
   final VoidCallback? onAvatarTap;
   final bool isAvatarLoading;
 
-  const HeaderWidget({
+  const HeaderCard({
     super.key,
     required this.name,
     required this.message,
@@ -35,12 +35,12 @@ class HeaderWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           spacing: 16,
           children: [
-            AvatarWidget(
+            Avatar(
               backgroundImage: backgroundImage,
               onTap: onAvatarTap,
               isLoading: isAvatarLoading,
             ),
-            UserInfoWidget(name: name, message: message, date: date),
+            UserInfo(name: name, message: message, date: date),
           ],
         ),
       ),

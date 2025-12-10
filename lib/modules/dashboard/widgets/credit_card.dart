@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mobile_app/app/ui/constants/app_assets.dart';
 
-class CreditCardWidget extends StatelessWidget {
+class CreditCard extends StatelessWidget {
   final String number;
   final String validity;
   final String balance;
@@ -9,7 +10,7 @@ class CreditCardWidget extends StatelessWidget {
   final bool isBalanceVisible;
   final VoidCallback onToggleBalanceVisibility;
 
-  const CreditCardWidget({
+  const CreditCard({
     super.key,
     required this.number,
     required this.validity,
@@ -21,8 +22,6 @@ class CreditCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     const Color background = Color(0xFF222222);
     const Color foreground = Color(0xFFFFFFFF);
     const Color foregroundAlt = Color(0xFFF1F1F1);
@@ -36,15 +35,15 @@ class CreditCardWidget extends StatelessWidget {
         child: Column(
           spacing: 60,
           children: [
-            _buildHeader(theme, foreground),
-            _buildContent(theme, foreground, foregroundAlt),
+            _buildHeader(foreground),
+            _buildContent(foreground, foregroundAlt),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(ThemeData theme, Color foreground) {
+  Row _buildHeader(Color foreground) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,14 +54,14 @@ class CreditCardWidget extends StatelessWidget {
           children: [
             Text(
               '**** $number',
-              style: theme.textTheme.bodyLarge!.copyWith(
+              style: Get.theme.textTheme.bodyLarge!.copyWith(
                 color: foreground,
                 fontWeight: FontWeight.bold,
               ),
             ),
             Text(
               validity,
-              style: theme.textTheme.bodySmall!.copyWith(color: foreground),
+              style: Get.theme.textTheme.bodySmall!.copyWith(color: foreground),
             ),
           ],
         ),
@@ -70,7 +69,7 @@ class CreditCardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(ThemeData theme, Color foreground, Color foregroundAlt) {
+  Row _buildContent(Color foreground, Color foregroundAlt) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -91,7 +90,7 @@ class CreditCardWidget extends StatelessWidget {
                 ),
                 Text(
                   isBalanceVisible ? balance : 'R\$ ******',
-                  style: theme.textTheme.bodyLarge!.copyWith(
+                  style: Get.theme.textTheme.bodyLarge!.copyWith(
                     color: foreground,
                     fontWeight: FontWeight.bold,
                   ),
@@ -100,7 +99,9 @@ class CreditCardWidget extends StatelessWidget {
             ),
             Text(
               accountType,
-              style: theme.textTheme.bodySmall!.copyWith(color: foregroundAlt),
+              style: Get.theme.textTheme.bodySmall!.copyWith(
+                color: foregroundAlt,
+              ),
             ),
           ],
         ),

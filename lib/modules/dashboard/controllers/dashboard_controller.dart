@@ -67,9 +67,9 @@ class DashboardController extends GetxController {
   }
 
   // UI Actions
-  Future<void> selectMonth(BuildContext context) async {
+  Future<void> selectMonth() async {
     final pickedMonth = await showMonthPicker(
-      context: context,
+      context: Get.context!,
       initialDate: selectedMonth.value,
     );
     if (pickedMonth != null && pickedMonth != selectedMonth.value) {

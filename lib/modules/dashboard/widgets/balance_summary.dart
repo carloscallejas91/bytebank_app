@@ -1,19 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_app/app/utils/math_utils.dart';
 
-class BalanceSummaryWidget extends StatelessWidget {
+class BalanceSummary extends StatelessWidget {
+  final String monthlyNetResultLabel;
+  final String incomeLabel;
+  final String expensesLabel;
   final String formattedSelectedMonth;
-  final VoidCallback onPreviousMonth;
-  final VoidCallback onNextMonth;
-  final VoidCallback onSelectMonth;
+  final Function() onPreviousMonth;
+  final Function() onNextMonth;
+  final Function() onSelectMonth;
   final String formattedMonthlyNetResult;
   final double monthlyIncomeValue;
   final double monthlyExpensesValue;
   final NumberFormat currencyFormatter;
 
-  const BalanceSummaryWidget({
+  const BalanceSummary({
     super.key,
+    required this.monthlyNetResultLabel,
+    required this.incomeLabel,
+    required this.expensesLabel,
     required this.formattedSelectedMonth,
     required this.onPreviousMonth,
     required this.onNextMonth,
@@ -26,33 +33,21 @@ class BalanceSummaryWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Card(
       margin: EdgeInsets.zero,
-      color: theme.colorScheme.surface,
+      color: Get.theme.colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildMonthSelector(context),
+            _buildMonthSelector(),
             const SizedBox(height: 16),
-            Text('Resultado do Mês', style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Text(
-              formattedMonthlyNetResult,
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 16),
-            _financialProgressBar(
-              theme: theme,
-              label: 'Entrada',
+            buildSummary(),
+            buildDivider(),
+            _buildFinancialProgressBar(
+              label: incomeLabel,
               value: monthlyIncomeValue,
               percentage: MathUtils.calculatePercentage(
                 monthlyIncomeValue,
@@ -62,15 +57,14 @@ class BalanceSummaryWidget extends StatelessWidget {
               currencyFormatter: currencyFormatter,
             ),
             const SizedBox(height: 24),
-            _financialProgressBar(
-              theme: theme,
-              label: 'Saída',
+            _buildFinancialProgressBar(
+              label: expensesLabel,
               value: monthlyExpensesValue,
               percentage: MathUtils.calculatePercentage(
                 monthlyExpensesValue,
                 monthlyIncomeValue,
               ),
-              color: theme.colorScheme.error,
+              color: Get.theme.colorScheme.error,
               currencyFormatter: currencyFormatter,
             ),
           ],
@@ -79,8 +73,7 @@ class BalanceSummaryWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildMonthSelector(BuildContext context) {
-    final theme = Theme.of(context);
+  Row _buildMonthSelector() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -95,7 +88,7 @@ class BalanceSummaryWidget extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
             child: Text(
               formattedSelectedMonth,
-              style: theme.textTheme.titleMedium,
+              style: Get.theme.textTheme.titleMedium,
             ),
           ),
         ),
@@ -107,8 +100,33 @@ class BalanceSummaryWidget extends StatelessWidget {
     );
   }
 
-  Widget _financialProgressBar({
-    required ThemeData theme,
+  Column buildSummary() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(monthlyNetResultLabel, style: Get.theme.textTheme.titleMedium),
+        const SizedBox(height: 8),
+        Text(
+          formattedMonthlyNetResult,
+          style: Get.theme.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Column buildDivider() {
+    return Column(
+      children: [
+        const SizedBox(height: 16),
+        const Divider(),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildFinancialProgressBar({
     required String label,
     required double value,
     required double percentage,
@@ -121,10 +139,10 @@ class BalanceSummaryWidget extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: theme.textTheme.bodyLarge),
+            Text(label, style: Get.theme.textTheme.bodyLarge),
             Text(
               currencyFormatter.format(value),
-              style: theme.textTheme.bodyLarge?.copyWith(
+              style: Get.theme.textTheme.bodyLarge?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: color,
               ),
@@ -146,7 +164,7 @@ class BalanceSummaryWidget extends StatelessWidget {
           alignment: Alignment.centerRight,
           child: Text(
             '${(percentage * 100).toStringAsFixed(1)}% do total',
-            style: theme.textTheme.bodySmall,
+            style: Get.theme.textTheme.bodySmall,
           ),
         ),
       ],
