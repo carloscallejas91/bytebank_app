@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mobile_app/domain/enums/sort_order.dart';
 
 class TransactionListHeader extends StatelessWidget {
@@ -13,22 +14,20 @@ class TransactionListHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Lista de Transações', style: theme.textTheme.titleMedium),
+            Text('Lista de Transações', style: Get.theme.textTheme.titleMedium),
             Row(
               children: [
                 const Icon(Icons.calendar_today_outlined, size: 14),
                 const SizedBox(width: 4),
                 Text(
                   'Data',
-                  style: theme.textTheme.bodySmall?.copyWith(
+                  style: Get.theme.textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),

@@ -1,96 +1,60 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app/app/ui/widgets/custom_button.dart';
+import 'package:get/get.dart';
 import 'package:mobile_app/app/ui/widgets/custom_text_field.dart';
 import 'package:mobile_app/app/utils/app_validators.dart';
 
 class AuthForm extends StatelessWidget {
-  final Key formKey;
   final TextEditingController emailController;
+  final String emailLabelText;
+  final String emailHintText;
+  final IconData emailPrefixIcon;
   final TextEditingController passwordController;
-  final bool isLoading;
+  final String passwordLabelText;
+  final String passwordHintText;
+  final IconData passwordPrefixIcon;
   final bool isPasswordHidden;
-  final VoidCallback onSignIn;
   final VoidCallback onTogglePasswordVisibility;
-  final VoidCallback onForgotPassword;
 
   const AuthForm({
     super.key,
-    required this.formKey,
     required this.emailController,
+    required this.emailLabelText,
+    required this.emailHintText,
+    required this.emailPrefixIcon,
     required this.passwordController,
-    required this.isLoading,
     required this.isPasswordHidden,
-    required this.onSignIn,
+    required this.passwordLabelText,
+    required this.passwordHintText,
+    required this.passwordPrefixIcon,
     required this.onTogglePasswordVisibility,
-    required this.onForgotPassword,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Form(
-      key: formKey,
-      child: Card(
-        elevation: 0,
-        margin: EdgeInsets.zero,
-        color: theme.colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildWelcomeText(theme),
-              const SizedBox(height: 16),
-              Text('Faça login para acessar sua conta.'),
-              const SizedBox(height: 32),
-              _buildEmailField(),
-              const SizedBox(height: 16),
-              _buildPasswordField(),
-              Align(
-                alignment: Alignment.centerRight,
-                child: _buildForgotPasswordButton(),
-              ),
-              const SizedBox(height: 16),
-              _buildSignInButton(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWelcomeText(ThemeData theme) {
-    return Row(
-      children: [
-        Text('Seja ', style: theme.textTheme.titleLarge),
-        Text(
-          'bem-vindo!',
-          style: theme.textTheme.titleLarge!.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: 16,
+      children: [_buildEmailField(), _buildPasswordField()],
     );
   }
 
   Widget _buildEmailField() {
     return CustomTextField(
       controller: emailController,
-      labelText: 'E-mail',
-      hintText: 'seuemail@exemplo.com',
-      prefixIcon: Icons.email_outlined,
+      labelText: emailLabelText,
+      hintText: emailHintText,
+      prefixIcon: emailPrefixIcon,
       keyboardType: TextInputType.emailAddress,
       validator: AppValidators.email,
     );
   }
 
-  Widget _buildPasswordField() {
+  CustomTextField _buildPasswordField() {
     return CustomTextField(
       controller: passwordController,
-      labelText: 'Senha',
-      hintText: '********',
-      prefixIcon: Icons.lock_outline,
+      labelText: passwordLabelText,
+      hintText: passwordHintText,
+      prefixIcon: passwordPrefixIcon,
       isPassword: isPasswordHidden,
       suffixIcon: IconButton(
         icon: Icon(
@@ -101,21 +65,6 @@ class AuthForm extends StatelessWidget {
         onPressed: onTogglePasswordVisibility,
       ),
       validator: AppValidators.password,
-    );
-  }
-
-  Widget _buildForgotPasswordButton() {
-    return TextButton(
-      onPressed: onForgotPassword,
-      child: const Text('Esqueceu a senha?'),
-    );
-  }
-
-  Widget _buildSignInButton() {
-    return CustomButton(
-      text: 'Entrar',
-      isLoading: isLoading,
-      onPressed: onSignIn,
     );
   }
 }

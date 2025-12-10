@@ -4,88 +4,71 @@ import 'package:mobile_app/app/ui/widgets/custom_text_field.dart';
 import 'package:mobile_app/app/utils/app_validators.dart';
 
 class CreateForm extends StatelessWidget {
-  final Key formKey;
   final TextEditingController nameController;
+  final String nameLabelText;
+  final String nameHintText;
+  final IconData namePrefixIcon;
   final TextEditingController emailController;
+  final String emailLabelText;
+  final String emailHintText;
+  final IconData emailPrefixIcon;
   final TextEditingController passwordController;
+  final String passwordLabelText;
+  final String passwordHintText;
+  final IconData passwordPrefixIcon;
   final TextEditingController confirmPasswordController;
-  final bool isLoading;
+  final String confirmPasswordLabelText;
+  final String confirmPasswordHintText;
+  final IconData confirmPasswordPrefixIcon;
   final bool isPasswordHidden;
   final bool isConfirmPasswordHidden;
-  final VoidCallback onCreateAccount;
   final VoidCallback onTogglePasswordVisibility;
   final VoidCallback onToggleConfirmPasswordVisibility;
 
   const CreateForm({
     super.key,
-    required this.formKey,
     required this.nameController,
+    required this.nameLabelText,
+    required this.nameHintText,
+    required this.namePrefixIcon,
     required this.emailController,
+    required this.emailLabelText,
+    required this.emailHintText,
+    required this.emailPrefixIcon,
     required this.passwordController,
+    required this.passwordLabelText,
+    required this.passwordHintText,
+    required this.passwordPrefixIcon,
     required this.confirmPasswordController,
-    required this.isLoading,
+    required this.confirmPasswordLabelText,
+    required this.confirmPasswordHintText,
+    required this.confirmPasswordPrefixIcon,
     required this.isPasswordHidden,
     required this.isConfirmPasswordHidden,
-    required this.onCreateAccount,
     required this.onTogglePasswordVisibility,
     required this.onToggleConfirmPasswordVisibility,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Form(
-      key: formKey,
-      child: Card(
-        elevation: 0,
-        margin: EdgeInsets.zero,
-        color: theme.colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildWelcomeText(theme),
-              const SizedBox(height: 16),
-              const Text('Preencha os campos abaixo para criar sua conta.'),
-              const SizedBox(height: 32),
-              _buildNameField(),
-              const SizedBox(height: 16),
-              _buildEmailField(),
-              const SizedBox(height: 16),
-              _buildPasswordField(),
-              const SizedBox(height: 16),
-              _buildConfirmPasswordField(),
-              const SizedBox(height: 16),
-              _buildCreateAccountButton(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWelcomeText(ThemeData theme) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: 16,
       children: [
-        Text('Criar ', style: theme.textTheme.titleLarge),
-        Text(
-          'conta',
-          style: theme.textTheme.titleLarge!.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        _buildNameField(),
+        _buildEmailField(),
+        _buildPasswordField(),
+        _buildConfirmPasswordField(),
       ],
     );
   }
 
-  Widget _buildNameField() {
+  CustomTextField _buildNameField() {
     return CustomTextField(
       controller: nameController,
-      labelText: 'Nome',
-      hintText: 'Como podemos te chamar?',
-      prefixIcon: Icons.person_outline,
+      labelText: nameLabelText,
+      hintText: nameHintText,
+      prefixIcon: namePrefixIcon,
       validator: (value) => AppValidators.notEmpty(
         value,
         message: 'O campo de nome é obrigatório.',
@@ -93,23 +76,23 @@ class CreateForm extends StatelessWidget {
     );
   }
 
-  Widget _buildEmailField() {
+  CustomTextField _buildEmailField() {
     return CustomTextField(
       controller: emailController,
-      labelText: 'E-mail',
-      hintText: 'seuemail@exemplo.com',
-      prefixIcon: Icons.email_outlined,
+      labelText: emailLabelText,
+      hintText: emailHintText,
+      prefixIcon: emailPrefixIcon,
       keyboardType: TextInputType.emailAddress,
       validator: AppValidators.email,
     );
   }
 
-  Widget _buildPasswordField() {
+  CustomTextField _buildPasswordField() {
     return CustomTextField(
       controller: passwordController,
-      labelText: 'Senha',
-      hintText: 'Crie uma senha forte',
-      prefixIcon: Icons.lock_outline,
+      labelText: passwordLabelText,
+      hintText: passwordHintText,
+      prefixIcon: passwordPrefixIcon,
       isPassword: isPasswordHidden,
       suffixIcon: IconButton(
         icon: Icon(
@@ -123,12 +106,12 @@ class CreateForm extends StatelessWidget {
     );
   }
 
-  Widget _buildConfirmPasswordField() {
+  CustomTextField _buildConfirmPasswordField() {
     return CustomTextField(
       controller: confirmPasswordController,
-      labelText: 'Confirmar Senha',
-      hintText: 'Repita a senha',
-      prefixIcon: Icons.lock_outline,
+      labelText: confirmPasswordLabelText,
+      hintText: confirmPasswordHintText,
+      prefixIcon: confirmPasswordPrefixIcon,
       isPassword: isConfirmPasswordHidden,
       suffixIcon: IconButton(
         icon: Icon(
@@ -140,14 +123,6 @@ class CreateForm extends StatelessWidget {
       ),
       validator: (value) =>
           AppValidators.confirmPassword(passwordController.text, value),
-    );
-  }
-
-  Widget _buildCreateAccountButton() {
-    return CustomButton(
-      text: 'Criar Conta',
-      isLoading: isLoading,
-      onPressed: onCreateAccount,
     );
   }
 }
