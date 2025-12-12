@@ -26,8 +26,6 @@ class DescriptionField extends StatelessWidget {
       prefixIcon: prefixIcon,
       keyboardType: TextInputType.text,
       validator: validator,
-          // (value) =>
-          // AppValidators.notEmpty(value, message: 'A descrição é obrigatória.'),
     );
   }
 }

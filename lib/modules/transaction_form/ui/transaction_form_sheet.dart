@@ -16,8 +16,6 @@ class TransactionFormSheet extends GetView<TransactionFormController> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
@@ -27,87 +25,111 @@ class TransactionFormSheet extends GetView<TransactionFormController> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                controller.isEditMode ? 'Editar transação' : 'Nova transação',
-                style: theme.textTheme.headlineSmall,
-              ),
+              _buildHeader(),
               const SizedBox(height: 24),
-              Obx(
-                () => TypeSelector(
-                  selectedType: controller.selectedType.value,
-                  onTypeChanged: controller.setTransactionType,
-                ),
-              ),
+              _buildTypeSelector(),
               const SizedBox(height: 16),
-              ValueField(
-                valueController: controller.valueController,
-                labelText: 'Valor',
-                hintText: 'R\$0,00',
-                prefixIcon: Icons.attach_money,
-                validator: (_) => AppValidators.currencyGreaterThanZero(
-                  controller.valueController,
-                ),
-              ),
+              _buildValueField(),
               const SizedBox(height: 16),
-              Obx(() {
-                return PaymentMethodDropdown(
-                  items: controller.currentPaymentMethods,
-                  value: controller.selectedPaymentMethod.value,
-                  prefixIcon: controller.paymentMethodPrefixIcon,
-                  hintText: controller.paymentMethodHintText,
-                  onChanged: (newValue) {
-                    controller.selectedPaymentMethod.value = newValue;
-                  },
-                  validator: (value) => AppValidators.notEmpty(
-                    value,
-                    message: 'Por favor, selecione um método.',
-                  ),
-                );
-              }),
+              _buildPaymentMethodDropdown(),
               const SizedBox(height: 16),
-              DescriptionField(
-                descriptionController: controller.descriptionController,
-                labelText: 'Descrição',
-                hintText: 'Descrição',
-                prefixIcon: Icons.description_outlined,
-                validator: (value) => AppValidators.notEmpty(
-                  value,
-                  message: 'A descrição é obrigatória.',
-                ),
-              ),
+              _buildDescriptionField(),
               const SizedBox(height: 16),
-              Obx(() {
-                final state = controller.receiptPickerState;
-                switch (state) {
-                  case ReceiptPickerState.localFile:
-                    return ReceiptPicker.localFile(
-                      fileName: p.basename(
-                        controller.selectedReceipt.value!.path,
-                      ),
-                      onRemoveReceipt: controller.removeReceipt,
-                    );
-                  case ReceiptPickerState.existingReceipt:
-                    return ReceiptPicker.existingReceipt(
-                      onViewReceipt: controller.viewReceipt,
-                      onRemoveReceipt: controller.removeReceipt,
-                    );
-                  case ReceiptPickerState.attach:
-                    return ReceiptPicker.attach(
-                      onPickReceipt: controller.pickReceipt,
-                    );
-                }
-              }),
+              _buildReceiptPicker(),
               const SizedBox(height: 32),
-              Obx(
-                () => SaveButton(
-                  textButton: 'Salvar',
-                  isLoading: controller.isLoading.value,
-                  onSave: controller.saveTransaction,
-                ),
-              ),
+              _buildSaveButton(),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Text _buildHeader() {
+    return Text(
+      controller.isEditMode ? 'Editar transação' : 'Nova transação',
+      style: Get.theme.textTheme.headlineSmall,
+    );
+  }
+
+  Obx _buildTypeSelector() {
+    return Obx(
+      () => TypeSelector(
+        incomeLabel: 'Entrada',
+        expensesLabel: 'Saída',
+        selectedType: controller.selectedType.value,
+        onTypeChanged: controller.setTransactionType,
+      ),
+    );
+  }
+
+  ValueField _buildValueField() {
+    return ValueField(
+      valueController: controller.valueController,
+      labelText: 'Valor',
+      hintText: 'R\$0,00',
+      prefixIcon: Icons.attach_money,
+      validator: (_) =>
+          AppValidators.currencyGreaterThanZero(controller.valueController),
+    );
+  }
+
+  Obx _buildPaymentMethodDropdown() {
+    return Obx(() {
+      return PaymentMethodDropdown(
+        labelText: 'Selecione um método',
+        items: controller.currentPaymentMethods,
+        value: controller.selectedPaymentMethod.value,
+        prefixIcon: controller.paymentMethodPrefixIcon,
+        hintText: controller.paymentMethodHintText,
+        onChanged: (newValue) {
+          controller.selectedPaymentMethod.value = newValue;
+        },
+        validator: (value) => AppValidators.notEmpty(
+          value,
+          message: 'Por favor, selecione um método.',
+        ),
+      );
+    });
+  }
+
+  DescriptionField _buildDescriptionField() {
+    return DescriptionField(
+      descriptionController: controller.descriptionController,
+      labelText: 'Descrição',
+      hintText: 'Descrição',
+      prefixIcon: Icons.description_outlined,
+      validator: (value) =>
+          AppValidators.notEmpty(value, message: 'A descrição é obrigatória.'),
+    );
+  }
+
+  Obx _buildReceiptPicker() {
+    return Obx(() {
+      final state = controller.receiptPickerState;
+      switch (state) {
+        case ReceiptPickerState.localFile:
+          return ReceiptPicker.localFile(
+            fileName: p.basename(controller.selectedReceipt.value!.path),
+            onRemoveReceipt: controller.removeReceipt,
+          );
+        case ReceiptPickerState.existingReceipt:
+          return ReceiptPicker.existingReceipt(
+            onViewReceipt: controller.viewReceipt,
+            onRemoveReceipt: controller.removeReceipt,
+          );
+        case ReceiptPickerState.attach:
+          return ReceiptPicker.attach(onPickReceipt: controller.pickReceipt);
+      }
+    });
+  }
+
+  Obx _buildSaveButton() {
+    return Obx(
+      () => SaveButton(
+        textButton: 'Salvar',
+        isLoading: controller.isLoading.value,
+        onSave: controller.saveTransaction,
       ),
     );
   }

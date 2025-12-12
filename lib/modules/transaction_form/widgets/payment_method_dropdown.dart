@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class PaymentMethodDropdown extends StatelessWidget {
+  final String labelText;
   final List<String> items;
   final String? value;
   final ValueChanged<String?> onChanged;
@@ -10,6 +11,7 @@ class PaymentMethodDropdown extends StatelessWidget {
 
   const PaymentMethodDropdown({
     super.key,
+    required this.labelText,
     required this.items,
     required this.value,
     required this.onChanged,
@@ -23,7 +25,7 @@ class PaymentMethodDropdown extends StatelessWidget {
     return DropdownButtonFormField<String>(
       initialValue: value,
       decoration: InputDecoration(
-        labelText: 'Selecione um método',
+        labelText: labelText,
         prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
         hintText: hintText,
       ),

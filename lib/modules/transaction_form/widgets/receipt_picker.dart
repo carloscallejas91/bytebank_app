@@ -34,31 +34,29 @@ class ReceiptPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (_onPickReceipt != null) {
-      return _attachButton(onPick: _onPickReceipt);
+      return _buildAttachButton(onPick: _onPickReceipt);
     }
 
     if (_fileName != null) {
-      return _localFileDisplay(
+      return _buildLocalFileDisplay(
         fileName: _fileName,
         onRemove: _onRemoveReceipt!,
       );
     }
 
-    return _existingReceiptDisplay(
+    return _buildExistingReceiptDisplay(
       onView: _onViewReceipt!,
       onRemove: _onRemoveReceipt!,
     );
   }
 }
 
-Widget _attachButton({required VoidCallback onPick}) {
-  final theme = Theme.of(Get.context!);
-
+OutlinedButton _buildAttachButton({required VoidCallback onPick}) {
   return OutlinedButton.icon(
-    icon: Icon(Icons.attach_file, color: theme.colorScheme.onSurface),
+    icon: Icon(Icons.attach_file, color: Get.theme.colorScheme.onSurface),
     label: Text(
       'Anexar comprovante',
-      style: TextStyle(color: theme.colorScheme.onSurface),
+      style: TextStyle(color: Get.theme.colorScheme.onSurface),
     ),
     onPressed: onPick,
     style: OutlinedButton.styleFrom(
@@ -67,11 +65,11 @@ Widget _attachButton({required VoidCallback onPick}) {
   );
 }
 
-Widget _localFileDisplay({
+Widget _buildLocalFileDisplay({
   required String fileName,
   required VoidCallback onRemove,
 }) {
-  return _receiptInfoRow(
+  return _buildReceiptInfoRow(
     icon: Icons.check_circle,
     iconColor: Colors.green,
     text: fileName,
@@ -83,13 +81,11 @@ Widget _localFileDisplay({
   );
 }
 
-Widget _existingReceiptDisplay({
+Widget _buildExistingReceiptDisplay({
   required VoidCallback onView,
   required VoidCallback onRemove,
 }) {
-  final theme = Theme.of(Get.context!);
-
-  return _receiptInfoRow(
+  return _buildReceiptInfoRow(
     icon: Icons.cloud_done,
     iconColor: Colors.blue,
     text: 'Comprovante salvo',
@@ -98,7 +94,7 @@ Widget _existingReceiptDisplay({
       children: [
         TextButton(onPressed: onView, child: const Text('Ver')),
         IconButton(
-          icon: Icon(Icons.close, color: theme.colorScheme.error),
+          icon: Icon(Icons.close, color: Get.theme.colorScheme.error),
           onPressed: onRemove,
           tooltip: 'Remover comprovante',
         ),
@@ -107,7 +103,7 @@ Widget _existingReceiptDisplay({
   );
 }
 
-Widget _receiptInfoRow({
+Container _buildReceiptInfoRow({
   required IconData icon,
   required Color iconColor,
   required String text,
