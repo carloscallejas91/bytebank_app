@@ -1,164 +1,77 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
-import 'package:mobile_app/app/data/enums/transaction_type.dart';
-import 'package:mobile_app/app/data/models/account_model.dart';
-import 'package:mobile_app/app/services/auth_service.dart';
-import 'package:mobile_app/app/services/database_service.dart';
-import 'package:mobile_app/app/services/snack_bar_service.dart';
 import 'package:mobile_app/app/utils/date_formatter.dart';
+import 'package:mobile_app/domain/entities/account_entity.dart';
+import 'package:mobile_app/domain/repositories/i_auth_repository.dart';
+import 'package:mobile_app/domain/usecases/get_user_stream_usecase.dart';
+import 'package:mobile_app/modules/dashboard/controllers/avatar_controller.dart';
+import 'package:mobile_app/modules/dashboard/services/dashboard_summary_service.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:path/path.dart' as p;
 
 class DashboardController extends GetxController {
-  // Services
-  final _snackBarService = Get.find<SnackBarService>();
-  final _authService = Get.find<AuthService>();
-  final _databaseService = Get.find<DatabaseService>();
+  // Repositories
+  final _authRepository = Get.find<IAuthRepository>();
 
-  // Class controllers
+  // Use Cases
+  final _getUserStreamUseCase = Get.find<GetUserStreamUseCase>();
+
+  // Local Controllers and Services
   final _transactionController = Get.find<TransactionController>();
+  late final DashboardSummaryService summaryService;
+  late final AvatarController avatarController;
 
-  // Controllers
-  final currencyFormatter = NumberFormat.currency(
-    locale: 'pt_BR',
-    symbol: 'R\$',
-  );
-
-  // Models
-  final account = AccountModel().obs;
-
-  // Header
-  final userName = ''.obs;
-  final userPhotoUrl = ''.obs;
+  // Formatters
   final now = DateFormatter.formatDayOfWeekWithDate();
 
-  // Credit Card
+  // Account and User Data
+  final account = Rxn<AccountEntity>();
+  final userName = ''.obs;
   final totalBalance = 0.0.obs;
-  final monthlyIncome = 0.0.obs;
-  final monthlyExpenses = 0.0.obs;
 
-  // Resume Summary
+  // Monthly Summary Data
   final selectedMonth = DateTime.now().obs;
 
-  // Category Summary
-  final spendingByCategory = <String, double>{}.obs;
-  final incomeByCategory = <String, double>{}.obs;
-
-  // Streams
-  late StreamSubscription _userSubscription;
-
-  // Conditionals
+  // UI State para avatar
   final isBalanceVisible = false.obs;
-  final isAvatarLoading = false.obs;
 
-  //================================================================
-  // Lifecycle Methods
-  //================================================================
+  // Formatted Reactive Variables
+  final formattedTotalBalance = 'R\$ 0,00'.obs;
+
+  // Stream Subscriptions
+  StreamSubscription<User?>? _authSubscription;
+  StreamSubscription<AccountEntity>? _userAccountSubscription;
 
   @override
   void onInit() {
     super.onInit();
+    summaryService = Get.find<DashboardSummaryService>();
+    avatarController = Get.find<AvatarController>();
 
-    final initialUser = _authService.currentUser;
-    if (initialUser != null) {
-      userName.value = initialUser.displayName ?? 'Usuário';
+    _setupAuthListener();
+    _setupOrchestrationListeners();
+    _setupFormattingListeners();
 
-      account.value = AccountModel(
-        last4Digits: '4321',
-        validity: '12/26',
-        accountType: 'Conta Corrente',
-      );
-    }
-
-    _setupDataListeners();
+    _initialCalls();
   }
 
   @override
   void onClose() {
-    _userSubscription.cancel();
+    _authSubscription?.cancel();
+    _userAccountSubscription?.cancel();
 
     super.onClose();
   }
 
-  //================================================================
-  // Getters
-  //================================================================
-
-  String get formattedTotalBalance =>
-      currencyFormatter.format(totalBalance.value);
-
-  String get formattedMonthlyIncome =>
-      currencyFormatter.format(monthlyIncome.value);
-
-  String get formattedMonthlyExpenses =>
-      currencyFormatter.format(monthlyExpenses.value);
-
-  String get formattedMonthlyNetResult =>
-      currencyFormatter.format(monthlyIncome.value - monthlyExpenses.value);
-
-  String get formattedSelectedMonth {
-    String formatted = DateFormat(
-      'MMMM yyyy',
-      'pt_BR',
-    ).format(selectedMonth.value);
-    return formatted[0].toUpperCase() + formatted.substring(1);
-  }
-
-  //================================================================
-  // Public Functions
-  //================================================================
-
-  Future<void> pickAndSaveImage(ImageSource source) async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: source, imageQuality: 50);
-
-    if (pickedFile == null) return;
-
-    isAvatarLoading.value = true;
-    try {
-      final appDir = await getApplicationDocumentsDirectory();
-      final localFile = File(pickedFile.path);
-      final fileName = p.basename(pickedFile.path);
-      final savedImage = await localFile.copy('${appDir.path}/$fileName');
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('user_avatar_path', savedImage.path);
-
-      if (userPhotoUrl.value != savedImage.path) {
-        userPhotoUrl(savedImage.path);
-      } else {
-        userPhotoUrl.refresh();
-      }
-
-      _snackBarService.showSuccess(
-        title: 'Sucesso!',
-        message: 'Avatar atualizado!',
-      );
-    } catch (e) {
-      _snackBarService.showError(
-        title: 'Erro',
-        message: 'Não foi possível salvar o avatar.',
-      );
-    } finally {
-      isAvatarLoading.value = false;
-    }
-  }
-
-  Future<void> selectMonth(BuildContext context) async {
+  // UI Actions
+  Future<void> selectMonth() async {
     final pickedMonth = await showMonthPicker(
-      context: context,
+      context: Get.context!,
       initialDate: selectedMonth.value,
     );
-
     if (pickedMonth != null && pickedMonth != selectedMonth.value) {
       selectedMonth.value = pickedMonth;
     }
@@ -178,71 +91,63 @@ class DashboardController extends GetxController {
     );
   }
 
-  double calculatePercentage(double value, double otherValue) {
-    final maxVal = (value + otherValue);
-    if (maxVal == 0) return 0.0;
-    return value / maxVal;
+  void toggleBalanceVisibility() {
+    isBalanceVisible.toggle();
   }
 
-  void toggleBalanceVisibility() => isBalanceVisible.toggle();
-
-  //================================================================
-  // Private Functions
-  //================================================================
-
-  void _setupDataListeners() {
-    _userSubscription = _databaseService.getUserStream().listen((userDoc) {
-      if (userDoc.exists) {
-        final data = userDoc.data() as Map<String, dynamic>? ?? {};
-        totalBalance.value = data['balance']?.toDouble() ?? 0.0;
-        userName.value = data['name'] ?? 'Usuário';
-        account.value = AccountModel.fromMap(data);
-      }
-    });
-
-    // Worker para o usuário do Firebase Auth
-    ever(_authService.user, (User? firebaseUser) {
-      _loadCachedAvatar().then((localPath) {
-        userPhotoUrl.value = localPath ?? firebaseUser?.photoURL ?? '';
-      });
-    });
-
-    // Workers para recalcular os resumos
-    ever(_transactionController.transactions, (_) => _calculateSummaries());
-    ever(selectedMonth, (_) => _calculateSummaries());
+  // Internal Logic & Private Methods
+  void _initialCalls() {
+    _updateSummaries();
+    _updateFormattedBalance();
   }
 
-  Future<String?> _loadCachedAvatar() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('user_avatar_path');
+  void _setupAuthListener() {
+    _authSubscription = _authRepository.userChanges.listen(_onAuthChanged);
   }
 
-  void _calculateSummaries() {
-    double income = 0.0;
-    double expenses = 0.0;
-    Map<String, double> spendingTotals = {};
-    Map<String, double> incomeTotals = {};
+  void _setupOrchestrationListeners() {
+    ever(_transactionController.transactions, (_) => _updateSummaries());
+    ever(selectedMonth, (_) => _updateSummaries());
+  }
 
-    final monthlyTransactions = _transactionController.transactions.where((t) {
-      return t.date.year == selectedMonth.value.year &&
-          t.date.month == selectedMonth.value.month;
-    });
+  void _setupFormattingListeners() {
+    ever(totalBalance, (_) => _updateFormattedBalance());
+  }
 
-    for (var t in monthlyTransactions) {
-      final category = t.paymentMethod;
-      if (t.type == TransactionType.income) {
-        income += t.amount;
-        incomeTotals[category] = (incomeTotals[category] ?? 0) + t.amount;
-      } else {
-        expenses += t.amount;
-        spendingTotals[category] = (spendingTotals[category] ?? 0) + t.amount;
-      }
+  void _updateSummaries() {
+    summaryService.calculateSummariesFor(
+      _transactionController.transactions.toList(),
+      selectedMonth.value,
+    );
+  }
+
+  void _updateFormattedBalance() {
+    formattedTotalBalance.value = summaryService.currencyFormatter.format(
+      totalBalance.value,
+    );
+  }
+
+  void _onAuthChanged(User? firebaseUser) {
+    _userAccountSubscription?.cancel();
+
+    if (firebaseUser != null) {
+      _userAccountSubscription = _getUserStreamUseCase
+          .call(firebaseUser.uid)
+          .listen(_onAccountChanged);
+    } else {
+      _clearAccountData();
     }
+  }
 
-    monthlyIncome.value = income;
-    monthlyExpenses.value = expenses;
+  void _onAccountChanged(AccountEntity userAccount) {
+    account.value = userAccount;
+    totalBalance.value = userAccount.balance;
+    userName.value = userAccount.name;
+  }
 
-    spendingByCategory.value = spendingTotals;
-    incomeByCategory.value = incomeTotals;
+  void _clearAccountData() {
+    userName.value = '';
+    totalBalance.value = 0.0;
+    account.value = null;
   }
 }

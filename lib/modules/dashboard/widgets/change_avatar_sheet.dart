@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mobile_app/modules/dashboard/controllers/dashboard_controller.dart';
 
-class ChangeAvatarSheet extends GetView<DashboardController> {
-  const ChangeAvatarSheet({super.key});
+class ChangeAvatarSheet extends StatelessWidget {
+  final String cameraOptionTitle;
+  final String galleryOptionTitle;
+  final ValueChanged<ImageSource> onPickImage;
+
+  const ChangeAvatarSheet({
+    super.key,
+    required this.cameraOptionTitle,
+    required this.galleryOptionTitle,
+    required this.onPickImage,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -14,18 +22,18 @@ class ChangeAvatarSheet extends GetView<DashboardController> {
         children: [
           ListTile(
             leading: const Icon(Icons.photo_camera),
-            title: const Text('Tirar Foto'),
+            title: Text(cameraOptionTitle),
             onTap: () {
               Get.back();
-              controller.pickAndSaveImage(ImageSource.camera);
+              onPickImage(ImageSource.camera);
             },
           ),
           ListTile(
             leading: const Icon(Icons.photo_library),
-            title: const Text('Escolher da Galeria'),
+            title: Text(galleryOptionTitle),
             onTap: () {
               Get.back();
-              controller.pickAndSaveImage(ImageSource.gallery);
+              onPickImage(ImageSource.gallery);
             },
           ),
         ],

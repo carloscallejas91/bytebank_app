@@ -2,19 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/modules/dashboard/controllers/dashboard_controller.dart';
-import 'package:mobile_app/modules/dashboard/widgets/balance_summary_widget.dart';
+import 'package:mobile_app/modules/dashboard/widgets/balance_summary.dart';
+import 'package:mobile_app/modules/dashboard/widgets/category_summary.dart';
 import 'package:mobile_app/modules/dashboard/widgets/change_avatar_sheet.dart';
-import 'package:mobile_app/modules/dashboard/widgets/credit_card_widget.dart';
-import 'package:mobile_app/modules/dashboard/widgets/header_widget.dart';
-import 'package:mobile_app/modules/dashboard/widgets/category_summary_widget.dart';
+import 'package:mobile_app/modules/dashboard/widgets/credit_card.dart';
+import 'package:mobile_app/modules/dashboard/widgets/header_card.dart';
 
 class DashboardScreen extends GetView<DashboardController> {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
@@ -28,55 +26,14 @@ class DashboardScreen extends GetView<DashboardController> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                spacing: 16,
+                spacing: 8,
                 children:
                     [
-                          Obx(
-                            () => HeaderWidget(
-                              name: controller.userName.value,
-                              message: 'Bem vindo de volta!',
-                              date: controller.now,
-                              url: controller.userPhotoUrl.value,
-                              onAvatarTap: () {
-                                Get.bottomSheet(
-                                  ChangeAvatarSheet(),
-                                  backgroundColor: theme.colorScheme.surface,
-                                  isScrollControlled: true,
-                                );
-                              },
-                              isAvatarLoading: controller.isAvatarLoading.value,
-                            ),
-                          ),
-                          Obx(
-                            () => CreditCardWidget(
-                              controller: controller,
-                              number: controller.account.value.last4Digits,
-                              validity: controller.account.value.validity,
-                              accountType: controller.account.value.accountType,
-                              balance: controller.formattedTotalBalance,
-                            ),
-                          ),
-                          BalanceSummaryWidget(controller: controller),
-                          Obx(() {
-                            if (controller.spendingByCategory.isNotEmpty) {
-                              return CategorySummaryWidget(
-                                title: 'Gastos por Categoria',
-                                spendingData: controller.spendingByCategory,
-                              );
-                            } else {
-                              return const SizedBox.shrink();
-                            }
-                          }),
-                          Obx(() {
-                            if (controller.incomeByCategory.isNotEmpty) {
-                              return CategorySummaryWidget(
-                                title: 'Receitas por Categoria',
-                                spendingData: controller.incomeByCategory,
-                              );
-                            } else {
-                              return const SizedBox.shrink();
-                            }
-                          }),
+                          _buildHeader(),
+                          _buildCreditCard(),
+                          _buildBalanceSummary(),
+                          _buildSpendingSummary(),
+                          _buildIncomeSummary(),
                         ]
                         .animate(interval: 200.ms)
                         .fadeIn(duration: 500.ms, delay: 100.ms)
@@ -87,5 +44,91 @@ class DashboardScreen extends GetView<DashboardController> {
         );
       },
     );
+  }
+
+  Obx _buildHeader() {
+    return Obx(
+      () => HeaderCard(
+        name: controller.userName.value,
+        message: 'Bem vindo de volta!',
+        date: controller.now,
+        backgroundImage: controller.avatarController.avatarImageProvider.value,
+        isAvatarLoading: controller.avatarController.isAvatarLoading.value,
+        onAvatarTap: () {
+          Get.bottomSheet(
+            ChangeAvatarSheet(
+              cameraOptionTitle: 'Tirar Foto',
+              galleryOptionTitle: 'Escolher da Galeria',
+              onPickImage: controller.avatarController.pickAndSaveImage,
+            ),
+            backgroundColor: Get.theme.colorScheme.surface,
+            isScrollControlled: true,
+          );
+        },
+      ),
+    );
+  }
+
+  Obx _buildCreditCard() {
+    return Obx(() {
+      if (controller.account.value == null) {
+        return const SizedBox.shrink();
+      }
+
+      return CreditCard(
+        number: controller.account.value!.last4Digits,
+        validity: controller.account.value!.validity,
+        accountType: controller.account.value!.accountType,
+        balance: controller.formattedTotalBalance.value,
+        isBalanceVisible: controller.isBalanceVisible.value,
+        onToggleBalanceVisibility: controller.toggleBalanceVisibility,
+      );
+    });
+  }
+
+  Obx _buildBalanceSummary() {
+    return Obx(
+      () => BalanceSummary(
+        monthlyNetResultLabel: 'Resultado do Mês',
+        incomeLabel: 'Entrada',
+        expensesLabel: 'Saída',
+        formattedSelectedMonth:
+            controller.summaryService.formattedSelectedMonth.value,
+        onPreviousMonth: controller.goToPreviousMonth,
+        onNextMonth: controller.goToNextMonth,
+        onSelectMonth: controller.selectMonth,
+        formattedMonthlyNetResult:
+            controller.summaryService.formattedMonthlyNetResult.value,
+        monthlyIncomeValue: controller.summaryService.monthlyIncome.value,
+        monthlyExpensesValue: controller.summaryService.monthlyExpenses.value,
+        currencyFormatter: controller.summaryService.currencyFormatter,
+      ),
+    );
+  }
+
+  Obx _buildSpendingSummary() {
+    return Obx(() {
+      if (controller.summaryService.spendingCategories.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      return CategorySummary(
+        title: 'Gastos por Categoria',
+        categories: controller.summaryService.spendingCategories.toList(),
+      );
+    });
+  }
+
+  Obx _buildIncomeSummary() {
+    return Obx(() {
+      if (controller.summaryService.incomeCategories.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      return CategorySummary(
+        title: 'Receitas por Categoria',
+        categories: controller.summaryService.incomeCategories.toList(),
+      );
+    });
   }
 }
