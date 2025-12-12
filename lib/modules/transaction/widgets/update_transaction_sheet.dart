@@ -4,29 +4,34 @@ import 'package:mobile_app/domain/entities/transaction_entity.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
 
 class UpdateTransactionsSheet extends GetView<TransactionController> {
+  final String editActionText;
+  final String deleteActionText;
   final TransactionEntity transaction;
 
-  const UpdateTransactionsSheet({super.key, required this.transaction});
+  const UpdateTransactionsSheet({
+    super.key,
+    required this.editActionText,
+    required this.deleteActionText,
+    required this.transaction,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
       child: Wrap(
         children: <Widget>[
           ListTile(
-            leading: Icon(Icons.edit, color: theme.colorScheme.secondary),
-            title: Text('Editar transação'),
+            leading: Icon(Icons.edit, color: Get.theme.colorScheme.secondary),
+            title: Text(editActionText),
             onTap: () {
               Get.back();
               controller.editTransaction(transaction);
             },
           ),
           ListTile(
-            leading: Icon(Icons.delete, color: theme.colorScheme.error),
-            title: Text('Deletar transação'),
+            leading: Icon(Icons.delete, color: Get.theme.colorScheme.error),
+            title: Text(deleteActionText),
             onTap: () {
               Get.back();
               controller.deleteTransaction(transaction);

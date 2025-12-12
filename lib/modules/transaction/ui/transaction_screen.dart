@@ -17,44 +17,64 @@ class TransactionScreen extends GetView<TransactionController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TransactionSearchField(
-            searchController: controller.searchController,
-            onClearSearch: controller.clearSearch,
-            isSearchActive: controller.searchController.text.isNotEmpty,
-          ),
+          _buildSearchField(),
           const SizedBox(height: 16),
-          Obx(
-            () => FilterChips(
-              activeFilter: controller.filter.value.type,
-              onFilterSelected: controller.toggleTypeFilter,
-            ),
-          ),
+          _buildFlip(),
           const SizedBox(height: 24),
-          Obx(
-            () => TransactionListHeader(
-              sortOrder: controller.sortOrder.value,
-              onToggleSortOrder: controller.toggleSortOrder,
-            ),
-          ),
+          _buildHeader(),
           const SizedBox(height: 8),
-          Expanded(
-            child: Obx(() {
-              if (controller.showEmptyState) {
-                return const EmptyState(
-                  textMessage: 'Nenhuma transação encontrada.',
-                );
-              } else {
-                return TransactionList(
-                  transactions: controller.transactionViewModels,
-                  scrollController: controller.scrollController,
-                  isLoadingMore: controller.isLoadingMore.value,
-                  onTransactionTap: controller.showOptionsSheet,
-                );
-              }
-            }),
-          ),
+          _buildListResult(),
         ],
       ),
+    );
+  }
+
+  TransactionSearchField _buildSearchField() {
+    return TransactionSearchField(
+      labelText: 'Pesquisar por descrição',
+      searchController: controller.searchController,
+      onClearSearch: controller.clearSearch,
+      isSearchActive: controller.searchController.text.isNotEmpty,
+    );
+  }
+
+  Obx _buildFlip() {
+    return Obx(
+      () => FilterChips(
+        incomeLabel: 'Entrada',
+        expensesLabel: 'Saída',
+        activeFilter: controller.filter.value.type,
+        onFilterSelected: controller.toggleTypeFilter,
+      ),
+    );
+  }
+
+  Obx _buildHeader() {
+    return Obx(
+      () => TransactionListHeader(
+        titleText: 'Lista de Transações',
+        sortByLabel: 'Data',
+        toggleSortTooltip: 'Alterar ordenação',
+        sortOrder: controller.sortOrder.value,
+        onToggleSortOrder: controller.toggleSortOrder,
+      ),
+    );
+  }
+
+  Expanded _buildListResult() {
+    return Expanded(
+      child: Obx(() {
+        if (controller.showEmptyState) {
+          return const EmptyState(textMessage: 'Nenhuma transação encontrada.');
+        } else {
+          return TransactionList(
+            transactions: controller.transactionViewModels,
+            scrollController: controller.scrollController,
+            isLoadingMore: controller.isLoadingMore.value,
+            onTransactionTap: controller.showOptionsSheet,
+          );
+        }
+      }),
     );
   }
 }

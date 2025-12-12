@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
 class TransactionSearchField extends StatelessWidget {
+  final String labelText;
   final TextEditingController searchController;
   final bool isSearchActive;
   final VoidCallback onClearSearch;
 
   const TransactionSearchField({
     super.key,
+    required this.labelText,
     required this.searchController,
     required this.isSearchActive,
     required this.onClearSearch,
@@ -17,7 +19,7 @@ class TransactionSearchField extends StatelessWidget {
     return TextField(
       controller: searchController,
       decoration: InputDecoration(
-        labelText: 'Pesquisar por descrição',
+        labelText: labelText,
         prefixIcon: const Icon(Icons.search),
         suffixIcon: isSearchActive
             ? IconButton(

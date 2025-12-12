@@ -147,7 +147,13 @@ class TransactionController extends GetxController {
   }
 
   void showOptionsSheet(TransactionEntity transaction) {
-    _showAppBottomSheet(UpdateTransactionsSheet(transaction: transaction));
+    _showAppBottomSheet(
+      UpdateTransactionsSheet(
+        editActionText: 'Editar transação',
+        deleteActionText: 'Deletar transação',
+        transaction: transaction,
+      ),
+    );
   }
 
   void editTransaction(TransactionEntity transactionToEdit) {

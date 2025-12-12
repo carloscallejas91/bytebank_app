@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:mobile_app/modules/transaction/models/transaction_list_item_view_model.dart';
 
 class TransactionListItem extends StatelessWidget {
@@ -13,11 +14,9 @@ class TransactionListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Card(
       margin: EdgeInsets.zero,
-      color: theme.colorScheme.surface,
+      color: Get.theme.colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: onTap,
@@ -27,8 +26,8 @@ class TransactionListItem extends StatelessWidget {
             children: [
               _buildLeading(),
               const SizedBox(width: 16),
-              _buildDetail(theme),
-              _buildValue(theme),
+              _buildDetail(),
+              _buildValue(),
             ],
           ),
         ),
@@ -43,22 +42,24 @@ class TransactionListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildDetail(ThemeData theme) {
+  Widget _buildDetail() {
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             viewModel.formattedDate,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+            style: Get.theme.textTheme.bodySmall?.copyWith(
+              color: Get.theme.colorScheme.onSurfaceVariant.withValues(
+                alpha: 0.8,
+              ),
             ),
           ),
-          Text(viewModel.paymentMethod, style: theme.textTheme.titleMedium),
+          Text(viewModel.paymentMethod, style: Get.theme.textTheme.titleMedium),
           Text(
             viewModel.description,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+            style: Get.theme.textTheme.bodyMedium?.copyWith(
+              color: Get.theme.colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -66,10 +67,10 @@ class TransactionListItem extends StatelessWidget {
     );
   }
 
-  Widget _buildValue(ThemeData theme) {
+  Widget _buildValue() {
     return Text(
       viewModel.formattedAmount,
-      style: theme.textTheme.titleMedium?.copyWith(
+      style: Get.theme.textTheme.titleMedium?.copyWith(
         color: viewModel.color,
         fontWeight: FontWeight.bold,
       ),
