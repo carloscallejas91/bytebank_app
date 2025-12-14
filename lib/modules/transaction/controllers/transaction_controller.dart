@@ -41,8 +41,9 @@ class TransactionController extends GetxController {
   // Transaction State
   final transactionViewModels = <TransactionListItemViewModel>[].obs;
   final transactions = <TransactionEntity>[].obs;
-  final filter = TransactionFilter().obs;
+  final filter = TransactionFilterModel().obs;
   final sortOrder = SortOrder.desc.obs;
+  final selectedDateRange = Rxn<DateTimeRange>();
 
   // Formatters
   final _currencyFormatter = NumberFormat.currency(
@@ -171,8 +172,56 @@ class TransactionController extends GetxController {
     );
   }
 
+  Future<void> chooseDateRange() async {
+    final pickedRange = await showDateRangePicker(
+      context: Get.context!,
+      initialDateRange: selectedDateRange.value,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      locale: const Locale('pt', 'BR'),
+    );
+
+    if (pickedRange != null) {
+      selectedDateRange.value = pickedRange;
+
+      if (searchController.text.isNotEmpty) {
+        searchController.clear();
+        filter.value.descriptionSearch = '';
+      }
+
+      filter.value.startDate = pickedRange.start;
+
+      filter.value.endDate = DateTime(
+        pickedRange.end.year,
+        pickedRange.end.month,
+        pickedRange.end.day,
+        23,
+        59,
+        59,
+      );
+
+      filter.refresh();
+      await refreshTransactions();
+    }
+  }
+
+  Future<void> clearDateRangeFilter() async {
+    selectedDateRange.value = null;
+    filter.value.startDate = null;
+    filter.value.endDate = null;
+    filter.refresh();
+    await refreshTransactions();
+  }
+
   void clearSearch() {
     searchController.clear();
+  }
+
+  String get formattedDateRange {
+    if (selectedDateRange.value == null) return '';
+    final start = DateFormat('dd/MM/yy').format(selectedDateRange.value!.start);
+    final end = DateFormat('dd/MM/yy').format(selectedDateRange.value!.end);
+    return '$start - $end';
   }
 
   // Internal Logic & Private Methods
@@ -255,6 +304,9 @@ class TransactionController extends GetxController {
       _debounce = Timer(const Duration(milliseconds: 500), () {
         final searchTerm = searchController.text.toLowerCase();
         if (filter.value.descriptionSearch != searchTerm) {
+          if (selectedDateRange.value != null) {
+            clearDateRangeFilter();
+          }
           filter.value.descriptionSearch = searchTerm;
           refreshTransactions();
         }

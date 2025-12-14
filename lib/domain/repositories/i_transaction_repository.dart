@@ -9,7 +9,7 @@ abstract class ITransactionRepository {
     required String userId,
     required int limit,
     DocumentSnapshot? startAfter,
-    TransactionFilter? filter,
+    TransactionFilterModel? filter,
     SortOrder sortOrder = SortOrder.desc,
   });
 

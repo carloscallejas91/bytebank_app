@@ -1,13 +1,25 @@
 import 'package:mobile_app/domain/enums/transaction_type.dart';
 
-class TransactionFilter {
+class TransactionFilterModel {
   TransactionType? type;
   String? paymentMethod;
   String descriptionSearch;
+  DateTime? startDate;
+  DateTime? endDate;
 
-  TransactionFilter({this.type, this.paymentMethod, this.descriptionSearch = ''});
+  TransactionFilterModel({
+    this.type,
+    this.paymentMethod,
+    this.descriptionSearch = '',
+    this.startDate,
+    this.endDate,
+  });
 
   bool get isEnabled {
-    return type != null || paymentMethod != null || descriptionSearch.isNotEmpty;
+    return type != null ||
+        paymentMethod != null ||
+        descriptionSearch.isNotEmpty ||
+        startDate != null ||
+        endDate != null;
   }
 }

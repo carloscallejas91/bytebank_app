@@ -4,58 +4,47 @@ import 'package:mobile_app/domain/enums/sort_order.dart';
 
 class TransactionListHeader extends StatelessWidget {
   final String titleText;
-  final String sortByLabel;
-  final String toggleSortTooltip;
   final SortOrder sortOrder;
   final VoidCallback onToggleSortOrder;
 
   const TransactionListHeader({
     super.key,
     required this.titleText,
-    required this.sortByLabel,
-    required this.toggleSortTooltip,
     required this.sortOrder,
     required this.onToggleSortOrder,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [buildListTitle(), buildDataFilter()],
-        ),
-        const Divider(),
+        Text(titleText, style: Get.theme.textTheme.titleMedium),
+        _buildSortControl(),
       ],
     );
   }
 
-  Text buildListTitle() =>
-      Text(titleText, style: Get.theme.textTheme.titleMedium);
-
-  Row buildDataFilter() {
-    return Row(
-      children: [
-        const Icon(Icons.calendar_today_outlined, size: 14),
-        const SizedBox(width: 4),
-        Text(
-          sortByLabel,
-          style: Get.theme.textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+  InkWell _buildSortControl() {
+    return InkWell(
+      onTap: onToggleSortOrder,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+        child: Row(
+          children: [
+            Text('Ordenar por data:', style: Get.theme.textTheme.bodySmall),
+            const SizedBox(width: 4),
+            Icon(
+              sortOrder == SortOrder.desc
+                  ? Icons.arrow_downward
+                  : Icons.arrow_upward,
+              size: 16,
+            ),
+          ],
         ),
-        IconButton(
-          icon: Icon(
-            sortOrder == SortOrder.desc
-                ? Icons.arrow_downward
-                : Icons.arrow_upward,
-          ),
-          tooltip: toggleSortTooltip,
-          onPressed: onToggleSortOrder,
-        ),
-      ],
+      ),
     );
   }
 }

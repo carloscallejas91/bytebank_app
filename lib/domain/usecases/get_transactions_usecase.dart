@@ -13,7 +13,7 @@ class GetTransactionsUseCase {
     required String userId,
     required int limit,
     DocumentSnapshot? startAfter,
-    TransactionFilter? filter,
+    TransactionFilterModel? filter,
     SortOrder sortOrder = SortOrder.desc,
   }) {
     return _repository.fetchTransactionsPage(
