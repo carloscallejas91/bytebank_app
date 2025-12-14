@@ -37,6 +37,7 @@ dependencies:
 
   # Core
   get: ^4.7.2
+  get_storage: ^2.1.1
   uuid: ^4.5.1
   shared_preferences: ^2.5.3
   url_launcher: ^6.3.2

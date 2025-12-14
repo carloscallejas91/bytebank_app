@@ -11,6 +11,7 @@ import 'package:mobile_app/domain/entities/account_entity.dart';
 import 'package:mobile_app/domain/entities/transaction_entity.dart';
 import 'package:mobile_app/domain/entities/transaction_filter_model.dart';
 import 'package:mobile_app/domain/enums/sort_order.dart';
+import 'package:mobile_app/domain/repositories/i_local_data_source.dart';
 import 'package:mobile_app/domain/repositories/i_transaction_repository.dart';
 import 'package:mobile_app/domain/repositories/i_user_repository.dart';
 import 'package:path_provider/path_provider.dart';
@@ -20,8 +21,9 @@ import 'package:path/path.dart' as p;
 class FirebaseDataRepositoryImpl
     implements IUserRepository, ITransactionRepository {
   final FirebaseDataSource _dataSource;
+  final ILocalDataSource _localDataSource;
 
-  FirebaseDataRepositoryImpl(this._dataSource);
+  FirebaseDataRepositoryImpl(this._dataSource, this._localDataSource);
 
   // User Repository
   @override
@@ -88,14 +90,50 @@ class FirebaseDataRepositoryImpl
     DocumentSnapshot? startAfter,
     TransactionFilterModel? filter,
     SortOrder sortOrder = SortOrder.desc,
-  }) {
-    return _dataSource.fetchTransactionsPage(
-      userId: userId,
-      limit: limit,
-      startAfter: startAfter,
-      filter: filter,
-      sortOrder: sortOrder,
-    );
+  }) async {
+    final bool isCacheable =
+        startAfter == null && !(filter?.isEnabled ?? false);
+
+    if (!isCacheable) {
+      debugPrint('Buscando na rede (não armazenável em cache)');
+      return await _dataSource.fetchTransactionsPage(
+        userId: userId,
+        limit: limit,
+        startAfter: startAfter,
+        filter: filter,
+        sortOrder: sortOrder,
+      );
+    }
+
+    try {
+      debugPrint('Buscando na rede (armazenável em cache)');
+      final networkResult = await _dataSource.fetchTransactionsPage(
+        userId: userId,
+        limit: limit,
+        startAfter: startAfter,
+        filter: filter,
+        sortOrder: sortOrder,
+      );
+
+      debugPrint(
+        'Sucesso na rede! Salvando ${networkResult.transactions.length} item '
+        'para cache.',
+      );
+      await _localDataSource.saveTransactions(networkResult.transactions);
+
+      return networkResult;
+    } catch (e) {
+      debugPrint(
+        'A solicitação de rede falhou, utilizando o cache como alternativa: $e',
+      );
+      final cachedTransactions = await _localDataSource.getLastTransactions();
+      debugPrint('Encontrado ${cachedTransactions.length} item para cache.');
+
+      return PaginatedTransactions(
+        transactions: cachedTransactions,
+        lastDocument: null,
+      );
+    }
   }
 
   @override

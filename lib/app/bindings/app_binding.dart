@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 import 'package:mobile_app/data/datasources/firebase_data_source.dart';
 import 'package:mobile_app/data/datasources/firebase_storage_data_source.dart';
+import 'package:mobile_app/data/datasources/local_data_source.dart';
 import 'package:mobile_app/data/repositories/firebase_auth_repository_impl.dart';
 import 'package:mobile_app/data/repositories/firebase_data_repository_impl.dart';
 import 'package:mobile_app/data/repositories/firebase_storage_repository_impl.dart';
@@ -11,6 +12,7 @@ import 'package:mobile_app/data/repositories/uuid_generator_repository_impl.dart
 import 'package:mobile_app/domain/repositories/i_auth_repository.dart';
 import 'package:mobile_app/domain/repositories/i_id_generator_repository.dart';
 import 'package:mobile_app/domain/repositories/i_image_picker_repository.dart';
+import 'package:mobile_app/domain/repositories/i_local_data_source.dart';
 import 'package:mobile_app/domain/repositories/i_storage_repository.dart';
 import 'package:mobile_app/domain/repositories/i_url_launcher_repository.dart';
 import 'package:mobile_app/domain/repositories/i_user_repository.dart';
@@ -45,6 +47,7 @@ class AppBinding extends Bindings {
     Get.put<SnackBarService>(SnackBarService(), permanent: true);
 
     // Sources
+    Get.lazyPut<ILocalDataSource>(() => LocalDataSource());
     Get.put<FirebaseDataSource>(FirebaseDataSource(), permanent: true);
     Get.put<FirebaseStorageDataSource>(
       FirebaseStorageDataSource(),
@@ -56,7 +59,7 @@ class AppBinding extends Bindings {
       FirebaseAuthRepositoryImpl(Get.find()),
       permanent: true,
     );
-    final dataRepository = FirebaseDataRepositoryImpl(Get.find());
+    final dataRepository = FirebaseDataRepositoryImpl(Get.find(), Get.find());
     Get.put<IUserRepository>(dataRepository, permanent: true);
     Get.put<ITransactionRepository>(dataRepository, permanent: true);
     Get.put<IStorageRepository>(
