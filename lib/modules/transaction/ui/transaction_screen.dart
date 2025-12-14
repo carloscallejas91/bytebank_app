@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/modules/transaction/controllers/transaction_controller.dart';
+import 'package:mobile_app/modules/transaction/widgets/date_filter_chip.dart';
 import 'package:mobile_app/modules/transaction/widgets/empty_state.dart';
 import 'package:mobile_app/modules/transaction/widgets/filter_chips.dart';
+import 'package:mobile_app/modules/transaction/widgets/filter_control.dart';
 import 'package:mobile_app/modules/transaction/widgets/transaction_list.dart';
 import 'package:mobile_app/modules/transaction/widgets/transaction_list_header.dart';
 import 'package:mobile_app/modules/transaction/widgets/search_field.dart';
@@ -20,9 +22,10 @@ class TransactionScreen extends GetView<TransactionController> {
           _buildSearchField(),
           const SizedBox(height: 16),
           _buildFlip(),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           _buildHeader(),
-          const SizedBox(height: 8),
+          _buildFilterSection(),
+          const SizedBox(height: 16),
           _buildListResult(),
         ],
       ),
@@ -53,12 +56,39 @@ class TransactionScreen extends GetView<TransactionController> {
     return Obx(
       () => TransactionListHeader(
         titleText: 'Lista de Transações',
-        sortByLabel: 'Data',
-        toggleSortTooltip: 'Alterar ordenação',
         sortOrder: controller.sortOrder.value,
         onToggleSortOrder: controller.toggleSortOrder,
       ),
     );
+  }
+
+  Padding _buildFilterSection() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          FilterControl(
+            label: 'Intervalo de data:',
+            onTap: () => controller.chooseDateRange(),
+          ),
+          const SizedBox(width: 8),
+          _buildDateFilterChip(),
+        ],
+      ),
+    );
+  }
+
+  Obx _buildDateFilterChip() {
+    return Obx(() {
+      if (controller.selectedDateRange.value == null) {
+        return const SizedBox.shrink();
+      }
+      return DateFilterChip(
+        label: controller.formattedDateRange,
+        onDeleted: controller.clearDateRangeFilter,
+      );
+    });
   }
 
   Expanded _buildListResult() {

@@ -148,7 +148,7 @@ class FirebaseDataSource {
     required String userId,
     required int limit,
     DocumentSnapshot? startAfter,
-    TransactionFilter? filter,
+    TransactionFilterModel? filter,
     SortOrder sortOrder = SortOrder.desc,
   }) async {
     Query query = _firestore
@@ -157,6 +157,19 @@ class FirebaseDataSource {
 
     if (filter?.type != null) {
       query = query.where('type', isEqualTo: filter!.type!.name);
+    }
+
+    if (filter?.startDate != null) {
+      query = query.where(
+        'date',
+        isGreaterThanOrEqualTo: Timestamp.fromDate(filter!.startDate!),
+      );
+    }
+    if (filter?.endDate != null) {
+      query = query.where(
+        'date',
+        isLessThanOrEqualTo: Timestamp.fromDate(filter!.endDate!),
+      );
     }
 
     final bool isSearching =
