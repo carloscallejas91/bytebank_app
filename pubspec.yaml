@@ -43,6 +43,7 @@ dependencies:
   url_launcher: ^6.3.2
   path_provider: ^2.1.5
   path: ^1.9.1
+  connectivity_plus: ^7.0.0
 
   # Firebase
   firebase_core: ^4.0.0
