@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 import 'package:mobile_app/domain/repositories/i_auth_repository.dart';
+import 'package:mobile_app/domain/usecases/get_cached_avatar_path_usecase.dart';
 import 'package:mobile_app/domain/usecases/pick_image_usecase.dart';
 import 'package:mobile_app/domain/usecases/save_avatar_usecase.dart';
 
@@ -19,6 +20,7 @@ class AvatarController extends GetxController {
   // Use Cases
   final _saveAvatarUseCase = Get.find<SaveAvatarUseCase>();
   final _pickImageUseCase = Get.find<PickImageUseCase>();
+  final _getCachedAvatarPathUseCase = Get.find<GetCachedAvatarPathUseCase>();
 
   // UI State para avatar
   final userPhotoUrl = ''.obs;
@@ -29,6 +31,7 @@ class AvatarController extends GetxController {
   void onInit() {
     super.onInit();
 
+    _loadCachedAvatar();
     _setupListeners();
   }
 
@@ -72,6 +75,20 @@ class AvatarController extends GetxController {
       );
     } finally {
       isAvatarLoading.value = false;
+    }
+  }
+
+  Future<void> _loadCachedAvatar() async {
+    final userId = _authRepository.currentUser?.uid;
+    if (userId == null) return;
+
+    try {
+      final path = await _getCachedAvatarPathUseCase.call(userId: userId);
+      if (path != null && path.isNotEmpty) {
+        userPhotoUrl.value = path;
+      }
+    } catch (e) {
+      debugPrint("Falha ao carregar avatar do cache: $e");
     }
   }
 
