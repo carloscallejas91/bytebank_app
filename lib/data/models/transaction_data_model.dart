@@ -56,4 +56,34 @@ class TransactionDataModel extends TransactionEntity {
       snapshot: doc,
     );
   }
+
+  // --- NOVOS MÉTODOS PARA CACHE ---
+  // Converte o objeto para um Map (JSON) para ser salvo no cache local.
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'type': type.name,
+      'description': description,
+      'paymentMethod': paymentMethod,
+      'amount': amount,
+      'receiptUrl': receiptUrl,
+      'date': date.toIso8601String(),
+    };
+  }
+
+  // Constrói um objeto a partir de um Map (JSON) lido do cache local.
+  factory TransactionDataModel.fromJson(Map<String, dynamic> json) {
+    return TransactionDataModel(
+      id: json['id'] as String,
+      type: (json['type'] as String) == 'income'
+          ? TransactionType.income
+          : TransactionType.expense,
+      description: json['description'] as String,
+      paymentMethod: json['paymentMethod'] as String,
+      amount: (json['amount'] as num).toDouble(),
+      receiptUrl: json['receiptUrl'] as String?,
+      date: DateTime.parse(json['date'] as String),
+      snapshot: null,
+    );
+  }
 }
