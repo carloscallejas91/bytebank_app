@@ -12,7 +12,9 @@ class FirebaseDataSource {
 
   FirebaseDataSource({FirebaseAuth? firebaseAuth, FirebaseFirestore? firestore})
     : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
-      _firestore = firestore ?? FirebaseFirestore.instance;
+      _firestore = firestore ?? FirebaseFirestore.instance {
+    _firestore.settings = const Settings(persistenceEnabled: false);
+  }
 
   // Auth
   Stream<User?> get userChanges {

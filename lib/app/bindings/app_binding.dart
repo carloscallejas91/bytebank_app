@@ -1,3 +1,4 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
 import 'package:mobile_app/app/services/snack_bar_service.dart';
 import 'package:mobile_app/data/datasources/firebase_data_source.dart';
@@ -7,12 +8,14 @@ import 'package:mobile_app/data/repositories/firebase_auth_repository_impl.dart'
 import 'package:mobile_app/data/repositories/firebase_data_repository_impl.dart';
 import 'package:mobile_app/data/repositories/firebase_storage_repository_impl.dart';
 import 'package:mobile_app/data/repositories/image_picker_repository_impl.dart';
+import 'package:mobile_app/data/repositories/network_info_impl.dart';
 import 'package:mobile_app/data/repositories/url_launcher_repository_impl.dart';
 import 'package:mobile_app/data/repositories/uuid_generator_repository_impl.dart';
 import 'package:mobile_app/domain/repositories/i_auth_repository.dart';
 import 'package:mobile_app/domain/repositories/i_id_generator_repository.dart';
 import 'package:mobile_app/domain/repositories/i_image_picker_repository.dart';
 import 'package:mobile_app/domain/repositories/i_local_data_source.dart';
+import 'package:mobile_app/domain/repositories/i_network_info.dart';
 import 'package:mobile_app/domain/repositories/i_storage_repository.dart';
 import 'package:mobile_app/domain/repositories/i_url_launcher_repository.dart';
 import 'package:mobile_app/domain/repositories/i_user_repository.dart';
@@ -54,12 +57,19 @@ class AppBinding extends Bindings {
       permanent: true,
     );
 
+    // Repositories
+    Get.lazyPut<INetworkInfo>(() => NetworkInfoImpl(Connectivity()));
+
     // Repositories - Firebase
     Get.put<IAuthRepository>(
       FirebaseAuthRepositoryImpl(Get.find()),
       permanent: true,
     );
-    final dataRepository = FirebaseDataRepositoryImpl(Get.find(), Get.find());
+    final dataRepository = FirebaseDataRepositoryImpl(
+      Get.find(),
+      Get.find(),
+      Get.find(),
+    );
     Get.put<IUserRepository>(dataRepository, permanent: true);
     Get.put<ITransactionRepository>(dataRepository, permanent: true);
     Get.put<IStorageRepository>(

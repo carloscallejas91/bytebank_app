@@ -12,6 +12,7 @@ import 'package:mobile_app/domain/entities/transaction_entity.dart';
 import 'package:mobile_app/domain/entities/transaction_filter_model.dart';
 import 'package:mobile_app/domain/enums/sort_order.dart';
 import 'package:mobile_app/domain/repositories/i_local_data_source.dart';
+import 'package:mobile_app/domain/repositories/i_network_info.dart';
 import 'package:mobile_app/domain/repositories/i_transaction_repository.dart';
 import 'package:mobile_app/domain/repositories/i_user_repository.dart';
 import 'package:path_provider/path_provider.dart';
@@ -22,8 +23,13 @@ class FirebaseDataRepositoryImpl
     implements IUserRepository, ITransactionRepository {
   final FirebaseDataSource _dataSource;
   final ILocalDataSource _localDataSource;
+  final INetworkInfo _networkInfo;
 
-  FirebaseDataRepositoryImpl(this._dataSource, this._localDataSource);
+  FirebaseDataRepositoryImpl(
+    this._dataSource,
+    this._localDataSource,
+    this._networkInfo,
+  );
 
   // User Repository
   @override
@@ -91,12 +97,10 @@ class FirebaseDataRepositoryImpl
     TransactionFilterModel? filter,
     SortOrder sortOrder = SortOrder.desc,
   }) async {
-    final bool isCacheable =
-        startAfter == null && !(filter?.isEnabled ?? false);
+    final bool canUseCache = startAfter == null;
 
-    if (!isCacheable) {
-      debugPrint('Buscando na rede (não armazenável em cache)');
-      return await _dataSource.fetchTransactionsPage(
+    if (!canUseCache) {
+      return _fetchWithoutCache(
         userId: userId,
         limit: limit,
         startAfter: startAfter,
@@ -105,35 +109,115 @@ class FirebaseDataRepositoryImpl
       );
     }
 
+    if (await _networkInfo.isConnected) {
+      return _fetchFromNetworkAndCache(
+        userId: userId,
+        limit: limit,
+        filter: filter,
+        sortOrder: sortOrder,
+      );
+    } else {
+      return _fetchFromCache(filter: filter, sortOrder: sortOrder);
+    }
+  }
+
+  Future<PaginatedTransactions> _fetchFromNetworkAndCache({
+    required String userId,
+    required int limit,
+    TransactionFilterModel? filter,
+    SortOrder sortOrder = SortOrder.desc,
+  }) async {
     try {
-      debugPrint('Buscando na rede (armazenável em cache)');
       final networkResult = await _dataSource.fetchTransactionsPage(
         userId: userId,
         limit: limit,
-        startAfter: startAfter,
+        startAfter: null,
         filter: filter,
         sortOrder: sortOrder,
       );
 
-      debugPrint(
-        'Sucesso na rede! Salvando ${networkResult.transactions.length} item '
-        'para cache.',
-      );
-      await _localDataSource.saveTransactions(networkResult.transactions);
+      if (!(filter?.isEnabled ?? false)) {
+        await _localDataSource.saveTransactions(networkResult.transactions);
+      }
 
       return networkResult;
     } catch (e) {
-      debugPrint(
-        'A solicitação de rede falhou, utilizando o cache como alternativa: $e',
-      );
-      final cachedTransactions = await _localDataSource.getLastTransactions();
-      debugPrint('Encontrado ${cachedTransactions.length} item para cache.');
-
-      return PaginatedTransactions(
-        transactions: cachedTransactions,
-        lastDocument: null,
-      );
+      debugPrint('Falha ao buscar na rede, usando cache como fallback: $e');
+      return _fetchFromCache(filter: filter, sortOrder: sortOrder);
     }
+  }
+
+  Future<PaginatedTransactions> _fetchFromCache({
+    TransactionFilterModel? filter,
+    SortOrder sortOrder = SortOrder.desc,
+  }) async {
+    final allCachedTransactions = await _localDataSource.getLastTransactions();
+
+    final filteredAndSortedTransactions = _applyClientSideFilters(
+      allCachedTransactions,
+      filter,
+      sortOrder: sortOrder,
+    );
+
+    return PaginatedTransactions(
+      transactions: filteredAndSortedTransactions,
+      lastDocument: null,
+    );
+  }
+
+  List<TransactionDataModel> _applyClientSideFilters(
+    List<TransactionDataModel> transactions,
+    TransactionFilterModel? filter, {
+    SortOrder sortOrder = SortOrder.desc,
+  }) {
+    final filteredTransactions = (filter == null || !filter.isEnabled)
+        ? transactions
+        : transactions.where((transaction) {
+            if (filter.type != null && transaction.type != filter.type) {
+              return false;
+            }
+            if (filter.startDate != null &&
+                transaction.date.isBefore(filter.startDate!)) {
+              return false;
+            }
+            if (filter.endDate != null &&
+                transaction.date.isAfter(filter.endDate!)) {
+              return false;
+            }
+            if (filter.descriptionSearch.isNotEmpty &&
+                !transaction.description.toLowerCase().contains(
+                  filter.descriptionSearch.toLowerCase(),
+                )) {
+              return false;
+            }
+            return true;
+          }).toList();
+
+    filteredTransactions.sort((a, b) {
+      if (sortOrder == SortOrder.desc) {
+        return b.date.compareTo(a.date);
+      } else {
+        return a.date.compareTo(b.date);
+      }
+    });
+
+    return filteredTransactions;
+  }
+
+  Future<PaginatedTransactions> _fetchWithoutCache({
+    required String userId,
+    required int limit,
+    DocumentSnapshot? startAfter,
+    TransactionFilterModel? filter,
+    SortOrder sortOrder = SortOrder.desc,
+  }) {
+    return _dataSource.fetchTransactionsPage(
+      userId: userId,
+      limit: limit,
+      startAfter: startAfter,
+      filter: filter,
+      sortOrder: sortOrder,
+    );
   }
 
   @override
