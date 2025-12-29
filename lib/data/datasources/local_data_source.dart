@@ -8,6 +8,8 @@ class LocalDataSource implements ILocalDataSource {
   final String _transactionsCacheKey = 'last_transactions';
 
   String _userAccountCacheKey(String userId) => 'user_account_$userId';
+  String _monthlyTransactionsCacheKey(String userId, DateTime month) =>
+      'transactions_${userId}_${month.year}_${month.month}';
 
   @override
   Future<List<TransactionDataModel>> getLastTransactions() async {
@@ -36,6 +38,42 @@ class LocalDataSource implements ILocalDataSource {
         .toList();
 
     await _box.write(_transactionsCacheKey, jsonList);
+  }
+
+  @override
+  Future<void> saveMonthlyTransactions(
+    String userId,
+    DateTime month,
+    List<TransactionDataModel> transactions,
+  ) async {
+    final List<Map<String, dynamic>> jsonList = transactions
+        .map((t) => t.toJson())
+        .toList();
+    await _box.write(_monthlyTransactionsCacheKey(userId, month), jsonList);
+  }
+
+  @override
+  Future<List<TransactionDataModel>> getMonthlyTransactions(
+    String userId,
+    DateTime month,
+  ) async {
+    final key = _monthlyTransactionsCacheKey(userId, month);
+    final cachedData = _box.read<List<dynamic>>(key);
+
+    if (cachedData != null) {
+      try {
+        return cachedData
+            .map(
+              (json) =>
+                  TransactionDataModel.fromJson(json as Map<String, dynamic>),
+            )
+            .toList();
+      } catch (e) {
+        await _box.remove(key);
+        return [];
+      }
+    }
+    return [];
   }
 
   @override

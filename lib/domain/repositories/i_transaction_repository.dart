@@ -22,4 +22,9 @@ abstract class ITransactionRepository {
   );
 
   Future<void> deleteTransaction(String userId, TransactionEntity transaction);
+
+  Future<List<TransactionEntity>> getTransactionsForMonth(
+    String userId,
+    DateTime month,
+  );
 }

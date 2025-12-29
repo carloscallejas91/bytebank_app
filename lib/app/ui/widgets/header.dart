@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile_app/app/ui/constants/app_assets.dart';
 
 class Header extends StatelessWidget {
   final String textMessage;

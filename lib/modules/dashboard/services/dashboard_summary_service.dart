@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile_app/domain/entities/transaction_entity.dart';
+
+import 'package:mobile_app/domain/repositories/i_auth_repository.dart';
 import 'package:mobile_app/domain/usecases/calculate_dashboard_summaries_usecase.dart';
+import 'package:mobile_app/domain/usecases/get_monthly_transactions_usecase.dart';
 import 'package:mobile_app/modules/dashboard/models/category_spending_view_model.dart';
 
 class DashboardSummaryService extends GetxService {
   // Use Cases
+  final _authRepository = Get.find<IAuthRepository>();
   final _calculateSummariesUseCase =
       Get.find<CalculateDashboardSummariesUseCase>();
+  final _getMonthlyTransactionsUseCase =
+      Get.find<GetMonthlyTransactionsUseCase>();
 
   // Monthly Summary Data
   final monthlyIncome = 0.0.obs;
@@ -48,10 +53,15 @@ class DashboardSummaryService extends GetxService {
   }
 
   // UI Actions
-  void calculateSummariesFor(
-    List<TransactionEntity> transactions,
-    DateTime month,
-  ) {
+  Future<void> fetchAndCalculateSummaries(DateTime month) async {
+    final user = _authRepository.currentUser;
+    if (user == null) return;
+
+    final transactions = await _getMonthlyTransactionsUseCase.call(
+      userId: user.uid,
+      selectedMonth: month,
+    );
+
     final summary = _calculateSummariesUseCase.call(
       transactions: transactions,
       selectedMonth: month,

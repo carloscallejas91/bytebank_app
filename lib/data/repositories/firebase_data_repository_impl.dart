@@ -300,4 +300,44 @@ class FirebaseDataRepositoryImpl
       newTransactionModel,
     );
   }
+
+  @override
+  Future<List<TransactionEntity>> getTransactionsForMonth(
+    String userId,
+    DateTime month,
+  ) async {
+    if (await _networkInfo.isConnected) {
+      try {
+        final transactionModels = await _dataSource.fetchMonthlyTransactions(
+          userId: userId,
+          month: month,
+        );
+
+        await _localDataSource.saveMonthlyTransactions(
+          userId,
+          month,
+          transactionModels,
+        );
+
+        return transactionModels;
+      } catch (e) {
+        debugPrint('Erro ao buscar transações mensais da rede: $e');
+        // Fallback para o cache em caso de erro na requisição
+        return _fetchMonthlyFromCache(userId, month);
+      }
+    } else {
+      return _fetchMonthlyFromCache(userId, month);
+    }
+  }
+
+  Future<List<TransactionEntity>> _fetchMonthlyFromCache(
+    String userId,
+    DateTime month,
+  ) async {
+    final cachedModels = await _localDataSource.getMonthlyTransactions(
+      userId,
+      month,
+    );
+    return cachedModels; // TransactionDataModel is a TransactionEntity
+  }
 }
