@@ -27,6 +27,7 @@ import 'package:mobile_app/domain/usecases/delete_transaction_usecase.dart';
 import 'package:mobile_app/domain/usecases/generate_id_usecase.dart';
 import 'package:mobile_app/domain/usecases/get_cached_avatar_path_usecase.dart';
 import 'package:mobile_app/domain/usecases/get_transactions_usecase.dart';
+import 'package:mobile_app/domain/usecases/get_monthly_transactions_usecase.dart';
 import 'package:mobile_app/domain/usecases/get_user_stream_usecase.dart';
 import 'package:mobile_app/domain/usecases/launch_url_usecase.dart';
 import 'package:mobile_app/domain/usecases/map_auth_exception_to_message_usecase.dart';
@@ -105,6 +106,7 @@ class AppBinding extends Bindings {
 
     // Use Cases - Transaction
     Get.lazyPut(() => GetTransactionsUseCase(Get.find()), fenix: true);
+    Get.lazyPut(() => GetMonthlyTransactionsUseCase(Get.find()), fenix: true);
     Get.lazyPut(() => AddTransactionUseCase(Get.find()), fenix: true);
     Get.lazyPut(() => UpdateTransactionUseCase(Get.find()), fenix: true);
     Get.lazyPut(() => DeleteTransactionUseCase(Get.find()), fenix: true);

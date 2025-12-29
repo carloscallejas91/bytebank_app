@@ -208,4 +208,32 @@ class FirebaseDataSource {
       lastDocument: lastDocument,
     );
   }
+
+  Future<List<TransactionDataModel>> fetchMonthlyTransactions({
+    required String userId,
+    required DateTime month,
+  }) async {
+    final startOfMonth = DateTime(month.year, month.month, 1);
+    final endOfMonth = DateTime(
+      month.year,
+      month.month + 1,
+      0,
+      23,
+      59,
+      59,
+      999,
+    );
+
+    final query = _firestore
+        .collection('transactions')
+        .where('userId', isEqualTo: userId)
+        .where('date', isGreaterThanOrEqualTo: Timestamp.fromDate(startOfMonth))
+        .where('date', isLessThanOrEqualTo: Timestamp.fromDate(endOfMonth));
+
+    final snapshot = await query.get();
+
+    return snapshot.docs
+        .map((doc) => TransactionDataModel.fromMap(doc))
+        .toList();
+  }
 }

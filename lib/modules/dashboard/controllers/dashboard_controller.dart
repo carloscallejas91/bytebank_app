@@ -114,11 +114,8 @@ class DashboardController extends GetxController {
     ever(totalBalance, (_) => _updateFormattedBalance());
   }
 
-  void _updateSummaries() {
-    summaryService.calculateSummariesFor(
-      _transactionController.transactions.toList(),
-      selectedMonth.value,
-    );
+  Future<void> _updateSummaries() async {
+    await summaryService.fetchAndCalculateSummaries(selectedMonth.value);
   }
 
   void _updateFormattedBalance() {
